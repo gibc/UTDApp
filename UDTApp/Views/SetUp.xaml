@@ -15,15 +15,15 @@
         </i:EventTrigger>
     </i:Interaction.Triggers>
     <Grid>
-        <ContentControl Grid.Row="1" prism:RegionManager.RegionName="SetUpRegion"/>
+        <ContentControl prism:RegionManager.RegionName="SetUpRegion" Margin="0,0,0,309"/>
         <StackPanel  Orientation="Horizontal" HorizontalAlignment="Left" Height="45" Margin="0,0,0,335"  VerticalAlignment="Bottom" Width="280">
             <StackPanel.Resources>
                 <Style TargetType="{x:Type Button}">
                     <Setter Property="Margin" Value="10,10,10,10"/>
                 </Style>
             </StackPanel.Resources>
-            <Button Command="{Binding NextCommand}" Content="Next" Margin="10,10,10,10.333"/>
             <Button Command="{Binding PreviousCommand}" Content="Pervious" Margin="10,10,10,10.333"/>
+            <Button Command="{Binding NextCommand}" Content="Next" Margin="10,10,10,10.333"/>
         </StackPanel>
     </Grid>
 </UserControl>
