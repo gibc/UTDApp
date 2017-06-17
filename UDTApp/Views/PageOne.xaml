@@ -8,15 +8,13 @@
              prism:ViewModelLocator.AutoWireViewModel="True"
              xmlns:sysControls="clr-namespace:System.Windows.Controls;assembly=PresentationFramework"
              xmlns:local="clr-namespace:UDTApp.Behaviour"
+             xmlns:lib="clr-namespace:UDTAppControlLibrary;assembly=UDTAppControlLibrary"
 
              d:DesignHeight="300" d:DesignWidth="300">
 
-    <UserControl.Resources>
-        <sysControls:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-    </UserControl.Resources>
-
     <Grid Margin="-10,0,-217,-184" HorizontalAlignment="Left" Width="527" RenderTransformOrigin="0.51,0.506">
-        <Label Content="PageOneView" HorizontalAlignment="Left" Margin="91,126,0,0" VerticalAlignment="Top" Width="152" Height="27"/>
+        <lib:MainDBGrid/>
+        <!--<Label Content="PageOneView" HorizontalAlignment="Left" Margin="91,126,0,0" VerticalAlignment="Top" Width="152" Height="27"/>
         <DataGrid AutoGenerateColumns="True" IsReadOnly="True" CanUserAddRows="False" 
                   ItemsSource="{Binding DataSets, Mode=TwoWay}" 
                   SelectedIndex="{Binding SelectedIndex}" 
@@ -40,7 +38,7 @@
         <Button Command="{Binding CancelCommand}" Content="Cancel" HorizontalAlignment="Left" Margin="390,73,0,0" VerticalAlignment="Top" Width="75"/>
         <DataGrid HorizontalAlignment="Left" Margin="32,252,0,0" VerticalAlignment="Top" Height="144" Width="224"
                   ItemsSource="{Binding DataItems}" 
-                  AutoGenerateColumns="True" />
+                  AutoGenerateColumns="True" />-->
 
     </Grid>
 </UserControl>

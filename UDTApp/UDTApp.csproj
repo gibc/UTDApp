@@ -89,6 +89,7 @@
     <Compile Include="ViewModels\DataViewModel.cs" />
     <Compile Include="ViewModels\PageOneViewModel.cs" />
     <Compile Include="ViewModels\PageTwoViewModel.cs" />
+    <Compile Include="ViewModels\SetupPageBase.cs" />
     <Compile Include="ViewModels\SetUpViewModel.cs" />
     <Compile Include="Views\PageOne.xaml.cs">
       <DependentUpon>PageOne.xaml</DependentUpon>
