@@ -16,31 +16,37 @@
     </UserControl.Resources>
 
     <Grid Margin="-10,0,-217,-184" HorizontalAlignment="Left" Width="527" RenderTransformOrigin="0.51,0.506">
-        <Label Content="PageOneView" HorizontalAlignment="Left" Margin="91,126,0,0" VerticalAlignment="Top" Width="152" Height="27"/>
         <DataGrid AutoGenerateColumns="True" IsReadOnly="True" CanUserAddRows="False" 
                   ItemsSource="{Binding DataSets, Mode=TwoWay}" 
                   SelectedIndex="{Binding SelectedIndex}" 
                   SelectedItem="{Binding SelectedItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                   local:AutoGeneratingColumnEventToCommandBehaviour.Command="{Binding CreateColumnsCommand}"
                   HorizontalAlignment="Left" Margin="32,38,0,0" VerticalAlignment="Top" Width="224" Height="181"/>
-        <Button Command="{Binding AddCommand}" Content="Add Data Set" HorizontalAlignment="Left" Margin="270,38,0,0" VerticalAlignment="Top" Width="102"/>
-        <Button Command="{Binding DeleteCommand}" Content="Delete Data Set" HorizontalAlignment="Left" Margin="270,73,0,0" VerticalAlignment="Top" Width="102"/>
-        <TextBox HorizontalAlignment="Left" Height="23" Margin="345,126,0,0" TextWrapping="Wrap" 
-                 Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                 IsEnabled="{Binding IsInputEnabled}"
-                 IsReadOnly="False"
-                 VerticalAlignment="Top" Width="120"/>
-        <TextBox local:InputBehaviour.IsAlphaOnly="true" HorizontalAlignment="Left" Height="23" Margin="345,158,0,0" TextWrapping="Wrap" 
-                 Text="{Binding Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                 IsEnabled="{Binding IsInputEnabled}"
-                 VerticalAlignment="Top" Width="143"/>
-        <Label Content="Name" HorizontalAlignment="Left" Margin="298,123,0,0" VerticalAlignment="Top"/>
-        <Label Content="Description" HorizontalAlignment="Left" Margin="270,154,0,0" VerticalAlignment="Top"/>
-        <Button Command="{Binding SaveCommand}" Content="Save" HorizontalAlignment="Left" Margin="390,38,0,0" VerticalAlignment="Top" Width="75"/>
-        <Button Command="{Binding CancelCommand}" Content="Cancel" HorizontalAlignment="Left" Margin="390,73,0,0" VerticalAlignment="Top" Width="75"/>
+        <Grid Visibility="{Binding IsMasterVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Button Command="{Binding AddCommand}" Content="Add Data Set" HorizontalAlignment="Left" Margin="270,62,0,0" VerticalAlignment="Top" Width="102"/>
+            <Button Command="{Binding DeleteCommand}" Content="Delete Data Set" HorizontalAlignment="Left" Margin="270,92,0,0" VerticalAlignment="Top" Width="102"/>
+            <TextBox HorizontalAlignment="Left" Height="23" Margin="345,130,0,0" TextWrapping="Wrap" 
+                     Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                     IsEnabled="{Binding IsInputEnabled}"
+                     IsReadOnly="False"
+                     VerticalAlignment="Top" Width="120"/>
+            <TextBox local:InputBehaviour.IsAlphaOnly="true" HorizontalAlignment="Left" Height="23" Margin="345,162,0,0" TextWrapping="Wrap" 
+                     Text="{Binding Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                     IsEnabled="{Binding IsInputEnabled}"
+                     VerticalAlignment="Top" Width="143"/>
+            <Label Content="Name" HorizontalAlignment="Left" Margin="298,127,0,0" VerticalAlignment="Top"/>
+            <Label Content="Description" HorizontalAlignment="Left" Margin="270,158,0,0" VerticalAlignment="Top"/>
+            <Button Command="{Binding SaveCommand}" Content="Save" HorizontalAlignment="Left" Margin="390,62,0,0" VerticalAlignment="Top" Width="75"/>
+            <Button Command="{Binding CancelCommand}" Content="Cancel" HorizontalAlignment="Left" Margin="390,92,0,0" VerticalAlignment="Top" Width="75"/>
+        </Grid>       
         <DataGrid HorizontalAlignment="Left" Margin="32,252,0,0" VerticalAlignment="Top" Height="144" Width="224"
                   ItemsSource="{Binding DataItems}" 
                   AutoGenerateColumns="True" />
-
+        <Grid Visibility="{Binding IsDetailVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Button Content="Button" HorizontalAlignment="Left" Margin="390,253,0,0" VerticalAlignment="Top" Width="75"/>
+            <Button Content="Button" HorizontalAlignment="Left" Margin="297,280,0,0" VerticalAlignment="Top" Width="75"/>
+            <Button Content="Button" HorizontalAlignment="Left" Margin="390,280,0,0" VerticalAlignment="Top" Width="75"/>
+            <Button Content="Button" HorizontalAlignment="Left" Margin="295,252,0,0" VerticalAlignment="Top" Width="75"/>
+        </Grid>
     </Grid>
 </UserControl>
