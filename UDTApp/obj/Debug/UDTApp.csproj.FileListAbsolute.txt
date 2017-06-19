@@ -72,7 +72,6 @@ C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\obj\Debug\Views\MainWindow.g.cs
 C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\obj\Debug\Views\PageOne.g.cs
 C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\obj\Debug\Views\PageThree.g.cs
 C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\obj\Debug\Views\SetUp.g.cs
-C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\obj\Debug\GeneratedInternalTypeHelper.g.cs
 C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\obj\Debug\UDTApp_MarkupCompile.lref
 C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\obj\Debug\Views\MainWindow.baml
 C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\obj\Debug\Views\PageOne.baml

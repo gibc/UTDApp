@@ -38,15 +38,27 @@
             <Label Content="Description" HorizontalAlignment="Left" Margin="270,158,0,0" VerticalAlignment="Top"/>
             <Button Command="{Binding SaveCommand}" Content="Save" HorizontalAlignment="Left" Margin="390,62,0,0" VerticalAlignment="Top" Width="75"/>
             <Button Command="{Binding CancelCommand}" Content="Cancel" HorizontalAlignment="Left" Margin="390,92,0,0" VerticalAlignment="Top" Width="75"/>
-        </Grid>       
+        </Grid>
         <DataGrid HorizontalAlignment="Left" Margin="32,252,0,0" VerticalAlignment="Top" Height="144" Width="224"
                   ItemsSource="{Binding DataItems}" 
+                  SelectedIndex="{Binding ChildSelectedIndex}" 
+                  SelectedItem="{Binding ChildSelectedItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                   AutoGenerateColumns="True" />
         <Grid Visibility="{Binding IsDetailVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
-            <Button Content="Button" HorizontalAlignment="Left" Margin="390,253,0,0" VerticalAlignment="Top" Width="75"/>
-            <Button Content="Button" HorizontalAlignment="Left" Margin="297,280,0,0" VerticalAlignment="Top" Width="75"/>
-            <Button Content="Button" HorizontalAlignment="Left" Margin="390,280,0,0" VerticalAlignment="Top" Width="75"/>
-            <Button Content="Button" HorizontalAlignment="Left" Margin="295,252,0,0" VerticalAlignment="Top" Width="75"/>
+            <Button Command="{Binding SaveCommand}" Content="Save" HorizontalAlignment="Left" Margin="413,252,0,0" VerticalAlignment="Top" Width="75"/>
+            <Button Command="{Binding DeleteCommand}" Content="Delete Data Item" HorizontalAlignment="Left" Margin="282,280,0,0" VerticalAlignment="Top" Width="108"/>
+            <Button Command="{Binding CancelCommand}" Content="Cancel" HorizontalAlignment="Left" Margin="413,280,0,0" VerticalAlignment="Top" Width="75" RenderTransformOrigin="0.87,0.602"/>
+            <Button Command="{Binding AddCommand}" Content="Add Data Item" HorizontalAlignment="Left" Margin="282,252,0,0" VerticalAlignment="Top" Width="108"/>
+            <TextBox 
+                Text="{Binding ChildName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                IsEnabled="{Binding IsInputEnabled}"
+                HorizontalAlignment="Left" Height="23" Margin="359,320,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="129"/>
+            <TextBox 
+                Text="{Binding Type, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                IsEnabled="{Binding IsInputEnabled}"
+                HorizontalAlignment="Left" Height="23" Margin="359,360,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="129"/>
+            <Label Content="Name" HorizontalContentAlignment="Right" HorizontalAlignment="Left" Margin="318,320,0,0" VerticalAlignment="Top" Width="41" RenderTransformOrigin="0.293,0.628"/>
+            <Label Content="Type" HorizontalContentAlignment="Right" HorizontalAlignment="Left" Margin="313,360,0,0" VerticalAlignment="Top" Width="41" RenderTransformOrigin="0.997,0.569" Height="23"/>
         </Grid>
     </Grid>
 </UserControl>
