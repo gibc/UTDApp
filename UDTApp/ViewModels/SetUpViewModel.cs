@@ -16,6 +16,7 @@ namespace UDTApp.ViewModels
     public static class cons
     {
         public const string SetUpRegion = "SetUpRegion";
+        public const string PageZero = "PageZero";
         public const string PageOne = "PageOne";
         public const string PageTwo = "PageTwo";
         public const string PageThree = "PageThree";
@@ -44,6 +45,8 @@ namespace UDTApp.ViewModels
 
         private void windowLoaded()
         {
+            //dynamic view = new PageZero();
+            //_regionManager.AddToRegion(cons.SetUpRegion, view);
             dynamic view = new PageOne();
             _regionManager.AddToRegion(cons.SetUpRegion, view);
             view = new PageTwo();
@@ -51,6 +54,7 @@ namespace UDTApp.ViewModels
             view = new PageThree();
             _regionManager.AddToRegion(cons.SetUpRegion, view);
             Navigate();
+
         }
 
         private void Navigate()

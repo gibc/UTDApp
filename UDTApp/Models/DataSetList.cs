@@ -33,5 +33,7 @@ namespace UDTApp.Models
 
         static public ObservableCollection<DataSet> Sets { get; set; }
         static public int SelectedIndex { get; set; }
+        //public ObservableCollection<DataSet> Sets { get; set; }
+        //public int SelectedIndex { get; set; }
     }
 }

@@ -7,8 +7,8 @@
              xmlns:prism="http://prismlibrary.com/"
              prism:ViewModelLocator.AutoWireViewModel="True"
              xmlns:sysControls="clr-namespace:System.Windows.Controls;assembly=PresentationFramework"
-             xmlns:local="clr-namespace:UDTApp.Behaviour"
-
+             xmlns:local="clr-namespace:UDTAppControlLibrary.Behaviour"
+             xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
              d:DesignHeight="300" d:DesignWidth="300">
 
     <UserControl.Resources>
@@ -16,12 +16,20 @@
     </UserControl.Resources>
 
     <Grid Margin="-10,0,-217,-184" HorizontalAlignment="Left" Width="527" RenderTransformOrigin="0.51,0.506">
-        <DataGrid AutoGenerateColumns="True" IsReadOnly="True" CanUserAddRows="False" 
+        <DataGrid AutoGenerateColumns="{Binding AutoColumns}" IsReadOnly="True" CanUserAddRows="False" 
+ 
                   ItemsSource="{Binding DataSets, Mode=TwoWay}" 
                   SelectedIndex="{Binding SelectedIndex}" 
                   SelectedItem="{Binding SelectedItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                   local:AutoGeneratingColumnEventToCommandBehaviour.Command="{Binding CreateColumnsCommand}"
-                  HorizontalAlignment="Left" Margin="32,38,0,0" VerticalAlignment="Top" Width="224" Height="181"/>
+                  HorizontalAlignment="Left" Margin="32,38,0,0" VerticalAlignment="Top" Width="224" Height="181">
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="AutoGeneratingColumn">
+                    <i:InvokeCommandAction Command="{Binding AutoGeneratingColumnCommand}" />
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
+        </DataGrid>
+        
         <Grid Visibility="{Binding IsMasterVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
             <Button Command="{Binding AddCommand}" Content="Add Data Set" HorizontalAlignment="Left" Margin="270,62,0,0" VerticalAlignment="Top" Width="102"/>
             <Button Command="{Binding DeleteCommand}" Content="Delete Data Set" HorizontalAlignment="Left" Margin="270,92,0,0" VerticalAlignment="Top" Width="102"/>
@@ -49,16 +57,30 @@
             <Button Command="{Binding DeleteCommand}" Content="Delete Data Item" HorizontalAlignment="Left" Margin="282,280,0,0" VerticalAlignment="Top" Width="108"/>
             <Button Command="{Binding CancelCommand}" Content="Cancel" HorizontalAlignment="Left" Margin="413,280,0,0" VerticalAlignment="Top" Width="75" RenderTransformOrigin="0.87,0.602"/>
             <Button Command="{Binding AddCommand}" Content="Add Data Item" HorizontalAlignment="Left" Margin="282,252,0,0" VerticalAlignment="Top" Width="108"/>
-            <TextBox 
-                Text="{Binding ChildName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                IsEnabled="{Binding IsInputEnabled}"
-                HorizontalAlignment="Left" Height="23" Margin="359,320,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="129"/>
-            <TextBox 
-                Text="{Binding Type, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                IsEnabled="{Binding IsInputEnabled}"
-                HorizontalAlignment="Left" Height="23" Margin="359,360,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="129"/>
-            <Label Content="Name" HorizontalContentAlignment="Right" HorizontalAlignment="Left" Margin="318,320,0,0" VerticalAlignment="Top" Width="41" RenderTransformOrigin="0.293,0.628"/>
-            <Label Content="Type" HorizontalContentAlignment="Right" HorizontalAlignment="Left" Margin="313,360,0,0" VerticalAlignment="Top" Width="41" RenderTransformOrigin="0.997,0.569" Height="23"/>
+            <Grid Visibility="{Binding IsItemVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <TextBox 
+                    Text="{Binding ChildName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                    IsEnabled="{Binding IsInputEnabled}"
+                    HorizontalAlignment="Left" Height="23" Margin="359,320,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="129"/>
+                <TextBox 
+                    Text="{Binding Type, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                    IsEnabled="{Binding IsInputEnabled}"
+                    HorizontalAlignment="Left" Height="23" Margin="359,360,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="129"/>
+                <Label Content="Name" HorizontalContentAlignment="Right" HorizontalAlignment="Left" Margin="318,320,0,0" VerticalAlignment="Top" Width="41" RenderTransformOrigin="0.293,0.628"/>
+                <Label Content="Type" HorizontalContentAlignment="Right" HorizontalAlignment="Left" Margin="313,360,0,0" VerticalAlignment="Top" Width="41" RenderTransformOrigin="0.997,0.569" Height="23"/>
+            </Grid>
+            <Grid Visibility="{Binding IsRelationVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <TextBox 
+                    Text="{Binding ParentDataset, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                    IsEnabled="{Binding IsInputEnabled}"
+                    HorizontalAlignment="Left" Height="23" Margin="359,320,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="129"/>
+                <TextBox 
+                    Text="{Binding ChildDataset, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                    IsEnabled="{Binding IsInputEnabled}"
+                    HorizontalAlignment="Left" Height="23" Margin="359,360,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="129"/>
+                <Label Content="Parent Dataset" HorizontalContentAlignment="Right" HorizontalAlignment="Left" Margin="274,320,0,0" VerticalAlignment="Top" Width="Auto"  RenderTransformOrigin="0.293,0.628"/>
+                <Label Content="Child Dataset" HorizontalContentAlignment="Right" HorizontalAlignment="Left" Margin="274,360,0,0" VerticalAlignment="Top" Width="Auto" RenderTransformOrigin="0.997,0.569" Height="23"/>
+            </Grid>
         </Grid>
     </Grid>
 </UserControl>

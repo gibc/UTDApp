@@ -22,8 +22,18 @@ namespace UDTApp.Models
             DataItems = dataItems;
         }
 
+        private ObservableCollection<DataSetRelation> _dataSetRelations;
+        public ObservableCollection<DataSetRelation> DataSetRelations
+        {
+            get { return _dataSetRelations; }
+            set
+            {
+                SetProperty(ref _dataSetRelations, value);
+            }
+        } 
+
         private ObservableCollection<DataItem> _dataItems;
-        public  ObservableCollection<DataItem> DataItems
+        public ObservableCollection<DataItem> DataItems
         {
             get { return _dataItems; }
             set

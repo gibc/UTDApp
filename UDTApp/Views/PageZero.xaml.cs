@@ -12,19 +12,17 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using UDTAppControlLibrary.Behaviour;
 
-namespace UDTAppControlLibrary
+namespace UDTApp.Views
 {
     /// <summary>
-    /// Interaction logic for UserControl1.xaml
+    /// Interaction logic for PageZeroView.xaml
     /// </summary>
-    public partial class MainDBGrid : UserControl
+    public partial class PageZero : UserControl
     {
-        public MainDBGrid()
+        public PageZero()
         {
             InitializeComponent();
         }
-
     }
 }

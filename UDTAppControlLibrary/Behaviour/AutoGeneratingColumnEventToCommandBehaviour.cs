@@ -7,7 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
-namespace UDTApp.Behaviour
+namespace UDTAppControlLibrary.Behaviour
 {
     public static class AutoGeneratingColumnEventToCommandBehaviour
     {
@@ -20,9 +20,11 @@ namespace UDTApp.Behaviour
             null,
             CommandPropertyChanged));
 
+
         public static void SetCommand(DependencyObject o, ICommand value)
         {
             o.SetValue(CommandProperty, value);
+
         }
 
         public static ICommand GetCommand(DependencyObject o)
@@ -35,6 +37,7 @@ namespace UDTApp.Behaviour
             var dataGrid = d as DataGrid;
             if (dataGrid != null)
             {
+
                 if (e.OldValue != null)
                 {
                     dataGrid.AutoGeneratingColumn -= OnAutoGeneratingColumn;
@@ -42,6 +45,10 @@ namespace UDTApp.Behaviour
                 if (e.NewValue != null)
                 {
                     dataGrid.AutoGeneratingColumn += OnAutoGeneratingColumn;
+                    // force column regen when new event handler is registered
+                    var source = dataGrid.ItemsSource;
+                    dataGrid.ItemsSource = null;
+                    dataGrid.ItemsSource = source;
                 }
             }
         }

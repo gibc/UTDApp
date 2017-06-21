@@ -13,17 +13,16 @@ using UDTApp.Models;
 
 namespace UDTApp.ViewModels
 {
-    public class PageTwoViewModel : PageOneViewModel
+    public class PageThreeViewModel : PageOneViewModel
     {
 
-        public PageTwoViewModel()
+        public PageThreeViewModel()
         {
-            _p = new SubPageTwo(this);
-
+            //_p = new SubPageTwo(this);
             IsMasterVisible = false;
             IsDetailVisible = true;
-            IsRelationVisible = false;
-            IsItemVisible = true;
+            IsRelationVisible = true;
+            IsItemVisible = false;
         }
 
         override public bool IsInputEnabled

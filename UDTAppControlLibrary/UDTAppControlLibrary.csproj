@@ -65,6 +65,7 @@
     </Page>
     <Compile Include="Behaviour\AlphaOnlycs.cs" />
     <Compile Include="Behaviour\AutoGeneratingColumnEventToCommandBehaviour.cs" />
+    <Compile Include="Behaviour\ColumnEvent.cs" />
     <Compile Include="MainDBGrid.xaml.cs">
       <DependentUpon>MainDBGrid.xaml</DependentUpon>
       <SubType>Code</SubType>

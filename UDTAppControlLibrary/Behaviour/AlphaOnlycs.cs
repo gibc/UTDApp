@@ -7,7 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
-namespace UDTApp.Behaviour
+namespace UDTAppControlLibrary.Behaviour
 {
     public static class InputBehaviour
     {

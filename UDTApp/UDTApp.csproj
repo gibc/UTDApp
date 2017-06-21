@@ -86,9 +86,11 @@
     <Compile Include="Models\DataItem.cs" />
     <Compile Include="Models\DataSet.cs" />
     <Compile Include="Models\DataSetList.cs" />
+    <Compile Include="Models\DataSetRelation.cs" />
     <Compile Include="ViewModels\DataViewModel.cs" />
     <Compile Include="ViewModels\ISubPage.cs" />
     <Compile Include="ViewModels\PageOneViewModel.cs" />
+    <Compile Include="ViewModels\PageThreeViewModel.cs" />
     <Compile Include="ViewModels\PageTwoViewModel.cs" />
     <Compile Include="ViewModels\SetUpViewModel.cs" />
     <Compile Include="ViewModels\SubPageOne.cs" />
@@ -101,6 +103,9 @@
     </Compile>
     <Compile Include="Views\PageTwo.xaml.cs">
       <DependentUpon>PageTwo.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\PageZero.xaml.cs">
+      <DependentUpon>PageZero.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\SetUp.xaml.cs">
       <DependentUpon>SetUp.xaml</DependentUpon>
@@ -138,6 +143,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\PageTwo.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\PageZero.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

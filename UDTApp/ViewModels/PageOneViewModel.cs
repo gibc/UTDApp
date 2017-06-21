@@ -7,11 +7,13 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using UDTApp.Models;
+using UDTAppControlLibrary.Behaviour;
 
 namespace UDTApp.ViewModels
 {
@@ -32,15 +34,27 @@ namespace UDTApp.ViewModels
             _p = new SubPageOne(this);
 
             IsMasterVisible = true;
+            IsDetailVisible = false;
+            IsRelationVisible = false;
+            IsItemVisible = false;
+
+            CreateColumnsCommand = new DelegateCommand<DataGridAutoGeneratingColumnEventArgs>(createColumns);
+
             _dataSetList = new DataSetList();
+            DataSets = DataSetList.Sets;
 
             AddCommand = new DelegateCommand(AddDataSet, canAddDataSet);
             DeleteCommand = new DelegateCommand(DeleteDataSet, canDelete);
             SaveCommand = new DelegateCommand(SaveUpdate, canSave);
             CancelCommand = new DelegateCommand(cancelUpdate, canCancel);
-            CreateColumnsCommand = new DelegateCommand<DataGridAutoGeneratingColumnEventArgs>(createColumns);
             ValidationEnabled = validationEnabled;
+        }
 
+        private bool _autoColumns = true;
+        public bool AutoColumns
+        {
+            get { return _autoColumns; }
+            set { SetProperty(ref _autoColumns, value); }
         }
 
         private bool validationEnabled()
@@ -53,27 +67,56 @@ namespace UDTApp.ViewModels
             get { return (_selectedItem != null || _newDataSet != null); }
         }
 
-        public bool IsMasterVisible { get; set; }
-        public bool IsDetailVisible { get { return !IsMasterVisible; } }
+        private bool _isMasterVisible = false;
+        public bool IsMasterVisible { 
+            get { return _isMasterVisible; }
+            set { SetProperty(ref _isMasterVisible, value); }
+        }
 
+        private bool _isDetailVisible = false;
+        public bool IsDetailVisible {
+            get { return _isDetailVisible; }
+            set { SetProperty(ref _isDetailVisible, value); }
+        }
+
+        private bool _isItemVisible = false;
+        public bool IsItemVisible
+        {
+            get { return _isItemVisible; }
+            set { SetProperty(ref _isItemVisible, value); }
+        }
+
+        private bool _isRelationVisible = false;
+        public bool IsRelationVisible { 
+            get { return _isRelationVisible; }
+            set { SetProperty(ref _isRelationVisible, value); }
+        }
 
         public dynamic DataSets
         {
             get { return DataSetList.Sets as ObservableCollection<DataSet>; }
             set { DataSetList.Sets = value; }
+            //get 
+            //{
+            //    return _dataSetList.Sets as ObservableCollection<DataSet>; 
+            //}
+            //set { _dataSetList.Sets = value; }
         }
 
         public int SelectedIndex
         {
             get { return DataSetList.SelectedIndex; }
+
             set
             {
                 int si = value;
                 SetProperty(ref si, value);
                 DataSetList.SelectedIndex = si;
+    
                 RaisePropertyChanged("SelectedItem");
                 if (DataSetList.SelectedIndex > -1)
                     DataItems = DataSets[DataSetList.SelectedIndex].DataItems;
+                    //if(DataSets != null) DataItems = DataSets[_dataSetList.SelectedIndex].DataItems;
                 else
                     DataItems = null;
             }
@@ -106,6 +149,7 @@ namespace UDTApp.ViewModels
 
         private ObservableCollection<DataItem> _dataItems;
         public ObservableCollection<DataItem> DataItems
+        //public dynamic DataItems
         {
             get { return _dataItems; }
             set
@@ -234,7 +278,7 @@ namespace UDTApp.ViewModels
             return false;
         }
 
-        private void createColumns(DataGridAutoGeneratingColumnEventArgs e)
+        static public void createColumns(DataGridAutoGeneratingColumnEventArgs e)
         {
             if (e.PropertyType.Name.Contains("ObservableCollection") || e.Column.Header.ToString().Contains("ID"))
             {
@@ -242,16 +286,22 @@ namespace UDTApp.ViewModels
             }
         }
 
+
+
         public bool IsNavigationTarget(NavigationContext navigationContext)
         {return true;}
         public void OnNavigatedTo(NavigationContext navigationContext) 
         {
             SelectedIndex = DataSetList.SelectedIndex;
+
         }
         public void OnNavigatedFrom(NavigationContext navigationContext) 
         {
             SelectedIndex = DataSetList.SelectedIndex;
+
         }
+
+
     }
 
 
