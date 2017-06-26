@@ -15,11 +15,13 @@ namespace UDTApp.Models
 
         }
 
-        public DataSet(string name, string description, ObservableCollection<DataItem> dataItems)
+        public DataSet(string name, string description, ObservableCollection<DataItem> dataItems,
+            ObservableCollection<DataSetRelation> relations)
         {
             Name = name;
             Description = description;
             DataItems = dataItems;
+            DataSetRelations = relations;
         }
 
         private ObservableCollection<DataSetRelation> _dataSetRelations;

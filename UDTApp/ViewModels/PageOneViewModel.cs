@@ -103,7 +103,7 @@ namespace UDTApp.ViewModels
             //set { _dataSetList.Sets = value; }
         }
 
-        public int SelectedIndex
+        virtual public int SelectedIndex
         {
             get { return DataSetList.SelectedIndex; }
 
@@ -115,8 +115,12 @@ namespace UDTApp.ViewModels
     
                 RaisePropertyChanged("SelectedItem");
                 if (DataSetList.SelectedIndex > -1)
-                    DataItems = DataSets[DataSetList.SelectedIndex].DataItems;
-                    //if(DataSets != null) DataItems = DataSets[_dataSetList.SelectedIndex].DataItems;
+                {
+                    DataItems = _p.SetChildDataSet(DataSets, DataSetList.SelectedIndex);
+                    //_p.DataItems = DataItems;
+                    //_p.DataItems = _p.SetChildDataSet(DataSets, DataSetList.SelectedIndex);
+                //if(DataSets != null) DataItems = DataSets[_dataSetList.SelectedIndex].DataItems;
+                }
                 else
                     DataItems = null;
             }
@@ -147,9 +151,10 @@ namespace UDTApp.ViewModels
             }
         }
 
-        private ObservableCollection<DataItem> _dataItems;
-        public ObservableCollection<DataItem> DataItems
-        //public dynamic DataItems
+        //private ObservableCollection<DataItem> _dataItems;
+        private dynamic _dataItems;
+        //public ObservableCollection<DataItem> DataItems
+        public dynamic DataItems
         {
             get { return _dataItems; }
             set
@@ -210,13 +215,13 @@ namespace UDTApp.ViewModels
 
         private bool canAddDataSet()
         {
-            return _p.DataSet != null;
+            return DataItems != null;
         }
 
         private void DeleteDataSet()
         {
-            _p.DataSet.Remove(_p.SelectedItem);
-            if (_p.DataSet.Count > 0)
+            DataItems.Remove(_p.SelectedItem);
+            if (DataItems.Count > 0)
                 _p.SelectedIndex = 0;
         }
 
@@ -230,12 +235,14 @@ namespace UDTApp.ViewModels
         {
             if (_newDataSet == null)
             {
-                _p.LoadTextPops(_p.DataSet[_p.SelectedIndex]);
+                //_p.LoadTextPops(_p.DataItems[_p.SelectedIndex]);
+                _p.LoadTextPops(DataItems[_p.SelectedIndex]);
+                //RaisePropertyChanged("DataItems");
             }
             else
             {
                 _p.LoadTextPops(_newDataSet);
-                _p.DataSet.Add(_newDataSet);
+                DataItems.Add(_newDataSet);
                 _p.SelectedItem = _newDataSet;
                 _newDataSet = null;
             }
@@ -258,10 +265,10 @@ namespace UDTApp.ViewModels
         {
             _p.SetTextProps(null, "xxx");
             _newDataSet = null;
-            if (_p.DataSet.Count > 0)
+            if (DataItems.Count > 0)
             {
                 if (_p.SelectedIndex == -1) _p.SelectedIndex = 0;
-                _p.SetTextProps(_p.DataSet[_p.SelectedIndex]);
+                _p.SetTextProps(DataItems[_p.SelectedIndex]);
             }
             else
                 _p.SetTextProps(null, "");

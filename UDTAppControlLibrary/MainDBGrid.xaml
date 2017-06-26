@@ -8,11 +8,24 @@
              prism:ViewModelLocator.AutoWireViewModel="True"
              xmlns:sysControls="clr-namespace:System.Windows.Controls;assembly=PresentationFramework"
              xmlns:local="clr-namespace:UDTAppControlLibrary.Behaviour"
+             xmlns:rules="clr-namespace:UDTAppControlLibrary.Validation"
              xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
              d:DesignHeight="300" d:DesignWidth="300">
 
     <UserControl.Resources>
         <sysControls:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <ControlTemplate x:Key="validationErrorTemplate">
+            <DockPanel>
+                <TextBlock Foreground="Red" Text="{Binding Path=[0].ErrorContent}"
+
+            DockPanel.Dock="Top"></TextBlock>
+                <AdornedElementPlaceholder 
+
+           x:Name="ErrorAdorner"
+
+        ></AdornedElementPlaceholder>
+            </DockPanel>
+        </ControlTemplate>
     </UserControl.Resources>
 
     <Grid Margin="-10,0,-217,-184" HorizontalAlignment="Left" Width="527" RenderTransformOrigin="0.51,0.506">
@@ -70,14 +83,30 @@
                 <Label Content="Type" HorizontalContentAlignment="Right" HorizontalAlignment="Left" Margin="313,360,0,0" VerticalAlignment="Top" Width="41" RenderTransformOrigin="0.997,0.569" Height="23"/>
             </Grid>
             <Grid Visibility="{Binding IsRelationVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <TextBox 
-                    Text="{Binding ParentDataset, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                    IsEnabled="{Binding IsInputEnabled}"
-                    HorizontalAlignment="Left" Height="23" Margin="359,320,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="129"/>
                 <TextBox 
-                    Text="{Binding ChildDataset, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                    IsEnabled="{Binding IsInputEnabled}"
-                    HorizontalAlignment="Left" Height="23" Margin="359,360,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="129"/>
+                    Text="{Binding ParentDataSet, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" 
+                    IsEnabled="False"
+                    HorizontalAlignment="Left" Height="23" Margin="359,320,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="129"/>
+ 
+                <ComboBox ItemsSource="{Binding ChildOptions}" 
+                          SelectedIndex="{Binding ComboIndex, Mode=TwoWay}"
+                          Validation.ErrorTemplate="{StaticResource validationErrorTemplate}"
+                    HorizontalAlignment="Left" Height="23" Margin="359,360,0,0" VerticalAlignment="Top" Width="129" >
+                    <ComboBox.SelectedItem>
+                        <Binding Path="SelectedChild" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged" >
+                            <!--<Binding.ValidationRules>
+                                <rules:SelectionRule ValidatesOnTargetUpdated="True"></rules:SelectionRule>
+                            </Binding.ValidationRules>-->
+                        </Binding>
+                    </ComboBox.SelectedItem>
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
                 <Label Content="Parent Dataset" HorizontalContentAlignment="Right" HorizontalAlignment="Left" Margin="274,320,0,0" VerticalAlignment="Top" Width="Auto"  RenderTransformOrigin="0.293,0.628"/>
                 <Label Content="Child Dataset" HorizontalContentAlignment="Right" HorizontalAlignment="Left" Margin="274,360,0,0" VerticalAlignment="Top" Width="Auto" RenderTransformOrigin="0.997,0.569" Height="23"/>
             </Grid>
