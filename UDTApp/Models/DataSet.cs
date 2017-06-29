@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace UDTApp.Models
 {
-    public class DataSet : BindableBase
+    public class DataSet : ModelBase
     {
         public DataSet()
         {
@@ -74,14 +74,14 @@ namespace UDTApp.Models
             }
         }
 
-        private int _id = -1;
-        public int ID
-        {
-            get { return _id; }
-            set
-            {
-                SetProperty(ref _id, value);
-            }
-        }
+        //private int _id = -1;
+        //public int ID
+        //{
+        //    get { return _id; }
+        //    set
+        //    {
+        //        SetProperty(ref _id, value);
+        //    }
+        //}
     }
 }

@@ -151,6 +151,7 @@ namespace UDTApp.ViewModels
             { 
                 SetProperty(ref _selectedChild, value);
                 SaveCommand.RaiseCanExecuteChanged();
+                CancelCommand.RaiseCanExecuteChanged();
             } 
         }
 
@@ -169,23 +170,6 @@ namespace UDTApp.ViewModels
             }
         }
 
-        private string _childName;
-        [Required]
-        [StringLength(15, MinimumLength = 5, ErrorMessage = "Name must be between 5 and 15 characters.")]
-        [RegularExpression(@"^[a-zA-Z]+$", ErrorMessage = "Name can include only letter characters")]
-        public string ChildDataSet
-        {
-            get
-            {
-                return _childName;
-            }
-            set
-            {
-                SetProperty(ref _childName, value);
-                SaveCommand.RaiseCanExecuteChanged();
-                CancelCommand.RaiseCanExecuteChanged();
-            }
-        }
 
         public static System.ComponentModel.DataAnnotations.ValidationResult CheckChildDataSet(string childDataSet, ValidationContext context)
         {

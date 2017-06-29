@@ -247,6 +247,16 @@ namespace UDTApp.ViewModels
                 _newDataSet = null;
             }
             CancelCommand.RaiseCanExecuteChanged();
+            SaveCommand.RaiseCanExecuteChanged();
+            ///
+            //DataSetRelation r = new DataSetRelation("", "");
+            //r.CreateTable();
+            //r.CreateRecord();
+
+            //DataSetList.SaveDataSetList();
+            //DataSetList.ReadDataSetList();
+
+            ///
 
         }
 
@@ -273,6 +283,7 @@ namespace UDTApp.ViewModels
             else
                 _p.SetTextProps(null, "");
             RaisePropertyChanged("IsInputEnabled");
+            SaveCommand.RaiseCanExecuteChanged();
         }
 
         private bool canCancel()

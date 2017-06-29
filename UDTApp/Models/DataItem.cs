@@ -7,8 +7,12 @@ using System.Threading.Tasks;
 
 namespace UDTApp.Models
 {
-    public class DataItem : BindableBase
+    public class DataItem : ModelBase
     {
+        public DataItem()
+        {
+        }
+
         public DataItem(string name, int type)
         {
             _name = name;

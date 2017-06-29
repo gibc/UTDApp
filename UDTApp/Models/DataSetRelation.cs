@@ -2,13 +2,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace UDTApp.Models
 {
-    public class DataSetRelation : BindableBase
+    public class DataSetRelation : ModelBase
     {
+        public DataSetRelation()
+        {
+        }
+
         public DataSetRelation(string parent, string child)
         {
             ParentDateSet = parent;
@@ -35,5 +40,7 @@ namespace UDTApp.Models
                 SetProperty(ref _childDataSet, value);
             }
         }
+
+
     }
 }

@@ -13,45 +13,94 @@ namespace UDTApp.Models
         {
             if(Sets == null)
             { 
-                ObservableCollection<DataItem> items = new ObservableCollection<DataItem>();
-                items.Add(new DataItem("ProductName", 1));
-                items.Add(new DataItem("Cost", 1));
-                Sets = new ObservableCollection<DataSet>();
-                ObservableCollection<DataSetRelation> ritems = new ObservableCollection<DataSetRelation>();
-                ritems.Add(new DataSetRelation("Product", "Order"));
-                ritems.Add(new DataSetRelation("Product", "Customer"));
-                Sets.Add(new DataSet("Product", "inventory item", items, ritems));
+                //ObservableCollection<DataItem> items = new ObservableCollection<DataItem>();
+                //items.Add(new DataItem("ProductName", 1));
+                //items.Add(new DataItem("Cost", 1));
+                //Sets = new ObservableCollection<DataSet>();
+                //ObservableCollection<DataSetRelation> ritems = new ObservableCollection<DataSetRelation>();
+                //ritems.Add(new DataSetRelation("Product", "Order"));
+                //ritems.Add(new DataSetRelation("Product", "Customer"));
+                //Sets.Add(new DataSet("Product", "inventory item", items, ritems));
 
-                items = new ObservableCollection<DataItem>();
-                items.Add(new DataItem("Terms", 1));
-                items.Add(new DataItem("ShipDate", 1));
+                //items = new ObservableCollection<DataItem>();
+                //items.Add(new DataItem("Terms", 1));
+                //items.Add(new DataItem("ShipDate", 1));
 
-                ritems = new ObservableCollection<DataSetRelation>();
-                ritems.Add(new DataSetRelation("Order", "Product"));
-                ritems.Add(new DataSetRelation("Order", "PayMethod"));
-                Sets.Add(new DataSet("Order", "list of ordered produts", items, ritems));
+                //ritems = new ObservableCollection<DataSetRelation>();
+                //ritems.Add(new DataSetRelation("Order", "Product"));
+                //ritems.Add(new DataSetRelation("Order", "PayMethod"));
+                //Sets.Add(new DataSet("Order", "list of ordered produts", items, ritems));
 
-                items = new ObservableCollection<DataItem>();
-                items.Add(new DataItem("CustomeName", 1));
-                items.Add(new DataItem("Phone", 1));
+                //items = new ObservableCollection<DataItem>();
+                //items.Add(new DataItem("CustomeName", 1));
+                //items.Add(new DataItem("Phone", 1));
 
-                ritems = new ObservableCollection<DataSetRelation>();
-                ritems.Add(new DataSetRelation("Customer", "Product"));
-                ritems.Add(new DataSetRelation("Customer", "PayMethod"));
-                Sets.Add(new DataSet("Customer", "person who places orders", items, ritems));
+                //ritems = new ObservableCollection<DataSetRelation>();
+                //ritems.Add(new DataSetRelation("Customer", "Product"));
+                //ritems.Add(new DataSetRelation("Customer", "PayMethod"));
+                //Sets.Add(new DataSet("Customer", "person who places orders", items, ritems));
 
-                items = new ObservableCollection<DataItem>();
-                items.Add(new DataItem("Code", 1));
-                items.Add(new DataItem("Key", 1));
+                //items = new ObservableCollection<DataItem>();
+                //items.Add(new DataItem("Code", 1));
+                //items.Add(new DataItem("Key", 1));
 
-                ritems = new ObservableCollection<DataSetRelation>();
-                ritems.Add(new DataSetRelation("PayMethod", "Product"));
-                ritems.Add(new DataSetRelation("PayMethod", "Customer"));
-                Sets.Add(new DataSet("PayMethod", "person who places orders", items, ritems));
+                //ritems = new ObservableCollection<DataSetRelation>();
+                //ritems.Add(new DataSetRelation("PayMethod", "Product"));
+                //ritems.Add(new DataSetRelation("PayMethod", "Customer"));
+                //Sets.Add(new DataSet("PayMethod", "person who places orders", items, ritems));
 
-
+                ReadDataSetList();
 
                 SelectedIndex = -1;
+            }
+        }
+
+        static private void ReadDataSetList()
+        {
+            ObservableCollection<object> dsRecs = ModelBase.ReadRecords(typeof(DataSet));
+            Sets = new ObservableCollection<DataSet>();
+            foreach (object obj in dsRecs)
+            {
+                DataSet dataSet = obj as DataSet;
+                ObservableCollection<object> itemRecs = ModelBase.ReadRecords(typeof(DataItem), dataSet.Id);
+                dataSet.DataItems = new ObservableCollection<DataItem>();
+                foreach (object dsObj in itemRecs)
+                {
+                    dataSet.DataItems.Add(dsObj as DataItem);
+                }
+
+                ObservableCollection<object> relationRecs = ModelBase.ReadRecords(typeof(DataSetRelation), dataSet.Id);
+                dataSet.DataSetRelations = new ObservableCollection<DataSetRelation>();
+                foreach (object dsObj in relationRecs)
+                {
+                    dataSet.DataSetRelations.Add(dsObj as DataSetRelation);
+                }
+
+                Sets.Add(dataSet);
+            }
+        }
+
+        static public void SaveDataSetList()
+        {
+            foreach(DataSet dataSet in Sets)
+            {
+                dataSet.CreateTable();
+                int recId = dataSet.CreateRecord();
+
+                foreach(DataItem item in dataSet.DataItems)
+                {
+                    item.CreateTable();
+                    item.ParentId = recId;
+                    item.CreateRecord();
+                }
+
+                foreach (DataSetRelation relation in dataSet.DataSetRelations)
+                {
+                    relation.CreateTable();
+                    relation.ParentId = recId;
+                    relation.CreateRecord();
+                }
+
             }
         }
 
