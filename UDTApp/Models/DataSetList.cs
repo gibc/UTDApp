@@ -12,7 +12,9 @@ namespace UDTApp.Models
         public DataSetList()
         {
             if(Sets == null)
-            { 
+            {
+                Sets = ModelBase.LoadRecords<DataSet>(typeof(DataSet));
+
                 //ObservableCollection<DataItem> items = new ObservableCollection<DataItem>();
                 //items.Add(new DataItem("ProductName", 1));
                 //items.Add(new DataItem("Cost", 1));
@@ -49,34 +51,9 @@ namespace UDTApp.Models
                 //ritems.Add(new DataSetRelation("PayMethod", "Customer"));
                 //Sets.Add(new DataSet("PayMethod", "person who places orders", items, ritems));
 
-                ReadDataSetList();
+                //ReadDataSetList();
 
                 SelectedIndex = -1;
-            }
-        }
-
-        static private void ReadDataSetList()
-        {
-            ObservableCollection<object> dsRecs = ModelBase.ReadRecords(typeof(DataSet));
-            Sets = new ObservableCollection<DataSet>();
-            foreach (object obj in dsRecs)
-            {
-                DataSet dataSet = obj as DataSet;
-                ObservableCollection<object> itemRecs = ModelBase.ReadRecords(typeof(DataItem), dataSet.Id);
-                dataSet.DataItems = new ObservableCollection<DataItem>();
-                foreach (object dsObj in itemRecs)
-                {
-                    dataSet.DataItems.Add(dsObj as DataItem);
-                }
-
-                ObservableCollection<object> relationRecs = ModelBase.ReadRecords(typeof(DataSetRelation), dataSet.Id);
-                dataSet.DataSetRelations = new ObservableCollection<DataSetRelation>();
-                foreach (object dsObj in relationRecs)
-                {
-                    dataSet.DataSetRelations.Add(dsObj as DataSetRelation);
-                }
-
-                Sets.Add(dataSet);
             }
         }
 

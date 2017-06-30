@@ -1,5 +1,6 @@
 ﻿using Prism.Mvvm;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Configuration;
@@ -118,12 +119,15 @@ namespace UDTApp.Models
             }
         }
 
-        //static private Type classType;
-
-        static public ObservableCollection<object> ReadRecords(Type type, int parentId = -1)
+        static public ObservableCollection<T> LoadRecords<T>(Type type, int parentId = -1)
         {
-            ObservableCollection<object> records = new ObservableCollection<object>();
+            List<T> dataList = new List<T>();
+            ReadRecords(dataList, type, parentId);
+            return new ObservableCollection<T>(dataList);
+        }
 
+        static private void ReadRecords(IList recs, Type type, int parentId = -1)
+        {
             PropertyInfo[] props = type.GetProperties();
 
             using (SqlConnection conn = new SqlConnection())
@@ -132,7 +136,8 @@ namespace UDTApp.Models
                 SqlCommand cmd = new SqlCommand();
                 SqlDataReader reader;
 
-                if(parentId == -1) cmd.CommandText = string.Format("SELECT * FROM {0}", type.Name);
+                if(parentId == -1) 
+                    cmd.CommandText = string.Format("SELECT * FROM {0}", type.Name);
                 else
                     cmd.CommandText = string.Format("SELECT * FROM {0} WHERE ParentId = {1}", type.Name, parentId);
                 cmd.CommandType = CommandType.Text;
@@ -147,27 +152,40 @@ namespace UDTApp.Models
                     while (reader.Read())
                     {
                         var instance = Activator.CreateInstance(type);
-                        ModelBase basse = instance as ModelBase;
+                        ModelBase modelBase = instance as ModelBase;
 
                         foreach(var prop in props)
                         {
-                            if (prop.PropertyType.Name.Contains("Collection")) continue;
-                            basse.SetPropValue(prop.Name, reader[prop.Name]);                            
+                            if (prop.PropertyType.Name.Contains("Collection"))
+                            {
+                                Type genericListType = typeof(List<>);
+                                Type[] typeArgs = { prop.PropertyType.GenericTypeArguments[0] };
+                                Type constructed = genericListType.MakeGenericType(typeArgs);
+
+                                IList customListInstance = (IList)Activator.CreateInstance(constructed);
+                                ReadRecords(customListInstance, prop.PropertyType.GenericTypeArguments[0], (int)reader["Id"]);
+
+                                Type genericCollectionType = typeof(ObservableCollection<>);
+                                constructed = genericCollectionType.MakeGenericType(typeArgs);
+                                var customCollectionInstance = Activator.CreateInstance(constructed, customListInstance);
+
+                                modelBase.SetPropValue(prop.Name, customCollectionInstance); 
+                                continue;
+                            }
+                            modelBase.SetPropValue(prop.Name, reader[prop.Name]);                            
                         }
-                        records.Add(instance);
+                        recs.Add(instance);
                     }
                 }
-                catch
+                catch(Exception ex)
                 {
-                    MessageBox.Show("Data read failed");
+                    MessageBox.Show(ex.Message);
                 }
                 finally
                 {
-                    // Always call Close when done reading.
                     reader.Close();
                 }
             }
-            return records;
         }
 
         public int CreateRecord()
