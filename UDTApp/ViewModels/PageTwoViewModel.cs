@@ -18,7 +18,7 @@ namespace UDTApp.ViewModels
 
         public PageTwoViewModel()
         {
-            _p = new SubPageTwo(this);
+            //_p = new SubPageTwo(this);
 
             IsMasterVisible = false;
             IsDetailVisible = true;

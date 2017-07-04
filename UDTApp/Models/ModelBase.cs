@@ -10,10 +10,13 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 using System.Windows.Forms;
 
 namespace UDTApp.Models
 {
+    enum ObjectState { New, Updated, Dirty };
+
     public class ModelBase : BindableBase
     {
         public ModelBase() { }
@@ -24,7 +27,40 @@ namespace UDTApp.Models
         private int _parentId = -1;
         public int ParentId { get { return _parentId; } set { _parentId = value; } }
 
+        private ObjectState _state = ObjectState.New;
+        private ObjectState State { get { return _state; } set { _state = value; } }
+
         public static bool _tableUpdated = false;
+
+        public void GetData(object vmObj)
+        {
+            List<PropertyInfo> modelPropsList = new List<PropertyInfo>(this.GetType().GetProperties());
+            List<PropertyInfo> vmPropsList = new List<PropertyInfo>(vmObj.GetType().GetProperties());
+            foreach (PropertyInfo modelProp in modelPropsList)
+            {
+                if (IsRecordProperty(modelProp))
+                {
+                    PropertyInfo vmProp = vmPropsList.Find(p => p.Name == modelProp.Name);
+                    vmProp.SetValue(vmObj, modelProp.GetValue(this));
+                }
+            }
+            this.State = ObjectState.Updated;
+        }
+
+        public void PutData(object vmObj)
+        {
+            List<PropertyInfo> modelPropsList = new List<PropertyInfo>(this.GetType().GetProperties());
+            List<PropertyInfo> vmPropsList = new List<PropertyInfo>(vmObj.GetType().GetProperties());
+            foreach (PropertyInfo modelProp in modelPropsList)
+            {
+                if (IsRecordProperty(modelProp))
+                {
+                    PropertyInfo vmProp = vmPropsList.Find(p => p.Name == modelProp.Name);
+                    SetPropValue(modelProp.Name, vmProp.GetValue(vmObj, null));
+                }
+            }
+            this.State = ObjectState.Dirty;
+        }
 
         public object GetPropValue(string propName)
         {
@@ -55,6 +91,32 @@ namespace UDTApp.Models
             return typeDic["String"];
         }
 
+        static List<PropertyInfo> _propList = null;
+        static private List<PropertyInfo> basePropList {
+            get
+            {
+                if (_propList == null)
+                {
+                    Type baseType = typeof(ModelBase);
+                    PropertyInfo[] baseProps = baseType.GetProperties();
+                    _propList = new List<PropertyInfo>(baseProps);
+                }
+                return _propList;
+            }
+        } 
+
+        static public bool IsRecordProperty(PropertyInfo prop)
+        {
+            if (prop.PropertyType.Name.Contains("Collection")) return false;
+            return !(basePropList.Any(p => p.Name == prop.Name) &&
+                prop.Name != "parentId");
+        }
+
+        static public bool IsRecordProperty(DataGridAutoGeneratingColumnEventArgs e)
+        {
+            if (e.PropertyType.Name.Contains("Collection")) return false;
+            return !basePropList.Any(p => p.Name == e.PropertyName); 
+        }
 
         public string CreateDDL()
         {
@@ -71,7 +133,7 @@ namespace UDTApp.Models
             PropertyInfo[] props = this.GetType().GetProperties();
             foreach (var prop in props)
             {
-                if(prop.PropertyType.Name.Contains("Collection")) continue;
+                if(!IsRecordProperty(prop)) continue;
                 ddl += string.Format("{0} ", prop.Name);
                 var val = GetPropValue(prop.Name);
                 ddl += string.Format("{0} ", getDDLType(prop.PropertyType.Name));
@@ -119,10 +181,44 @@ namespace UDTApp.Models
             }
         }
 
-        static public ObservableCollection<T> LoadRecords<T>(Type type, int parentId = -1)
+        static public void SaveObjects<T>(ObservableCollection<T> objCol)
+        {
+            List<T> objList = objCol.ToList();
+            SaveRecords(objList);
+        }
+
+        static private void SaveRecords(IList objList, int parentId = -1)
+        {
+            int recId = -1;
+            foreach(object obj in objList)
+            {
+                Type type = obj.GetType();
+                ModelBase modelBase = obj as ModelBase;
+                if (modelBase.State == ObjectState.New) recId = modelBase.CreateRecord();
+                else if (modelBase.State == ObjectState.Dirty) recId = modelBase.UpdateRecord();
+
+                PropertyInfo[] props = type.GetProperties();
+                foreach (var prop in props)
+                {
+                    if (prop.PropertyType.Name.Contains("Collection"))
+                    {
+                        Type genericListType = typeof(List<>);
+                        Type[] typeArgs = { prop.PropertyType.GenericTypeArguments[0] };
+                        Type constructed = genericListType.MakeGenericType(typeArgs);
+
+                        var col = modelBase.GetPropValue(prop.Name);
+
+                        IList customListInstance = (IList)Activator.CreateInstance(constructed, col);
+                        SaveRecords(customListInstance, recId);
+                    }
+                }
+            }
+        }
+
+        static public ObservableCollection<T> LoadObjects<T>(int parentId = -1)
         {
             List<T> dataList = new List<T>();
-            ReadRecords(dataList, type, parentId);
+            ReadRecords(dataList, typeof(T), parentId);
             return new ObservableCollection<T>(dataList);
         }
 
@@ -153,6 +249,7 @@ namespace UDTApp.Models
                     {
                         var instance = Activator.CreateInstance(type);
                         ModelBase modelBase = instance as ModelBase;
+                        modelBase.State = ObjectState.Updated;
 
                         foreach(var prop in props)
                         {
@@ -172,7 +269,11 @@ namespace UDTApp.Models
                                 modelBase.SetPropValue(prop.Name, customCollectionInstance); 
                                 continue;
                             }
-                            modelBase.SetPropValue(prop.Name, reader[prop.Name]);                            
+                            if(IsRecordProperty(prop))
+                                modelBase.SetPropValue(prop.Name, reader[prop.Name]); 
+                            if(prop.Name == "Id")
+                                modelBase.SetPropValue(prop.Name, reader[prop.Name]); 
+
                         }
                         recs.Add(instance);
                     }
@@ -185,6 +286,66 @@ namespace UDTApp.Models
                 {
                     reader.Close();
                 }
+            }
+        }
+
+        public int UpdateRecord()
+        {
+            //UPDATE table_name
+            //SET column1 = value1, column2 = value2, ...
+            //WHERE condition;
+            using (SqlConnection conn = new SqlConnection())
+            {
+                conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
+                SqlCommand cmd = new SqlCommand();
+
+                string cmdText = string.Format("UPDATE {0} SET ", this.GetType().Name);
+                PropertyInfo[] props = this.GetType().GetProperties();
+                foreach (var prop in props)
+                {
+                    if (!IsRecordProperty(prop))
+                    {
+                        if (prop == props.Last())
+                        {
+                            cmdText = cmdText.TrimEnd(' ');
+                            cmdText = cmdText.TrimEnd(',');
+                        }
+                        continue;
+                    }
+                    cmdText += string.Format("{0} = {1}", prop.Name, GetPropValue(prop.Name));
+                    if (prop != props.Last()) cmdText += ", ";
+                }
+                cmdText += string.Format("WHERE Id = {0}", Id);
+
+                cmd.CommandText = cmdText;
+                cmd.CommandType = CommandType.Text;
+                cmd.Connection = conn;
+
+                conn.Open();
+
+                cmd.ExecuteNonQuery();
+
+                State = ObjectState.Updated;
+
+                // Data is accessible through the DataReader object here.      
+                //try
+                //{
+                //    while (reader.Read())
+                //    {
+                //        //_fieldName = reader["fieldName"].ToString();
+                //        //_fieldValue = (int)reader["fieldValue"];
+                //    }
+                //}
+                //catch
+                //{
+                //    //MessageBox.Show("Data read failed");
+                //}
+                //finally
+                //{
+                //    // Always call Close when done reading.
+                //    reader.Close();
+                //}
+                return Id;
             }
         }
 
@@ -202,7 +363,7 @@ namespace UDTApp.Models
                 PropertyInfo[] props = this.GetType().GetProperties();
                 foreach (var prop in props)
                 {
-                    if (prop.Name == "Id" || prop.PropertyType.Name.Contains("Collection"))
+                    if (!IsRecordProperty(prop))
                     {
                        if (prop == props.Last())
                        {
@@ -217,7 +378,7 @@ namespace UDTApp.Models
                 cmdText += ") VALUES (";
                 foreach (var prop in props)
                 {
-                    if(prop.Name == "Id" || prop.PropertyType.Name.Contains("Collection"))
+                    if (!IsRecordProperty(prop))
                     {
                        if (prop == props.Last())
                        {
@@ -239,6 +400,8 @@ namespace UDTApp.Models
 
                 //cmd.ExecuteNonQuery();
                 decimal recId = (decimal)cmd.ExecuteScalar();
+
+                State = ObjectState.Updated;
 
                 // Data is accessible through the DataReader object here.      
                 //try

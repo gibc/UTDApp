@@ -13,7 +13,7 @@ namespace UDTApp.Models
         {
             if(Sets == null)
             {
-                Sets = ModelBase.LoadRecords<DataSet>(typeof(DataSet));
+                Sets = ModelBase.LoadObjects<DataSet>();
 
                 //ObservableCollection<DataItem> items = new ObservableCollection<DataItem>();
                 //items.Add(new DataItem("ProductName", 1));
@@ -55,6 +55,11 @@ namespace UDTApp.Models
 
                 SelectedIndex = -1;
             }
+        }
+
+        static public void SaveChanges()
+        {
+            ModelBase.SaveObjects<DataSet>(Sets);
         }
 
         static public void SaveDataSetList()

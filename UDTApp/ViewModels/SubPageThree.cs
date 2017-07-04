@@ -24,8 +24,9 @@ namespace UDTApp.ViewModels
         {
             get
             {
-                return page.DataItems[page.ChildSelectedIndex].ChildDateSet != page.SelectedChild ||
-                    page.DataItems[page.ChildSelectedIndex].ParentDateSet != page.ParentDataSet;
+                //return page.DataItems[page.ChildSelectedIndex].ChildDateSet != page.SelectedChild ||
+                //    page.DataItems[page.ChildSelectedIndex].ParentDateSet != page.ParentDataSet;
+                return true;
             }
         }
 

@@ -18,14 +18,18 @@ namespace UDTApp.ViewModels
 
     public class PageThreeViewModel : PageOneViewModel
     {
+        public DelegateCommand SaveChangesCommand { get; set; }
 
         public PageThreeViewModel()
         {
-            _p = new SubPageThree(this);
+            //_p = new SubPageThree(this);
             IsMasterVisible = false;
             IsDetailVisible = true;
             IsRelationVisible = true;
             IsItemVisible = false;
+
+            SaveChangesCommand = new DelegateCommand(saveChanges);
+
 
         }
 
@@ -168,6 +172,11 @@ namespace UDTApp.ViewModels
 
                 SetProperty(ref _childOptions, value);
             }
+        }
+
+        private void saveChanges()
+        {
+            DataSetList.SaveChanges();
         }
 
 
