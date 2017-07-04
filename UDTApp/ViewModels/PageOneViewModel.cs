@@ -22,57 +22,18 @@ namespace UDTApp.ViewModels
 
     public class PageOneViewModel : ViewModelBase<DataItem, DataSet>
     {
-        override public int SelectedIndex
-        {
-            get { return DataSetList.SelectedIndex; }
-
-            set
-            {
-                int si = value;
-                SetProperty(ref si, value);
-                DataSetList.SelectedIndex = si;
-
-                RaisePropertyChanged("SelectedItem");
-                if (DataSetList.SelectedIndex > -1)
-                {
-                    DataItems = GetSelectedCol(SelectedIndex);
-                }
-                else
-                    DataItems = null;
-            }
-        }
-
-        private DataSet _selectedItem;
-        override public DataSet SelectedItem
-        {
-            get
-            { return _selectedItem; }
-            set
-            {
-                SetProperty(ref _selectedItem, value);
-                if (value != null)
-                {
-                    Name = value.Name;
-                    Description = value.Description;
-                }
-                else
-                {
-                    Name = "";
-                    Description = "";
-                }
-                DeleteCommand.RaiseCanExecuteChanged();
-                CancelCommand.RaiseCanExecuteChanged();
-                RaisePropertyChanged("IsInputEnabled");
-                _newDataSet = null;
-            }
-        }
-
+      
         override public bool IsPropertyEdited { 
             get
             {
                 return DataSets[SelectedIndex].Name != Name ||
                     DataSets[SelectedIndex].Description != Description;
             }
+        }
+
+        override public bool IsInputEnabled
+        {
+            get { return (SelectedItem != null || _newDataSet != null); }
         }
         override public void SetTextProps(DataSet dataSet, string value = "")
         {
@@ -84,11 +45,24 @@ namespace UDTApp.ViewModels
                 Description = dataSet.Description;
             }
         }
-        override public void LoadTextPops(DataSet dataSet)
+
+        override public void SetMasterTextProps(DataSet dataSet, string value = "")
+        {
+            Name = "";
+            Description = "";
+            if (value != null)
+            {
+                Name = dataSet.Name;
+                Description = dataSet.Description;
+            }
+        }
+
+        override public void SetChildTextProps(DataSet dataSet, string value = "") { }
+
+        override public void LoadTextProps(DataSet dataSet)
         {
             dataSet.Name = Name;
             dataSet.Description = Description;
-
         }
         override public DataSet CreateNewDataSet()
         {
@@ -98,12 +72,64 @@ namespace UDTApp.ViewModels
         override public ObservableCollection<DataItem> GetSelectedCol(int selectedIndex)
         {
             // takes nothing, returns D
-            return GetEditedCol()[selectedIndex].DataItems;
+            //return EditedCol[selectedIndex].DataItems;
+            return DataSets[selectedIndex].DataItems;
         }
-        override public ObservableCollection<DataSet> GetEditedCol()
+        override public ObservableCollection<DataSet> EditedCol
         {
             // returns C
-            return DataSets;
+            get { return DataSets; }
+        }
+
+        override public int EditedIndex { get { return SelectedIndex; }  set { SelectedIndex = value;} }
+
+
+        private string _name;
+        [Required]
+        [StringLength(15, MinimumLength = 5, ErrorMessage = "Name must be between 5 and 15 characters.")]
+        [RegularExpression(@"^[a-zA-Z]+$", ErrorMessage = "Name can include only letter characters")]
+        public string Name
+        {
+            get
+            {
+                return _name;
+            }
+            set
+            {
+                SetProperty(ref _name, value);
+                SaveCommand.RaiseCanExecuteChanged();
+                CancelCommand.RaiseCanExecuteChanged();
+            }
+        }
+
+        private string _description;
+        public string Description
+        {
+            get
+            {
+                return _description;
+            }
+            set
+            {
+                SetProperty(ref _description, value);
+                SaveCommand.RaiseCanExecuteChanged();
+                CancelCommand.RaiseCanExecuteChanged();
+            }
+        }
+
+        private string _title;
+        public string Title
+        {
+            get
+            {
+                return _title;
+            }
+            set
+            {
+                SetProperty(ref _title, value);
+                SaveCommand.RaiseCanExecuteChanged();
+                CancelCommand.RaiseCanExecuteChanged();
+            }
         }
     }
 
@@ -158,10 +184,10 @@ namespace UDTApp.ViewModels
     //        return IsInputEnabled;
     //    }
 
-    //    virtual public bool IsInputEnabled
-    //    {
-    //        get { return (_selectedItem != null || _newDataSet != null); }
-    //    }
+        //override public bool IsInputEnabled
+        //{
+        //    get { return (_selectedItem != null || _newDataSet != null); }
+        //}
 
     //    private bool _isMasterVisible = false;
     //    public bool IsMasterVisible { 

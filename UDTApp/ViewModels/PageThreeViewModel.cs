@@ -22,7 +22,6 @@ namespace UDTApp.ViewModels
 
         public PageThreeViewModel()
         {
-            //_p = new SubPageThree(this);
             IsMasterVisible = false;
             IsDetailVisible = true;
             IsRelationVisible = true;
@@ -35,7 +34,7 @@ namespace UDTApp.ViewModels
 
         override public bool IsInputEnabled
         {
-            get { return (_childSelectedItem != null || _newDataSet != null); }
+            get { return (ChildSelectedItem != null || _newDataSet != null); }
         }
 
         //private ObservableCollection<DataSetRelation> _dataRelaionItems;
@@ -51,15 +50,15 @@ namespace UDTApp.ViewModels
         //    }
         //}
 
-        override public int SelectedIndex
-        {
-            get { return base.SelectedIndex; }
-            set 
-            { 
-                base.SelectedIndex = value;
-                ChildOptions = null;
-            }
-        }
+        //override public int SelectedIndex
+        //{
+        //    get { return base.SelectedIndex; }
+        //    set 
+        //    { 
+        //        base.SelectedIndex = value;
+        //        ChildOptions = null;
+        //    }
+        //}
 
         private int _childSelectedIndex = -1;
         public int ChildSelectedIndex
@@ -89,32 +88,32 @@ namespace UDTApp.ViewModels
             return new ObservableCollection<String>(result);
         }
 
-        private DataSetRelation _childSelectedItem;
-        public DataSetRelation ChildSelectedItem
-        {
-            get
-            { return _childSelectedItem; }
-            set
-            {
-                SetProperty(ref _childSelectedItem, value);
-                if (value != null)
-                {
-                    var parentDataSet = DataSetList.Sets[SelectedIndex].Name;
+        //private DataSetRelation _childSelectedItem;
+        //public DataSetRelation ChildSelectedItem
+        //{
+        //    get
+        //    { return _childSelectedItem; }
+        //    set
+        //    {
+        //        SetProperty(ref _childSelectedItem, value);
+        //        if (value != null)
+        //        {
+        //            var parentDataSet = DataSetList.Sets[SelectedIndex].Name;
 
-                    ChildOptions = getChildOptions(parentDataSet, value.ChildDateSet);
-                    SelectedChild = value.ChildDateSet;
-                }
-                else
-                {
-                    SelectedChild = "";
-                }
-                DeleteCommand.RaiseCanExecuteChanged();
-                CancelCommand.RaiseCanExecuteChanged();
-                SaveCommand.RaiseCanExecuteChanged();
-                RaisePropertyChanged("IsInputEnabled");
-                _newDataSet = null;
-            }
-        }
+        //            ChildOptions = getChildOptions(parentDataSet, value.ChildDateSet);
+        //            SelectedChild = value.ChildDateSet;
+        //        }
+        //        else
+        //        {
+        //            SelectedChild = "";
+        //        }
+        //        DeleteCommand.RaiseCanExecuteChanged();
+        //        CancelCommand.RaiseCanExecuteChanged();
+        //        SaveCommand.RaiseCanExecuteChanged();
+        //        RaisePropertyChanged("IsInputEnabled");
+        //        _newDataSet = null;
+        //    }
+        //}
 
         private int _comboIndex = -1;
         public int ComboIndex {
@@ -169,7 +168,6 @@ namespace UDTApp.ViewModels
             }
             set 
             {
-
                 SetProperty(ref _childOptions, value);
             }
         }

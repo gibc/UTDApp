@@ -16,17 +16,20 @@ using UDTApp.Models;
 namespace UDTApp.ViewModels
 {
     public abstract class ViewModelBase<D, C> : ValidatableBindableBase
-        where D : ModelBase
-        where C : ModelBase
+        where D : ModelBase // set to detail grid type: DataItem, DataItem, DataSetRelation
+        where C : ModelBase // set to edited type:      DataSet,  DataItem, DataSetRelation
     {
-        public abstract C SelectedItem { get; set; }
-        public abstract int SelectedIndex { get; set; }
+
         public abstract bool IsPropertyEdited { get; }
+        public abstract bool IsInputEnabled { get; }
         public abstract void SetTextProps(C dataSet, string value = "");
-        public abstract void LoadTextPops(C dataSet);
+        public abstract void SetMasterTextProps(DataSet dataSet, string value = "");
+        public abstract void SetChildTextProps(C dataSet, string value = "");
+        public abstract void LoadTextProps(C dataSet);
         public abstract C CreateNewDataSet(); 
         public abstract ObservableCollection<D> GetSelectedCol(int selectedIndex);
-        public abstract ObservableCollection<C> GetEditedCol();
+        public abstract ObservableCollection<C> EditedCol { get; }
+        public abstract int EditedIndex { get; set; }
 
         private DataSetList _dataSetList;
         public DelegateCommand AddCommand { get; set; }
@@ -65,11 +68,6 @@ namespace UDTApp.ViewModels
         private bool validationEnabled()
         {
             return IsInputEnabled;
-        }
-
-        virtual public bool IsInputEnabled
-        {
-            get { return (SelectedItem != null || _newDataSet != null); }
         }
 
         private bool _isMasterVisible = false;
@@ -119,53 +117,86 @@ namespace UDTApp.ViewModels
             }
         }
 
-        private string _name;
-        [Required]
-        [StringLength(15, MinimumLength = 5, ErrorMessage = "Name must be between 5 and 15 characters.")]
-        [RegularExpression(@"^[a-zA-Z]+$", ErrorMessage = "Name can include only letter characters")]
-        public string Name
+        private int _childSelectedIndex = -1;
+        public int ChildSelectedIndex
         {
-            get
-            {
-                return _name;
-            }
+            get { return _childSelectedIndex; }
             set
             {
-                SetProperty(ref _name, value);
-                SaveCommand.RaiseCanExecuteChanged();
-                CancelCommand.RaiseCanExecuteChanged();
+                SetProperty(ref _childSelectedIndex, value);
+                RaisePropertyChanged("ChildSelectedItem");
             }
         }
 
-        private string _description;
-        public string Description
+        public int SelectedIndex
         {
-            get
-            {
-                return _description;
-            }
+            get { return DataSetList.SelectedIndex; }
+
             set
             {
-                SetProperty(ref _description, value);
-                SaveCommand.RaiseCanExecuteChanged();
-                CancelCommand.RaiseCanExecuteChanged();
+                int si = value;
+                SetProperty(ref si, value);
+                DataSetList.SelectedIndex = si;
+
+                RaisePropertyChanged("SelectedItem");
+                if (DataSetList.SelectedIndex > -1)
+                {
+                    DataItems = GetSelectedCol(SelectedIndex);
+                    //DataItems = DataSets[SelectedIndex].DataItems;
+                }
+                else
+                    DataItems = null;
             }
         }
 
-        private string _title;
-        public string Title
+        private DataSet _selectedItem;
+        public DataSet SelectedItem
         {
             get
-            {
-                return _title;
-            }
+            { return _selectedItem; }
             set
             {
-                SetProperty(ref _title, value);
-                SaveCommand.RaiseCanExecuteChanged();
+                SetProperty(ref _selectedItem, value);
+                if (value != null)
+                {
+                    SetMasterTextProps(value, "");
+                }
+                else
+                {
+                    SetMasterTextProps(null, "");
+                }
+                DeleteCommand.RaiseCanExecuteChanged();
                 CancelCommand.RaiseCanExecuteChanged();
+                RaisePropertyChanged("IsInputEnabled");
+                _newDataSet = null;
             }
         }
+
+        private DataItem _childSelectedItem;
+        public DataItem ChildSelectedItem
+        {
+            get
+            { return _childSelectedItem; }
+            set
+            {
+                SetProperty(ref _childSelectedItem, value);
+                if (value != null)
+                {
+
+                    SetChildTextProps(value as C, "");
+                }
+                else
+                {
+                    SetChildTextProps(null, "");
+                }
+                DeleteCommand.RaiseCanExecuteChanged();
+                CancelCommand.RaiseCanExecuteChanged();
+                RaisePropertyChanged("IsInputEnabled");
+                _newDataSet = null;
+            }
+        }
+
+
 
         protected dynamic _newDataSet = null;
         private void AddDataSet()
@@ -179,18 +210,18 @@ namespace UDTApp.ViewModels
             RaisePropertyChanged("IsInputEnabled");
         }
 
-
         private bool canAddDataSet()
         {
-            return GetEditedCol() != null;
+            return EditedCol != null;
         }
 
 
         private void DeleteDataSet()
         {
-            GetEditedCol().Remove(SelectedItem);
-            if (GetEditedCol().Count > 0)
-                SelectedIndex = 0;
+            //EditedCol.Remove(SelectedItem);
+            EditedCol.Remove(EditedCol[EditedIndex]);
+            if (EditedCol.Count > 0)
+                EditedIndex = 0;
         }
 
         bool canDelete()
@@ -205,12 +236,13 @@ namespace UDTApp.ViewModels
 
             if (_newDataSet == null)
             {
-                LoadTextPops(GetEditedCol()[SelectedIndex]);
+                LoadTextProps(EditedCol[EditedIndex]);
+                EditedCol[EditedIndex].State = ObjectState.Dirty;
             }
             else
             {
-                LoadTextPops(_newDataSet);
-                GetEditedCol().Add(_newDataSet);
+                LoadTextProps(_newDataSet);
+                EditedCol.Add(_newDataSet);
                 SelectedItem = _newDataSet;
                 _newDataSet = null;
             }
@@ -234,10 +266,11 @@ namespace UDTApp.ViewModels
         {
             SetTextProps(null, "xxx");
             _newDataSet = null;
-            if (GetEditedCol().Count > 0)
+            if (EditedCol.Count > 0)
             {
-                if (SelectedIndex == -1) SelectedIndex = 0;
-                SetTextProps(GetEditedCol()[SelectedIndex]);
+                if (EditedIndex == -1) EditedIndex = 0;
+                SetTextProps(EditedCol[EditedIndex]);
+                EditedCol[EditedIndex].State = ObjectState.Updated;
             }
             else
                 SetTextProps(null, "");
@@ -295,8 +328,6 @@ namespace UDTApp.ViewModels
                 e.Column.Visibility = Visibility.Hidden;
             }
         }
-
-
 
         public bool IsNavigationTarget(NavigationContext navigationContext)
         { return true; }

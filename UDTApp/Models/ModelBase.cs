@@ -15,7 +15,7 @@ using System.Windows.Forms;
 
 namespace UDTApp.Models
 {
-    enum ObjectState { New, Updated, Dirty };
+    public enum ObjectState { New, Updated, Dirty };
 
     public class ModelBase : BindableBase
     {
@@ -28,7 +28,7 @@ namespace UDTApp.Models
         public int ParentId { get { return _parentId; } set { _parentId = value; } }
 
         private ObjectState _state = ObjectState.New;
-        private ObjectState State { get { return _state; } set { _state = value; } }
+        public ObjectState State { get { return _state; } set { _state = value; } }
 
         public static bool _tableUpdated = false;
 
