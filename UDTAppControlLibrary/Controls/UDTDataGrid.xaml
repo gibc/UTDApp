@@ -1,0 +1,36 @@
+﻿<UserControl x:Class="UDTAppControlLibrary.Controls.UDTDataGrid"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="600"
+             xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+             xmlns:local="clr-namespace:UDTAppControlLibrary.Behaviour"
+             HorizontalAlignment='Stretch'  
+             xmlns:ctls="clr-namespace:UDTAppControlLibrary.Controls"
+             VerticalAlignment="Stretch" >
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        
+        <DataGrid  Grid.Row="0" Grid.Column="0" AutoGenerateColumns="{Binding AutoColumns}" IsReadOnly="True" CanUserAddRows="False" 
+                  ItemsSource="{Binding DataSets, Mode=TwoWay}" 
+                  SelectedIndex="{Binding SelectedIndex}" 
+                  SelectedItem="{Binding SelectedItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                  local:AutoGeneratingColumnEventToCommandBehaviour.Command="{Binding CreateColumnsCommand}"
+                  HorizontalAlignment='Stretch'  
+                  VerticalAlignment="Stretch" 
+                   >
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="AutoGeneratingColumn">
+                    <i:InvokeCommandAction Command="{Binding AutoGeneratingColumnCommand}" />
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
+        </DataGrid>
+    </Grid>
+</UserControl>

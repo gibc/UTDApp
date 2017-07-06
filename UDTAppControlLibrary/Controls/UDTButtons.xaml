@@ -1,0 +1,22 @@
+﻿<UserControl x:Class="UDTAppControlLibrary.Controls.UDTButtons"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="50" d:DesignWidth="225">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="25" />
+            <RowDefinition Height="25" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="130" />
+            <ColumnDefinition Width="130" />
+        </Grid.ColumnDefinitions>
+        <Button Grid.Row="0" Grid.Column="1" Command="{Binding SaveCommand}" Content="Save" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75"/>
+        <Button Grid.Row="1" Grid.Column="0"  Command="{Binding DeleteCommand}" Content="Delete Data Item" HorizontalAlignment="Left"  VerticalAlignment="Top" Width="108"/>
+        <Button Grid.Row="1" Grid.Column="1"  Command="{Binding CancelCommand}" Content="Cancel" HorizontalAlignment="Left"  VerticalAlignment="Top" Width="75" />
+        <Button Grid.Row="0" Grid.Column="0"  Command="{Binding AddCommand}" Content="Add Data Item" HorizontalAlignment="Left"  VerticalAlignment="Top" Width="108"/>
+    </Grid>
+</UserControl>
