@@ -83,3 +83,5 @@ C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\obj\Debug\UDTApp.Properties.Resources.r
 C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\obj\Debug\UDTApp.csproj.GenerateResource.Cache
 C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\obj\Debug\UDTApp.exe
 C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\obj\Debug\UDTApp.pdb
+C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\obj\Debug\Views\PageOneSave.g.cs
+C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\obj\Debug\Views\PageOneSave.baml

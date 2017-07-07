@@ -93,6 +93,7 @@
     <Compile Include="ViewModels\DataViewModel.cs" />
     <Compile Include="ViewModels\ISubPage.cs" />
     <Compile Include="ViewModels\PageOneViewModel.cs" />
+    <Compile Include="ViewModels\PageOneViewModelSave.cs" />
     <Compile Include="ViewModels\PageThreeViewModel.cs" />
     <Compile Include="ViewModels\PageTwoViewModel.cs" />
     <Compile Include="ViewModels\SetUpViewModel.cs" />
@@ -103,6 +104,9 @@
     <Compile Include="ViewModels\ViewModelBase.cs" />
     <Compile Include="Views\PageOne.xaml.cs">
       <DependentUpon>PageOne.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\PageOneSave.xaml.cs">
+      <DependentUpon>PageOneSave.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\PageThree.xaml.cs">
       <DependentUpon>PageThree.xaml</DependentUpon>
@@ -141,6 +145,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="Views\PageOne.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\PageOneSave.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

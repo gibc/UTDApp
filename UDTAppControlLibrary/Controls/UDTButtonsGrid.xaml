@@ -15,6 +15,6 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <ctls:UDTDataGrid Grid.Row="0" Grid.Column="0"/>
-        <ctls:UDTButtons Grid.Row="0" Grid.Column="1"/>
+        <ctls:UDTButtons Grid.Row="0" Grid.Column="1" Margin="20,0,0,0"/>
     </Grid>
 </UserControl>

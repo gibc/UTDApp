@@ -4,41 +4,42 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
+             xmlns:ctls="clr-namespace:UDTAppControlLibrary.Controls;assembly=UDTAppControlLibrary"
+             xmlns:beh="clr-namespace:UDTAppControlLibrary.Behaviour;assembly=UDTAppControlLibrary"
              xmlns:prism="http://prismlibrary.com/"
              prism:ViewModelLocator.AutoWireViewModel="True"
-             xmlns:sysControls="clr-namespace:System.Windows.Controls;assembly=PresentationFramework"
-             xmlns:local="clr-namespace:UDTApp.Behaviour"
-             xmlns:lib="clr-namespace:UDTAppControlLibrary;assembly=UDTAppControlLibrary"
+             d:DesignHeight="300" d:DesignWidth="800">
+    <Grid Margin="50,50,0,0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="70" />
+            <RowDefinition Height="200" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="250" />
+            <ColumnDefinition Width="250" />
+        </Grid.ColumnDefinitions>
+        <ctls:UDTButtonsGrid DataContext="{Binding Path=MasterGrid}" Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" Grid.RowSpan="2"/>
+        <Grid Grid.Row="1" Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="30" />
+                <RowDefinition Height="30" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="70" />
+                <ColumnDefinition Width="150" />
+            </Grid.ColumnDefinitions>
 
-             d:DesignHeight="300" d:DesignWidth="300">
-
-    <Grid Margin="-10,0,-217,-184" HorizontalAlignment="Left" Width="527" RenderTransformOrigin="0.51,0.506">
-        <lib:MainDBGrid/>
-        <!--<Label Content="PageOneView" HorizontalAlignment="Left" Margin="91,126,0,0" VerticalAlignment="Top" Width="152" Height="27"/>
-        <DataGrid AutoGenerateColumns="True" IsReadOnly="True" CanUserAddRows="False" 
-                  ItemsSource="{Binding DataSets, Mode=TwoWay}" 
-                  SelectedIndex="{Binding SelectedIndex}" 
-                  SelectedItem="{Binding SelectedItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                  local:AutoGeneratingColumnEventToCommandBehaviour.Command="{Binding CreateColumnsCommand}"
-                  HorizontalAlignment="Left" Margin="32,38,0,0" VerticalAlignment="Top" Width="224" Height="181"/>
-        <Button Command="{Binding AddCommand}" Content="Add Data Set" HorizontalAlignment="Left" Margin="270,38,0,0" VerticalAlignment="Top" Width="102"/>
-        <Button Command="{Binding DeleteCommand}" Content="Delete Data Set" HorizontalAlignment="Left" Margin="270,73,0,0" VerticalAlignment="Top" Width="102"/>
-        <TextBox HorizontalAlignment="Left" Height="23" Margin="345,126,0,0" TextWrapping="Wrap" 
-                 Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                 IsEnabled="{Binding IsInputEnabled}"
-                 IsReadOnly="False"
-                 VerticalAlignment="Top" Width="120"/>
-        <TextBox local:InputBehaviour.IsAlphaOnly="true" HorizontalAlignment="Left" Height="23" Margin="345,158,0,0" TextWrapping="Wrap" 
-                 Text="{Binding Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                 IsEnabled="{Binding IsInputEnabled}"
-                 VerticalAlignment="Top" Width="143"/>
-        <Label Content="Name" HorizontalAlignment="Left" Margin="298,123,0,0" VerticalAlignment="Top"/>
-        <Label Content="Description" HorizontalAlignment="Left" Margin="270,154,0,0" VerticalAlignment="Top"/>
-        <Button Command="{Binding SaveCommand}" Content="Save" HorizontalAlignment="Left" Margin="390,38,0,0" VerticalAlignment="Top" Width="75"/>
-        <Button Command="{Binding CancelCommand}" Content="Cancel" HorizontalAlignment="Left" Margin="390,73,0,0" VerticalAlignment="Top" Width="75"/>
-        <DataGrid HorizontalAlignment="Left" Margin="32,252,0,0" VerticalAlignment="Top" Height="144" Width="224"
-                  ItemsSource="{Binding DataItems}" 
-                  AutoGenerateColumns="True" />-->
-
+            <TextBox Grid.Column="1" Grid.Row="0" HorizontalAlignment="Left" Height="23" TextWrapping="Wrap" 
+                         Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                         IsEnabled="{Binding IsInputEnabled}"
+                         IsReadOnly="False"
+                         VerticalAlignment="Top" Width="120"/>
+            <TextBox Grid.Column="1" Grid.Row="1" beh:InputBehaviour.IsAlphaOnly="true" HorizontalAlignment="Left" Height="23" TextWrapping="Wrap" 
+                         Text="{Binding Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                         IsEnabled="{Binding IsInputEnabled}"
+                         VerticalAlignment="Top" Width="143"/>
+            <Label Grid.Column="0" Grid.Row="0" Content="Name" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+            <Label Grid.Column="0" Grid.Row="1" Content="Description" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+        </Grid>
     </Grid>
 </UserControl>

@@ -5,6 +5,7 @@
         prism:ViewModelLocator.AutoWireViewModel="True"
         xmlns:views="clr-namespace:UDTApp.Views"
         xmlns:ViewModels="clr-namespace:UDTApp.ViewModels"
+        xmlns:diag="clr-namespace:System.Diagnostics;assembly=WindowsBase"
         xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
         Title="UDTApp" Height="600" Width="800">
 

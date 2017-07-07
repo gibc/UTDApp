@@ -70,9 +70,8 @@ namespace UDTApp.ViewModels
 
             set
             {
-                int si = value;
                 SetProperty(ref _selectedIndex, value);
-                if(SetChildCollection != null) SetChildCollection(value);
+                if(SetChildCollection != null  && value != -1) SetChildCollection(value);
             }
         }
 
@@ -130,7 +129,6 @@ namespace UDTApp.ViewModels
 
         private void SaveUpdate()
         {
-
             if (_newDataSet == null)
             {
                 LoadEditProps(DataSets[_selectedIndex]);
@@ -149,7 +147,6 @@ namespace UDTApp.ViewModels
 
         private bool canSave()
         {
-
             if (HasErrors) return false;
             if (SelectedIndex == -1 && _newDataSet == null) return false;
             if (SelectedIndex > -1)
