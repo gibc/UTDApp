@@ -46,9 +46,12 @@ namespace UDTAppControlLibrary.Behaviour
                 {
                     dataGrid.AutoGeneratingColumn += OnAutoGeneratingColumn;
                     // force column regen when new event handler is registered
+                    var c = dataGrid.Items.Count;
                     var source = dataGrid.ItemsSource;
+                    if (c == 0) return;
                     dataGrid.ItemsSource = null;
                     dataGrid.ItemsSource = source;
+                    
                 }
             }
         }

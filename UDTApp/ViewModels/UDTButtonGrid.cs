@@ -28,7 +28,7 @@ namespace UDTApp.ViewModels
             Func<D> createDataSet
             )
         {
-            DataSets = dataSets;
+            //DataSets = dataSets;
             SetEditProps = setEditProps;
             LoadEditProps = loadEditProps;
             SetChildCollection = setChildCollection;
@@ -36,6 +36,8 @@ namespace UDTApp.ViewModels
             CreateDataSet = createDataSet;
 
             CreateColumnsCommand = new DelegateCommand<System.Windows.Controls.DataGridAutoGeneratingColumnEventArgs>(createColumns);
+            //DataSets = new ObservableCollection<D>();
+            DataSets = dataSets;
 
             AddCommand = new DelegateCommand(AddDataSet, canAddDataSet);
             DeleteCommand = new DelegateCommand(DeleteDataSet, canDelete);
@@ -182,7 +184,7 @@ namespace UDTApp.ViewModels
             return false;
         }
 
-        static public void createColumns(System.Windows.Controls.DataGridAutoGeneratingColumnEventArgs e)
+        public void createColumns(System.Windows.Controls.DataGridAutoGeneratingColumnEventArgs e)
         {
             //if (e.PropertyType.Name.Contains("ObservableCollection") || e.Column.Header.ToString().Contains("ID"))
             if (!ModelBase.IsRecordProperty(e))

@@ -18,7 +18,7 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         
-        <DataGrid  Grid.Row="0" Grid.Column="0" AutoGenerateColumns="{Binding AutoColumns}" IsReadOnly="True" CanUserAddRows="False" 
+        <DataGrid Grid.Row="0" Grid.Column="0" AutoGenerateColumns="{Binding AutoColumns}" IsReadOnly="True" CanUserAddRows="False" 
                   ItemsSource="{Binding DataSets, Mode=TwoWay}" 
                   SelectedIndex="{Binding SelectedIndex}" 
                   SelectedItem="{Binding SelectedItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 

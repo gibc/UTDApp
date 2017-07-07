@@ -25,11 +25,29 @@ namespace UDTApp.ViewModels
                 CreateDataSet
                 );
 
+            //DetailGrid = new UDTButtonGrid<DataItem>
+            //    (
+            //    new ObservableCollection<DataItem>(),
+            //    null,
+            //    null,
+            //    null,
+            //    null,
+            //    null
+            //    );
+            DataSets = new ObservableCollection<DataItem>();
+            DetailGrid = new UDTDataGrid<DataItem>
+                (
+                DataSets,
+                null
+                );
+
         }
 
         private DataSetList _dataSetList;
 
         public UDTButtonGrid<DataSet> MasterGrid { get; set; }
+        public UDTDataGrid<DataItem> DetailGrid { get; set; }
+        //public UDTButtonGrid<DataItem> DetailGrid { get; set; }
 
         private void SetEditProps(DataSet dataSet, string value)
         {
@@ -50,7 +68,7 @@ namespace UDTApp.ViewModels
        
         private void SetChildCollection(int selectedIndex)
         {
-            DataSets = MasterGrid.DataSets[selectedIndex].DataItems;        
+            DetailGrid.DataSets = MasterGrid.DataSets[selectedIndex].DataItems;
         }   
 
         private bool IsPropertyEdited(DataSet dataSet)
@@ -65,7 +83,8 @@ namespace UDTApp.ViewModels
         }
 
         ObservableCollection<DataItem> _dataSets = null;
-        public ObservableCollection<DataItem> DataSets { 
+        public ObservableCollection<DataItem> DataSets
+        {
             get { return _dataSets; }
             set { SetProperty(ref _dataSets, value); }
         }

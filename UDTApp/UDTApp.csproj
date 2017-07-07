@@ -101,6 +101,7 @@
     <Compile Include="ViewModels\SubPageThree.cs" />
     <Compile Include="ViewModels\SubPageTwo.cs" />
     <Compile Include="ViewModels\UDTButtonGrid.cs" />
+    <Compile Include="ViewModels\UDTDataGrid.cs" />
     <Compile Include="ViewModels\ViewModelBase.cs" />
     <Compile Include="Views\PageOne.xaml.cs">
       <DependentUpon>PageOne.xaml</DependentUpon>
