@@ -13,7 +13,16 @@ namespace UDTApp.ViewModels
 {
     public class UDTButtonGrid<D> : ValidatableBindableBase where D : ModelBase
     {
-        public ObservableCollection<D> DataSets { get; set; }
+        ObservableCollection<D> _dataSets = null;
+        public ObservableCollection<D> DataSets
+        {
+            get { return _dataSets; }
+            set
+            {
+                SetProperty(ref _dataSets, value);
+                if(AddCommand != null) AddCommand.RaiseCanExecuteChanged();
+            }
+        }        
         public DelegateCommand AddCommand { get; set; }
         public DelegateCommand DeleteCommand { get; set; }
         public DelegateCommand SaveCommand { get; set; }
@@ -28,7 +37,7 @@ namespace UDTApp.ViewModels
             Func<D> createDataSet
             )
         {
-            //DataSets = dataSets;
+            DataSets = dataSets;
             SetEditProps = setEditProps;
             LoadEditProps = loadEditProps;
             SetChildCollection = setChildCollection;
@@ -36,8 +45,6 @@ namespace UDTApp.ViewModels
             CreateDataSet = createDataSet;
 
             CreateColumnsCommand = new DelegateCommand<System.Windows.Controls.DataGridAutoGeneratingColumnEventArgs>(createColumns);
-            //DataSets = new ObservableCollection<D>();
-            DataSets = dataSets;
 
             AddCommand = new DelegateCommand(AddDataSet, canAddDataSet);
             DeleteCommand = new DelegateCommand(DeleteDataSet, canDelete);

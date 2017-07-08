@@ -4,16 +4,46 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
+             xmlns:ctls="clr-namespace:UDTAppControlLibrary.Controls;assembly=UDTAppControlLibrary"
+             xmlns:beh="clr-namespace:UDTAppControlLibrary.Behaviour;assembly=UDTAppControlLibrary"
              xmlns:prism="http://prismlibrary.com/"
              prism:ViewModelLocator.AutoWireViewModel="True"
-             xmlns:sysControls="clr-namespace:System.Windows.Controls;assembly=PresentationFramework"
-             xmlns:local="clr-namespace:UDTApp.Behaviour"
-             xmlns:lib="clr-namespace:UDTAppControlLibrary;assembly=UDTAppControlLibrary"
+             d:DesignHeight="600" d:DesignWidth="800">
+    <Grid Margin="50,50,0,0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="170" />
+            <RowDefinition Height="100" />
+            <RowDefinition Height="70" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="250" />
+            <ColumnDefinition Width="250" />
+        </Grid.ColumnDefinitions>
+        <ctls:UDTButtonsGrid Margin="0,20,0,0" DataContext="{Binding Path=DetailGrid}" Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" Grid.RowSpan="2"/>
+        <ctls:UDTDataGrid Margin="0,0,0,0" DataContext="{Binding Path=MasterGrid}" Grid.Column="0" Grid.Row="0"/>
 
-             d:DesignHeight="300" d:DesignWidth="300">
-    
+        <Grid Grid.Row="2" Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="30" />
+                <RowDefinition Height="30" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="70" />
+                <ColumnDefinition Width="150" />
+            </Grid.ColumnDefinitions>
 
-    <Grid Margin="-10,0,-217,-184" HorizontalAlignment="Left" Width="527" RenderTransformOrigin="0.51,0.506">
-        <lib:MainDBGrid/>
+            <TextBox 
+                    Grid.Column="1" Grid.Row="0"
+                    Text="{Binding ChildName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                    IsEnabled="{Binding IsInputEnabled}"
+                    HorizontalAlignment="Left" Height="23" TextWrapping="Wrap" VerticalAlignment="Top" Width="129"/>
+            <TextBox 
+                    Grid.Column="1" Grid.Row="1"
+                    Text="{Binding Type, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                    IsEnabled="{Binding IsInputEnabled}"
+                    HorizontalAlignment="Left" Height="23" TextWrapping="Wrap" VerticalAlignment="Top" Width="129"/>
+            <Label Grid.Column="0" Grid.Row="0" Content="Name" HorizontalContentAlignment="Right" HorizontalAlignment="Right" VerticalAlignment="Top" Width="41" RenderTransformOrigin="0.293,0.628"/>
+            <Label Grid.Column="0" Grid.Row="1" Content="Type" HorizontalContentAlignment="Right" HorizontalAlignment="Right" VerticalAlignment="Top" Width="41" RenderTransformOrigin="0.997,0.569" Height="23"/>
+        </Grid>
     </Grid>
 </UserControl>

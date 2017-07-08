@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
@@ -25,15 +26,8 @@ namespace UDTApp.ViewModels
                 CreateDataSet
                 );
 
-            //DetailGrid = new UDTButtonGrid<DataItem>
-            //    (
-            //    new ObservableCollection<DataItem>(),
-            //    null,
-            //    null,
-            //    null,
-            //    null,
-            //    null
-            //    );
+            //MasterGrid.PropertyChanged += new PropertyChangedEventHandler(grid_PropertyChanged);
+
             DataSets = new ObservableCollection<DataItem>();
             DetailGrid = new UDTDataGrid<DataItem>
                 (
@@ -88,30 +82,6 @@ namespace UDTApp.ViewModels
             get { return _dataSets; }
             set { SetProperty(ref _dataSets, value); }
         }
-
-        //public UDTButtonGrid<DataItem> DetailGrid;
-
-        //private void DetailSetEditProps(DataItem dataSet, string value)
-        //{
-        //}
-
-        //private void DetailLoadEditProps(DataItem dataSet)
-        //{
-        //}
-
-        //private void DetailSetChildCollection(int selectedIndex)
-        //{
-        //}
-
-        //private bool DetailIsPropertyEdited(DataItem dataSet)
-        //{
-        //    return false;
-        //}
-
-        //private DataItem DetailCreateDataSet()
-        //{
-        //    return new DataItem("", 1);
-        //}
 
         private string _name;
         [Required]

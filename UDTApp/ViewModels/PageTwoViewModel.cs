@@ -1,39 +1,46 @@
-﻿using Prism.Commands;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
 using UDTApp.Models;
 
 namespace UDTApp.ViewModels
 {
-    public class PageTwoViewModel : ViewModelBase<DataItem, DataItem>
+    public class PageTwoViewModel : ValidatableBindableBase
     {
         public PageTwoViewModel()
         {
-            IsMasterVisible = false;
-            IsDetailVisible = true;
-            IsRelationVisible = false;
-            IsItemVisible = true;
+            _dataSetList = new DataSetList();
+
+            DataSets = new ObservableCollection<DataItem>();
+            DetailGrid = new UDTButtonGrid<DataItem>
+                (
+                null, //DataSets,
+                SetEditProps,
+                LoadEditProps,
+                null,
+                IsPropertyEdited,
+                CreateDataSet
+                );
+
+
+            MasterGrid = new UDTDataGrid<DataSet>
+                (
+                DataSetList.Sets,
+                SetChildCollection
+                );
+
         }
 
-        override public bool IsPropertyEdited
-        {
-            get
-            {
-                if (ChildSelectedIndex == -1) return false;
-                return DataItems[ChildSelectedIndex].Name != ChildName ||
-                    DataItems[ChildSelectedIndex].Type.ToString() != Type;
-            }
-        }
+        private DataSetList _dataSetList;
 
-        override public void SetTextProps(DataItem dataSet, string value = "")
+        public UDTButtonGrid<DataItem> DetailGrid { get; set; }
+        public UDTDataGrid<DataSet> MasterGrid { get; set; }
+
+        private void SetEditProps(DataItem dataSet, string value)
         {
             ChildName = value;
             Type = value;
@@ -44,41 +51,33 @@ namespace UDTApp.ViewModels
             }
         }
 
-        override public void SetMasterTextProps(DataSet dataSet, string value = "") { }
-
-        override public void SetChildTextProps(DataItem dataSet, string value = "") 
-        {
-            SetTextProps(dataSet, value);
-        }
-
- 
-        override public void LoadTextProps(DataItem dataSet)
+        private void LoadEditProps(DataItem dataSet)
         {
             dataSet.Name = ChildName;
             dataSet.Type = Convert.ToInt32(Type);
         }
-        override public DataItem CreateNewDataSet()
+
+        private void SetChildCollection(int selectedIndex)
         {
-            // returns C
-            return new DataItem();
-        }
-        override public ObservableCollection<DataItem> GetSelectedCol(int selectedIndex)
-        {
-            // takes nothing, returns D
-            //return EditedCol[selectedIndex].DataItems;
-            return DataSets[selectedIndex].DataItems;
-        }
-        override public ObservableCollection<DataItem> EditedCol
-        {
-            // returns C
-            get { return DataItems; }
+            DetailGrid.DataSets = MasterGrid.DataSets[selectedIndex].DataItems;
         }
 
-        override public int EditedIndex { get { return ChildSelectedIndex; } set { ChildSelectedIndex = value; } }
-
-        override public bool IsInputEnabled
+        private bool IsPropertyEdited(DataItem dataSet)
         {
-            get { return (ChildSelectedItem != null || _newDataSet != null); }
+            return DetailGrid.DataSets[DetailGrid.SelectedIndex].Name != ChildName ||
+                DetailGrid.DataSets[DetailGrid.SelectedIndex].Type.ToString() != Type;
+        }
+
+        private DataItem CreateDataSet()
+        {
+            return new DataItem("", 1);
+        }
+
+        ObservableCollection<DataItem> _dataSets = null;
+        public ObservableCollection<DataItem> DataSets
+        {
+            get { return _dataSets; }
+            set { SetProperty(ref _dataSets, value); }
         }
 
 
@@ -95,8 +94,8 @@ namespace UDTApp.ViewModels
             set
             {
                 SetProperty(ref _name, value);
-                SaveCommand.RaiseCanExecuteChanged();
-                CancelCommand.RaiseCanExecuteChanged();
+                DetailGrid.SaveCommand.RaiseCanExecuteChanged();
+                DetailGrid.CancelCommand.RaiseCanExecuteChanged();
             }
         }
 
@@ -110,8 +109,8 @@ namespace UDTApp.ViewModels
             set
             {
                 SetProperty(ref _type, value);
-                SaveCommand.RaiseCanExecuteChanged();
-                CancelCommand.RaiseCanExecuteChanged();
+                DetailGrid.SaveCommand.RaiseCanExecuteChanged();
+                DetailGrid.CancelCommand.RaiseCanExecuteChanged();
             }
         }
 
