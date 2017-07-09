@@ -16,22 +16,15 @@ namespace UDTApp.ViewModels
             _dataSetList = new DataSetList();
 
             DataSets = new ObservableCollection<DataSetRelation>();
-            DetailGrid = new UDTButtonGrid<DataSetRelation>
-                (
-                null, //DataSets,
-                SetEditProps,
-                LoadEditProps,
-                null,
-                IsPropertyEdited,
-                CreateDataSet
-                );
+            DetailGrid = new UDTButtonGrid<DataSetRelation>(null); 
+            DetailGrid.SetEditProps = SetEditProps;
+            DetailGrid.LoadEditProps = LoadEditProps;
+            DetailGrid.IsPropertyEdited = IsPropertyEdited;
+            DetailGrid.CreateDataSet = CreateDataSet;
+            DetailGrid.CanAddDataSet = CanAddDataSet;
 
-
-            MasterGrid = new UDTDataGrid<DataSet>
-                (
-                DataSetList.Sets,
-                SetChildCollection
-                );
+            MasterGrid = new UDTDataGrid<DataSet>(DataSetList.Sets);
+            MasterGrid.SelectionIndexChange = SetChildCollection;
         }
 
         private DataSetList _dataSetList;
@@ -39,10 +32,15 @@ namespace UDTApp.ViewModels
         public UDTButtonGrid<DataSetRelation> DetailGrid { get; set; }
         public UDTDataGrid<DataSet> MasterGrid { get; set; }
 
+        private bool CanAddDataSet()
+        {
+            return DetailGrid.DataSets != null && ChildOptions != null && ChildOptions.Count > 1;
+        }
+
         private void SetEditProps(DataSetRelation dataSet, string value)
         {
             ParentDataSet = value;
-            SelectedChild = value;
+            //SelectedChild = value;
             if (dataSet != null)
             {
                 ParentDataSet = dataSet.ParentDateSet;
@@ -63,6 +61,8 @@ namespace UDTApp.ViewModels
         private void SetChildCollection(int selectedIndex)
         {
             DetailGrid.DataSets = MasterGrid.DataSets[selectedIndex].DataSetRelations;
+            if (DetailGrid.DataSets.Count > 0)
+                DetailGrid.SelectedIndex = 0;
         }
 
         private bool IsPropertyEdited(DataSetRelation dataSet)

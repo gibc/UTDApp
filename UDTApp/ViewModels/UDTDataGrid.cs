@@ -25,26 +25,18 @@ namespace UDTApp.ViewModels
 
         public DelegateCommand<System.Windows.Controls.DataGridAutoGeneratingColumnEventArgs> CreateColumnsCommand { get; set; }
 
-        public UDTDataGrid(ObservableCollection<D> dataSets,
-            Action<int> setChildCollection
-            )
-            {
-                SetChildCollection = setChildCollection;
-                CreateColumnsCommand = new DelegateCommand<System.Windows.Controls.DataGridAutoGeneratingColumnEventArgs>(createColumns);
-                DataSets = dataSets;
-            }
+        public UDTDataGrid(ObservableCollection<D> dataSets)
+        {
+            CreateColumnsCommand = new DelegateCommand<System.Windows.Controls.DataGridAutoGeneratingColumnEventArgs>(createColumns);
+            DataSets = dataSets;
+        }
 
-        Action<int> SetChildCollection = null;
-
-        //public bool IsInputEnabled
-        //{
-        //    get { return (SelectedItem != null || _newDataSet != null); }
-        //}
-
-        //private bool validationEnabled()
-        //{
-        //    return IsInputEnabled;
-        //}
+        public Action<int> SelectionIndexChange { get; set; }
+        private void selectionIndexChange(int selectionIndex)
+        {
+            if (SelectionIndexChange != null  && selectionIndex != -1) 
+                SelectionIndexChange(selectionIndex);
+        }
 
         private int _selectedIndex = -1;
         public int SelectedIndex
@@ -54,7 +46,7 @@ namespace UDTApp.ViewModels
             set
             {
                 SetProperty(ref _selectedIndex, value);
-                if (SetChildCollection != null && value != -1) SetChildCollection(value);
+                selectionIndexChange(value);
             }
         }
 
@@ -74,10 +66,6 @@ namespace UDTApp.ViewModels
                 {
                     //SetEditProps(null, "");
                 }
-                //DeleteCommand.RaiseCanExecuteChanged();
-                //CancelCommand.RaiseCanExecuteChanged();
-                //RaisePropertyChanged("IsInputEnabled");
-                //_newDataSet = null;
             }
         }
 

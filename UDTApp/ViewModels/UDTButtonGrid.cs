@@ -29,20 +29,9 @@ namespace UDTApp.ViewModels
         public DelegateCommand CancelCommand { get; set; }
         public DelegateCommand<System.Windows.Controls.DataGridAutoGeneratingColumnEventArgs> CreateColumnsCommand { get; set; }
 
-        public UDTButtonGrid(ObservableCollection<D> dataSets,
-            Action<D, string> setEditProps,
-            Action<D> loadEditProps,
-            Action<int> setChildCollection,
-            Predicate<D> isPropertyEdited,
-            Func<D> createDataSet
-            )
+        public UDTButtonGrid(ObservableCollection<D> dataSets)
         {
             DataSets = dataSets;
-            SetEditProps = setEditProps;
-            LoadEditProps = loadEditProps;
-            SetChildCollection = setChildCollection;
-            IsPropertyEdited = isPropertyEdited;
-            CreateDataSet = createDataSet;
 
             CreateColumnsCommand = new DelegateCommand<System.Windows.Controls.DataGridAutoGeneratingColumnEventArgs>(createColumns);
 
@@ -53,12 +42,44 @@ namespace UDTApp.ViewModels
 
             ValidationEnabled = validationEnabled;
 
+
         }
-        Action<D, string> SetEditProps = null;
-        Action<D> LoadEditProps = null;
-        Action<int> SetChildCollection = null;
-        Predicate<D> IsPropertyEdited = null;
-        Func<D> CreateDataSet = null;
+
+        //Action<D, string> SetEditProps = null;
+        public Action<D, string> SetEditProps { get; set; }
+        private void setEditProps(D dataSet, string value)
+        {
+            if (SetEditProps != null) SetEditProps(dataSet, value);
+        }
+
+        //Action<D> LoadEditProps = null;
+        public Action<D> LoadEditProps { get; set; }
+        private void loadEditProps(D dataSet)
+        {
+            if (LoadEditProps != null) LoadEditProps(dataSet);
+        }
+
+        //Action<int> SetChildCollection = null;
+        public Action<int> SelectionIndexChange { get; set; }
+        private void selectionIndexChange(int selectionIndex)
+        {
+            if (SelectionIndexChange != null && selectionIndex != -1)
+                SelectionIndexChange(selectionIndex);
+        }
+
+        public Predicate<D> IsPropertyEdited { get; set; }
+        private bool isPropertyEdited(D dataSet)
+        {
+            if(IsPropertyEdited != null) return IsPropertyEdited(dataSet);
+            return false;
+        }
+
+        public Func<D> CreateDataSet { get; set; }
+        private D createDataSet()
+        {
+            if (CreateDataSet != null) return CreateDataSet();
+            return null;
+        }
 
         private D _newDataSet = null;
 
@@ -80,7 +101,9 @@ namespace UDTApp.ViewModels
             set
             {
                 SetProperty(ref _selectedIndex, value);
-                if(SetChildCollection != null  && value != -1) SetChildCollection(value);
+                //if(SetChildCollection != null  && value != -1) SetChildCollection(value);
+                selectionIndexChange(value);
+                AddCommand.RaiseCanExecuteChanged();
             }
         }
 
@@ -94,11 +117,11 @@ namespace UDTApp.ViewModels
                 SetProperty(ref _selectedItem, value);
                 if (value != null)
                 {
-                    SetEditProps(value, "");
+                    setEditProps(value, "");
                 }
                 else
                 {
-                    SetEditProps(null, "");
+                    setEditProps(null, "");
                 }
                 DeleteCommand.RaiseCanExecuteChanged();
                 CancelCommand.RaiseCanExecuteChanged();
@@ -109,17 +132,19 @@ namespace UDTApp.ViewModels
 
         private void AddDataSet()
         {
-            SetEditProps(_newDataSet, "xxx");
-            _newDataSet = CreateDataSet();
-            SetEditProps(_newDataSet, "");
+            setEditProps(_newDataSet, "xxx");
+            _newDataSet = createDataSet();
+            setEditProps(_newDataSet, "");
             DeleteCommand.RaiseCanExecuteChanged();
             CancelCommand.RaiseCanExecuteChanged();
             SaveCommand.RaiseCanExecuteChanged();
             RaisePropertyChanged("IsInputEnabled");
         }
 
-        private bool canAddDataSet()
+        public Func<bool> CanAddDataSet { get; set; }
+        public bool canAddDataSet()
         {
+            if(CanAddDataSet != null) return CanAddDataSet();
             return DataSets != null;
         }
 
@@ -140,12 +165,12 @@ namespace UDTApp.ViewModels
         {
             if (_newDataSet == null)
             {
-                LoadEditProps(DataSets[_selectedIndex]);
+                loadEditProps(DataSets[_selectedIndex]);
                 DataSets[_selectedIndex].State = ObjectState.Dirty;
             }
             else
             {
-                LoadEditProps(_newDataSet);
+                loadEditProps(_newDataSet);
                 DataSets.Add(_newDataSet);
                 SelectedItem = _newDataSet;
                 _newDataSet = null;
@@ -160,23 +185,23 @@ namespace UDTApp.ViewModels
             if (SelectedIndex == -1 && _newDataSet == null) return false;
             if (SelectedIndex > -1)
             {
-                return IsPropertyEdited(DataSets[_selectedIndex]);
+                return isPropertyEdited(DataSets[_selectedIndex]);
             }
             return true;
         }
 
         private void cancelUpdate()
         {
-            SetEditProps(null, "xxx");
+            setEditProps(null, "xxx");
             _newDataSet = null;
             if (DataSets.Count > 0)
             {
                 if (_selectedIndex == -1) SelectedIndex = 0;
-                SetEditProps(DataSets[_selectedIndex], "");
+                setEditProps(DataSets[_selectedIndex], "");
                 DataSets[_selectedIndex].State = ObjectState.Updated;
             }
             else
-                SetEditProps(null, "");
+                setEditProps(null, "");
             RaisePropertyChanged("IsInputEnabled");
             SaveCommand.RaiseCanExecuteChanged();
         }
@@ -186,7 +211,7 @@ namespace UDTApp.ViewModels
             if (_newDataSet != null) return true;
             if (SelectedIndex > -1)
             {
-                return IsPropertyEdited(DataSets[_selectedIndex]);
+                return isPropertyEdited(DataSets[_selectedIndex]);
             }
             return false;
         }

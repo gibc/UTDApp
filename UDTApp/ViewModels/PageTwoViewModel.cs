@@ -16,22 +16,15 @@ namespace UDTApp.ViewModels
             _dataSetList = new DataSetList();
 
             DataSets = new ObservableCollection<DataItem>();
-            DetailGrid = new UDTButtonGrid<DataItem>
-                (
-                null, //DataSets,
-                SetEditProps,
-                LoadEditProps,
-                null,
-                IsPropertyEdited,
-                CreateDataSet
-                );
+            DetailGrid = new UDTButtonGrid<DataItem>(null); 
+            DetailGrid.SetEditProps = SetEditProps;
+            DetailGrid.LoadEditProps = LoadEditProps;
+            DetailGrid.IsPropertyEdited = IsPropertyEdited;
+            DetailGrid.CreateDataSet = CreateDataSet;
 
 
-            MasterGrid = new UDTDataGrid<DataSet>
-                (
-                DataSetList.Sets,
-                SetChildCollection
-                );
+            MasterGrid = new UDTDataGrid<DataSet>(DataSetList.Sets);
+            MasterGrid.SelectionIndexChange = SetChildCollection;
 
         }
 
