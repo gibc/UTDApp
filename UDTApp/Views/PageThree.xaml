@@ -3,14 +3,80 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             xmlns:ctls="clr-namespace:UDTAppControlLibrary.Controls;assembly=UDTAppControlLibrary"
+             xmlns:beh="clr-namespace:UDTAppControlLibrary.Behaviour;assembly=UDTAppControlLibrary"
              xmlns:prism="http://prismlibrary.com/"
              prism:ViewModelLocator.AutoWireViewModel="True"
-             xmlns:lib="clr-namespace:UDTAppControlLibrary;assembly=UDTAppControlLibrary"
+             xmlns:sysControls="clr-namespace:System.Windows.Controls;assembly=PresentationFramework"
+             d:DesignHeight="600" d:DesignWidth="800">
+    
+    <UserControl.Resources>
+        <sysControls:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <ControlTemplate x:Key="validationErrorTemplate">
+            <DockPanel>
+                <TextBlock Foreground="Red" Text="{Binding Path=[0].ErrorContent}"
 
-             mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300">
-    <Grid>
-        <lib:MainDBGrid/>
-        <Button Content="Save Changes" Command="{Binding SaveChangesCommand}" HorizontalAlignment="Left" Margin="566,255,-341,0" VerticalAlignment="Top" Width="75"/>
+            DockPanel.Dock="Top"></TextBlock>
+                <AdornedElementPlaceholder 
+
+           x:Name="ErrorAdorner"
+
+        ></AdornedElementPlaceholder>
+            </DockPanel>
+        </ControlTemplate>
+    </UserControl.Resources>
+    
+    <Grid Margin="50,50,0,0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="170" />
+            <RowDefinition Height="100" />
+            <RowDefinition Height="70" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="250" />
+            <ColumnDefinition Width="250" />
+        </Grid.ColumnDefinitions>
+        <ctls:UDTButtonsGrid Margin="0,20,0,0" DataContext="{Binding Path=DetailGrid}" Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" Grid.RowSpan="2"/>
+        <ctls:UDTDataGrid Margin="0,0,0,0" DataContext="{Binding Path=MasterGrid}" Grid.Column="0" Grid.Row="0"/>
+
+        <Grid Grid.Row="2" Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="30" />
+                <RowDefinition Height="30" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="100" />
+                <ColumnDefinition Width="150" />
+            </Grid.ColumnDefinitions>
+
+            <TextBox Grid.Column="1" Grid.Row="0"
+                    Text="{Binding ParentDataSet, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" 
+                    IsEnabled="False"
+                    HorizontalAlignment="Left" Height="23" TextWrapping="Wrap" VerticalAlignment="Top" Width="129"/>
+
+            <ComboBox  Grid.Column="1" Grid.Row="1"
+                ItemsSource="{Binding ChildOptions}" 
+                          SelectedIndex="{Binding ComboIndex, Mode=TwoWay}"
+                          Validation.ErrorTemplate="{StaticResource validationErrorTemplate}"
+                    HorizontalAlignment="Left" Height="23" VerticalAlignment="Top" Width="129" >
+                <ComboBox.SelectedItem>
+                    <Binding Path="SelectedChild" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged" >
+                        <!--<Binding.ValidationRules>
+                                <rules:SelectionRule ValidatesOnTargetUpdated="True"></rules:SelectionRule>
+                            </Binding.ValidationRules>-->
+                    </Binding>
+                </ComboBox.SelectedItem>
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <Label Grid.Column="0" Grid.Row="0" Content="Parent Dataset" HorizontalContentAlignment="Right" HorizontalAlignment="Right" VerticalAlignment="Top" Width="Auto"  />
+            <Label Grid.Column="0" Grid.Row="1" Content="Child Dataset" HorizontalContentAlignment="Right" HorizontalAlignment="Right" VerticalAlignment="Top" Width="Auto" Height="23"/>
+        </Grid>
     </Grid>
 </UserControl>
