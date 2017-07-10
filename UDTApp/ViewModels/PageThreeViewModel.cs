@@ -32,9 +32,11 @@ namespace UDTApp.ViewModels
         public UDTButtonGrid<DataSetRelation> DetailGrid { get; set; }
         public UDTDataGrid<DataSet> MasterGrid { get; set; }
 
-        private bool CanAddDataSet()
+        private bool CanAddDataSet(Func<bool> baseMethod)
         {
-            return DetailGrid.DataSets != null && ChildOptions != null && ChildOptions.Count > 1;
+            if (!baseMethod()) return false;
+            //return DetailGrid.DataSets != null && ChildOptions != null && ChildOptions.Count > 1;
+            return ChildOptions.Count > 1;
         }
 
         private void SetEditProps(DataSetRelation dataSet, string value)

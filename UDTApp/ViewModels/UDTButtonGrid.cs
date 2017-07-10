@@ -46,35 +46,35 @@ namespace UDTApp.ViewModels
         }
 
         //Action<D, string> SetEditProps = null;
-        public Action<D, string> SetEditProps { get; set; }
+        public Action<D, string> SetEditProps { private get; set; }
         private void setEditProps(D dataSet, string value)
         {
             if (SetEditProps != null) SetEditProps(dataSet, value);
         }
 
         //Action<D> LoadEditProps = null;
-        public Action<D> LoadEditProps { get; set; }
+        public Action<D> LoadEditProps { private get; set; }
         private void loadEditProps(D dataSet)
         {
             if (LoadEditProps != null) LoadEditProps(dataSet);
         }
 
         //Action<int> SetChildCollection = null;
-        public Action<int> SelectionIndexChange { get; set; }
+        public Action<int> SelectionIndexChange { private get; set; }
         private void selectionIndexChange(int selectionIndex)
         {
             if (SelectionIndexChange != null && selectionIndex != -1)
                 SelectionIndexChange(selectionIndex);
         }
 
-        public Predicate<D> IsPropertyEdited { get; set; }
+        public Predicate<D> IsPropertyEdited { private get; set; }
         private bool isPropertyEdited(D dataSet)
         {
             if(IsPropertyEdited != null) return IsPropertyEdited(dataSet);
             return false;
         }
 
-        public Func<D> CreateDataSet { get; set; }
+        public Func<D> CreateDataSet { private get; set; }
         private D createDataSet()
         {
             if (CreateDataSet != null) return CreateDataSet();
@@ -82,6 +82,7 @@ namespace UDTApp.ViewModels
         }
 
         private D _newDataSet = null;
+        private D _deletedDataSet = null;
 
         public bool IsInputEnabled
         {
@@ -141,15 +142,26 @@ namespace UDTApp.ViewModels
             RaisePropertyChanged("IsInputEnabled");
         }
 
-        public Func<bool> CanAddDataSet { get; set; }
-        public bool canAddDataSet()
+        public Func<Func<bool>, bool> CanAddDataSet { private get; set; }
+        private bool canAddDataSet()
         {
-            if(CanAddDataSet != null) return CanAddDataSet();
-            return DataSets != null;
+            if (CanAddDataSet != null)
+            {
+                //Func<bool> baseMethod = _canAddDataSet;
+                //return CanAddDataSet(baseMethod);
+                return CanAddDataSet(() => _canAddDataSet());
+            }
+            return _canAddDataSet();
+        }
+
+        private bool _canAddDataSet()
+        {
+            return DataSets != null && _deletedDataSet == null;
         }
 
         private void DeleteDataSet()
         {
+            _deletedDataSet = DataSets[_selectedIndex];
             DataSets.Remove(DataSets[_selectedIndex]);
             if (DataSets.Count > 0)
                 SelectedIndex = 0;
@@ -157,44 +169,57 @@ namespace UDTApp.ViewModels
 
         bool canDelete()
         {
-            if (_newDataSet != null) return false;
+            if (_newDataSet != null || _deletedDataSet != null) return false;
             return SelectedIndex > -1;
         }
 
         private void SaveUpdate()
         {
-            if (_newDataSet == null)
+            if (_newDataSet == null && _deletedDataSet == null)
             {
                 loadEditProps(DataSets[_selectedIndex]);
                 DataSets[_selectedIndex].State = ObjectState.Dirty;
             }
-            else
+            else if (_newDataSet != null)
             {
                 loadEditProps(_newDataSet);
                 DataSets.Add(_newDataSet);
                 SelectedItem = _newDataSet;
                 _newDataSet = null;
             }
+            else if (_deletedDataSet != null)
+            {
+                DataSetList.DeleteRecord(_deletedDataSet);
+                _deletedDataSet = null;
+            }
+
             CancelCommand.RaiseCanExecuteChanged();
             SaveCommand.RaiseCanExecuteChanged();
+            AddCommand.RaiseCanExecuteChanged();
         }
 
         private bool canSave()
         {
             if (HasErrors) return false;
-            if (SelectedIndex == -1 && _newDataSet == null) return false;
-            if (SelectedIndex > -1)
+            if (_newDataSet != null || _deletedDataSet != null) return true;
+            if (SelectedIndex > -1 )
             {
                 return isPropertyEdited(DataSets[_selectedIndex]);
             }
-            return true;
+            return false;
         }
 
         private void cancelUpdate()
         {
             setEditProps(null, "xxx");
             _newDataSet = null;
-            if (DataSets.Count > 0)
+            if(_deletedDataSet != null)
+            {
+                DataSets.Add(_deletedDataSet);
+                SelectedItem = _deletedDataSet;
+                _deletedDataSet = null;
+            }
+            else if (DataSets.Count > 0)
             {
                 if (_selectedIndex == -1) SelectedIndex = 0;
                 setEditProps(DataSets[_selectedIndex], "");
@@ -208,7 +233,7 @@ namespace UDTApp.ViewModels
 
         private bool canCancel()
         {
-            if (_newDataSet != null) return true;
+            if (_newDataSet != null || _deletedDataSet != null) return true;
             if (SelectedIndex > -1)
             {
                 return isPropertyEdited(DataSets[_selectedIndex]);

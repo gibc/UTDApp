@@ -62,6 +62,11 @@ namespace UDTApp.Models
             ModelBase.SaveObjects<DataSet>(Sets);
         }
 
+        static public void DeleteRecord(ModelBase item)
+        {
+            DeletedRecords.Add(item);
+        }
+
         static public void SaveDataSetList()
         {
             foreach(DataSet dataSet in Sets)
@@ -86,9 +91,9 @@ namespace UDTApp.Models
             }
         }
 
+        static private List<ModelBase> DeletedRecords;
         static public ObservableCollection<DataSet> Sets { get; set; }
         static public int SelectedIndex { get; set; }
-        //public ObservableCollection<DataSet> Sets { get; set; }
-        //public int SelectedIndex { get; set; }
+ 
     }
 }
