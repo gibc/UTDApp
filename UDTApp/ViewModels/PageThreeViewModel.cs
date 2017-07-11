@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Prism.Commands;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
@@ -25,6 +26,14 @@ namespace UDTApp.ViewModels
 
             MasterGrid = new UDTDataGrid<DataSet>(DataSetList.Sets);
             MasterGrid.SelectionIndexChange = SetChildCollection;
+
+            SaveChangesCommand = new DelegateCommand(saveChanges);
+        }
+
+        public DelegateCommand SaveChangesCommand { get; set; }
+        private void saveChanges()
+        {
+            DataSetList.SaveChanges();
         }
 
         private DataSetList _dataSetList;

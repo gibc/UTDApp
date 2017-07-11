@@ -59,6 +59,7 @@ namespace UDTApp.Models
 
         static public void SaveChanges()
         {
+            ModelBase.DeleteRecords(DeletedRecords);
             ModelBase.SaveObjects<DataSet>(Sets);
         }
 
@@ -67,31 +68,31 @@ namespace UDTApp.Models
             DeletedRecords.Add(item);
         }
 
-        static public void SaveDataSetList()
-        {
-            foreach(DataSet dataSet in Sets)
-            {
-                dataSet.CreateTable();
-                int recId = dataSet.CreateRecord();
+        //static public void SaveDataSetList()
+        //{
+        //    foreach(DataSet dataSet in Sets)
+        //    {
+        //        dataSet.CreateTable();
+        //        int recId = dataSet.CreateRecord();
 
-                foreach(DataItem item in dataSet.DataItems)
-                {
-                    item.CreateTable();
-                    item.ParentId = recId;
-                    item.CreateRecord();
-                }
+        //        foreach(DataItem item in dataSet.DataItems)
+        //        {
+        //            item.CreateTable();
+        //            item.ParentId = recId;
+        //            item.CreateRecord();
+        //        }
 
-                foreach (DataSetRelation relation in dataSet.DataSetRelations)
-                {
-                    relation.CreateTable();
-                    relation.ParentId = recId;
-                    relation.CreateRecord();
-                }
+        //        foreach (DataSetRelation relation in dataSet.DataSetRelations)
+        //        {
+        //            relation.CreateTable();
+        //            relation.ParentId = recId;
+        //            relation.CreateRecord();
+        //        }
 
-            }
-        }
+        //    }
+        //}
 
-        static private List<ModelBase> DeletedRecords;
+        static private List<ModelBase> DeletedRecords = new List<ModelBase>();
         static public ObservableCollection<DataSet> Sets { get; set; }
         static public int SelectedIndex { get; set; }
  

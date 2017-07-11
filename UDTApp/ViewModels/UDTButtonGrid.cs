@@ -178,7 +178,8 @@ namespace UDTApp.ViewModels
             if (_newDataSet == null && _deletedDataSet == null)
             {
                 loadEditProps(DataSets[_selectedIndex]);
-                DataSets[_selectedIndex].State = ObjectState.Dirty;
+                if (DataSets[_selectedIndex].State != ObjectState.New) 
+                    DataSets[_selectedIndex].State = ObjectState.Dirty;
             }
             else if (_newDataSet != null)
             {
@@ -223,7 +224,8 @@ namespace UDTApp.ViewModels
             {
                 if (_selectedIndex == -1) SelectedIndex = 0;
                 setEditProps(DataSets[_selectedIndex], "");
-                DataSets[_selectedIndex].State = ObjectState.Updated;
+                if (DataSets[_selectedIndex].State!= ObjectState.New) 
+                    DataSets[_selectedIndex].State = ObjectState.Updated;
             }
             else
                 setEditProps(null, "");

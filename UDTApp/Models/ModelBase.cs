@@ -109,7 +109,7 @@ namespace UDTApp.Models
         {
             if (prop.PropertyType.Name.Contains("Collection")) return false;
             return !(basePropList.Any(p => p.Name == prop.Name) &&
-                prop.Name != "parentId");
+                prop.Name != "ParentId");
         }
 
         static public bool IsRecordProperty(DataGridAutoGeneratingColumnEventArgs e)
@@ -194,7 +194,7 @@ namespace UDTApp.Models
             {
                 Type type = obj.GetType();
                 ModelBase modelBase = obj as ModelBase;
-                if (modelBase.State == ObjectState.New) recId = modelBase.CreateRecord();
+                if (modelBase.State == ObjectState.New) recId = modelBase.CreateRecord(parentId);
                 else if (modelBase.State == ObjectState.Dirty) recId = modelBase.UpdateRecord();
 
                 PropertyInfo[] props = type.GetProperties();
@@ -210,6 +210,32 @@ namespace UDTApp.Models
 
                         IList customListInstance = (IList)Activator.CreateInstance(constructed, col);
                         SaveRecords(customListInstance, recId);
+                    }
+                }
+            }
+        }
+
+        static public void DeleteRecords(IList objList)
+        {
+            foreach (object obj in objList)
+            {
+                Type type = obj.GetType();
+                ModelBase modelBase = obj as ModelBase;
+                if (modelBase.State != ObjectState.New) modelBase.DeleteRecord();
+
+                PropertyInfo[] props = type.GetProperties();
+                foreach (var prop in props)
+                {
+                    if (prop.PropertyType.Name.Contains("Collection"))
+                    {
+                        Type genericListType = typeof(List<>);
+                        Type[] typeArgs = { prop.PropertyType.GenericTypeArguments[0] };
+                        Type constructed = genericListType.MakeGenericType(typeArgs);
+
+                        var col = modelBase.GetPropValue(prop.Name);
+
+                        IList customListInstance = (IList)Activator.CreateInstance(constructed, col);
+                        DeleteRecords(customListInstance);
                     }
                 }
             }
@@ -289,6 +315,29 @@ namespace UDTApp.Models
             }
         }
 
+        public void DeleteRecord()
+        {
+            //DELETE FROM table_name
+            //WHERE condition;
+            using (SqlConnection conn = new SqlConnection())
+            {
+                conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
+                SqlCommand cmd = new SqlCommand();
+
+                string cmdText = string.Format("DELETE FROM {0} WHERE Id = {1} ", 
+                    this.GetType().Name, this.Id);
+
+                cmd.CommandText = cmdText;
+                cmd.CommandType = CommandType.Text;
+                cmd.Connection = conn;
+
+                conn.Open();
+
+                cmd.ExecuteNonQuery();
+
+            }
+        }
+
         public int UpdateRecord()
         {
             //UPDATE table_name
@@ -315,7 +364,7 @@ namespace UDTApp.Models
                     cmdText += string.Format("{0} = {1}", prop.Name, GetPropValue(prop.Name));
                     if (prop != props.Last()) cmdText += ", ";
                 }
-                cmdText += string.Format("WHERE Id = {0}", Id);
+                cmdText += string.Format(" WHERE Id = {0}", Id);
 
                 cmd.CommandText = cmdText;
                 cmd.CommandType = CommandType.Text;
@@ -349,7 +398,7 @@ namespace UDTApp.Models
             }
         }
 
-        public int CreateRecord()
+        public int CreateRecord(int parentID)
         {
 
             //INSERT INTO table_name VALUES (value1, value2, value3, ...);
@@ -387,7 +436,10 @@ namespace UDTApp.Models
                        }
                        continue;
                     }
-                    cmdText += string.Format("{0}", GetPropValue(prop.Name));
+                    if(prop.Name == "ParentId")
+                        cmdText += string.Format("{0}", parentID);
+                    else
+                        cmdText += string.Format("{0}", GetPropValue(prop.Name));
                     if (prop != props.Last()) cmdText += ", ";
                 }
                 cmdText += "); SELECT SCOPE_IDENTITY();";
