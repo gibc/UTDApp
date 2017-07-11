@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UDTApp.Models;
+using UDTAppControlLibrary.Controls;
 
 namespace UDTApp.ViewModels
 {
@@ -14,6 +15,7 @@ namespace UDTApp.ViewModels
     {
         public PageThreeViewModel()
         {
+
             _dataSetList = new DataSetList();
 
             DataSets = new ObservableCollection<DataSetRelation>();
@@ -35,6 +37,7 @@ namespace UDTApp.ViewModels
         {
             DataSetList.SaveChanges();
         }
+
 
         private DataSetList _dataSetList;
 
@@ -111,7 +114,8 @@ namespace UDTApp.ViewModels
             return new ObservableCollection<String>(result);
         }
 
- 
+        //public bool IsInputEnabled { get { return DetailGrid.IsInputEnabled; } }
+
         private int _comboIndex = -1;
         public int ComboIndex
         {

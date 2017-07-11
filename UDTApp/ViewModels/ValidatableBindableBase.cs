@@ -29,12 +29,15 @@ namespace UDTApp.ViewModels
         public void SetErrors<TProperty>(Expression<Func<TProperty>> propertyExpression, IEnumerable<string> errors)
         {
             ErrorsContainer.SetErrors(propertyExpression, errors);
+            IsValid = HasErrors;
         }
 
         public bool HasErrors
         {
             get { return ErrorsContainer.HasErrors; }
         }
+
+        public static bool IsValid { get; set; }
 
         public Func<Boolean> ValidationEnabled = null;
 

@@ -73,7 +73,6 @@ namespace UDTApp.ViewModels
             set { SetProperty(ref _dataSets, value); }
         }
 
-
         private string _name;
         [Required]
         [StringLength(15, MinimumLength = 4, ErrorMessage = "Name must be between 4 and 15 characters.")]

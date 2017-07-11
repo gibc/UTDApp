@@ -84,10 +84,16 @@ namespace UDTApp.ViewModels
         private D _newDataSet = null;
         private D _deletedDataSet = null;
 
+        private bool _isEnabled = false;
         public bool IsInputEnabled
         {
-            get { return (SelectedItem != null || _newDataSet != null); }
+            get { return _isEnabled; }
+            set 
+            {
+                SetProperty(ref _isEnabled, value);
+            }
         }
+        private bool isInputEnabled{ get {return (SelectedItem != null || _newDataSet != null); }}
 
         private bool validationEnabled()
         {
@@ -126,7 +132,7 @@ namespace UDTApp.ViewModels
                 }
                 DeleteCommand.RaiseCanExecuteChanged();
                 CancelCommand.RaiseCanExecuteChanged();
-                RaisePropertyChanged("IsInputEnabled");
+                IsInputEnabled = isInputEnabled;
                 _newDataSet = null;
             }
         }
@@ -138,8 +144,9 @@ namespace UDTApp.ViewModels
             setEditProps(_newDataSet, "");
             DeleteCommand.RaiseCanExecuteChanged();
             CancelCommand.RaiseCanExecuteChanged();
+            AddCommand.RaiseCanExecuteChanged();
             SaveCommand.RaiseCanExecuteChanged();
-            RaisePropertyChanged("IsInputEnabled");
+            IsInputEnabled = isInputEnabled;
         }
 
         public Func<Func<bool>, bool> CanAddDataSet { private get; set; }
@@ -156,7 +163,7 @@ namespace UDTApp.ViewModels
 
         private bool _canAddDataSet()
         {
-            return DataSets != null && _deletedDataSet == null;
+            return DataSets != null && _newDataSet == null && _deletedDataSet == null;
         }
 
         private void DeleteDataSet()
@@ -202,6 +209,7 @@ namespace UDTApp.ViewModels
         private bool canSave()
         {
             if (HasErrors) return false;
+            if(!ValidatableBindableBase.IsValid) return false;
             if (_newDataSet != null || _deletedDataSet != null) return true;
             if (SelectedIndex > -1 )
             {
@@ -229,7 +237,7 @@ namespace UDTApp.ViewModels
             }
             else
                 setEditProps(null, "");
-            RaisePropertyChanged("IsInputEnabled");
+            IsInputEnabled = isInputEnabled;
             SaveCommand.RaiseCanExecuteChanged();
         }
 

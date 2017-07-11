@@ -35,12 +35,12 @@
             <TextBox 
                     Grid.Column="1" Grid.Row="0"
                     Text="{Binding ChildName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                    IsEnabled="{Binding IsInputEnabled}"
+                    IsEnabled="{Binding DetailGrid.IsInputEnabled}"
                     HorizontalAlignment="Left" Height="23" TextWrapping="Wrap" VerticalAlignment="Top" Width="129"/>
             <TextBox 
                     Grid.Column="1" Grid.Row="1"
                     Text="{Binding Type, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                    IsEnabled="{Binding IsInputEnabled}"
+                    IsEnabled="{Binding DetailGrid.IsInputEnabled}"
                     HorizontalAlignment="Left" Height="23" TextWrapping="Wrap" VerticalAlignment="Top" Width="129"/>
             <Label Grid.Column="0" Grid.Row="0" Content="Name" HorizontalContentAlignment="Right" HorizontalAlignment="Right" VerticalAlignment="Top" Width="41" RenderTransformOrigin="0.293,0.628"/>
             <Label Grid.Column="0" Grid.Row="1" Content="Type" HorizontalContentAlignment="Right" HorizontalAlignment="Right" VerticalAlignment="Top" Width="41" RenderTransformOrigin="0.997,0.569" Height="23"/>

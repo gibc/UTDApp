@@ -22,8 +22,8 @@ namespace UDTApp.ViewModels
             MasterGrid.SelectionIndexChange = SetChildCollection;
             MasterGrid.IsPropertyEdited = IsPropertyEdited;
             MasterGrid.CreateDataSet = CreateDataSet;
+            //MasterGrid.SetInputEnabled = SetInputEnabled;
 
-            //MasterGrid.PropertyChanged += new PropertyChangedEventHandler(grid_PropertyChanged);
 
             DataSets = new ObservableCollection<DataItem>();
             DetailGrid = new UDTDataGrid<DataItem>(DataSets);
@@ -34,7 +34,6 @@ namespace UDTApp.ViewModels
 
         public UDTButtonGrid<DataSet> MasterGrid { get; set; }
         public UDTDataGrid<DataItem> DetailGrid { get; set; }
-        //public UDTButtonGrid<DataItem> DetailGrid { get; set; }
 
         private void SetEditProps(DataSet dataSet, string value)
         {
