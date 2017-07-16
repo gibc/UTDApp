@@ -209,7 +209,7 @@ namespace UDTApp.Models
                         var col = modelBase.GetPropValue(prop.Name);
 
                         IList customListInstance = (IList)Activator.CreateInstance(constructed, col);
-                        SaveRecords(customListInstance, recId);
+                        SaveRecords(customListInstance, modelBase.Id);
                     }
                 }
             }

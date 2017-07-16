@@ -59,6 +59,8 @@ namespace UDTApp.Models
 
         static public void SaveChanges()
         {
+            var user = new UDTUserData(Sets);
+
             ModelBase.DeleteRecords(DeletedRecords);
             ModelBase.SaveObjects<DataSet>(Sets);
         }

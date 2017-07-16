@@ -12,6 +12,8 @@ namespace UDTApp.ViewModels
 {
     public class PageOneViewModel : ValidatableBindableBase
     {
+        Type masterType = typeof(DataSet);
+
         public PageOneViewModel()
         {
             _dataSetList = new DataSetList();
@@ -22,8 +24,7 @@ namespace UDTApp.ViewModels
             MasterGrid.SelectionIndexChange = SetChildCollection;
             MasterGrid.IsPropertyEdited = IsPropertyEdited;
             MasterGrid.CreateDataSet = CreateDataSet;
-            //MasterGrid.SetInputEnabled = SetInputEnabled;
-
+            MasterGrid.ParentHasErrors = parentHasError;
 
             DataSets = new ObservableCollection<DataItem>();
             DetailGrid = new UDTDataGrid<DataItem>(DataSets);
@@ -34,6 +35,11 @@ namespace UDTApp.ViewModels
 
         public UDTButtonGrid<DataSet> MasterGrid { get; set; }
         public UDTDataGrid<DataItem> DetailGrid { get; set; }
+
+        private bool parentHasError()
+        {
+            return HasErrors;
+        }
 
         private void SetEditProps(DataSet dataSet, string value)
         {

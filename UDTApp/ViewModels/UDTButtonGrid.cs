@@ -45,6 +45,13 @@ namespace UDTApp.ViewModels
 
         }
 
+        public Func<bool> ParentHasErrors { private get; set; }
+        public bool hasErrors()
+        {
+            if (ParentHasErrors != null) return ParentHasErrors();
+            return true;
+        }
+
         //Action<D, string> SetEditProps = null;
         public Action<D, string> SetEditProps { private get; set; }
         private void setEditProps(D dataSet, string value)
@@ -73,6 +80,7 @@ namespace UDTApp.ViewModels
             if(IsPropertyEdited != null) return IsPropertyEdited(dataSet);
             return false;
         }
+
 
         public Func<D> CreateDataSet { private get; set; }
         private D createDataSet()
@@ -208,8 +216,8 @@ namespace UDTApp.ViewModels
 
         private bool canSave()
         {
-            if (HasErrors) return false;
-            if(!ValidatableBindableBase.IsValid) return false;
+            if (hasErrors()) return false;
+            //if(!ValidatableBindableBase.IsValid) return false;
             if (_newDataSet != null || _deletedDataSet != null) return true;
             if (SelectedIndex > -1 )
             {

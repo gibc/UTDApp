@@ -25,6 +25,7 @@ namespace UDTApp.ViewModels
             DetailGrid.IsPropertyEdited = IsPropertyEdited;
             DetailGrid.CreateDataSet = CreateDataSet;
             DetailGrid.CanAddDataSet = CanAddDataSet;
+            DetailGrid.ParentHasErrors = parentHasError;
 
             MasterGrid = new UDTDataGrid<DataSet>(DataSetList.Sets);
             MasterGrid.SelectionIndexChange = SetChildCollection;
@@ -43,6 +44,11 @@ namespace UDTApp.ViewModels
 
         public UDTButtonGrid<DataSetRelation> DetailGrid { get; set; }
         public UDTDataGrid<DataSet> MasterGrid { get; set; }
+
+        private bool parentHasError()
+        {
+            return HasErrors;
+        }
 
         private bool CanAddDataSet(Func<bool> baseMethod)
         {

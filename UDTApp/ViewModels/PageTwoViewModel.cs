@@ -21,6 +21,7 @@ namespace UDTApp.ViewModels
             DetailGrid.LoadEditProps = LoadEditProps;
             DetailGrid.IsPropertyEdited = IsPropertyEdited;
             DetailGrid.CreateDataSet = CreateDataSet;
+            DetailGrid.ParentHasErrors = parentHasError;
 
 
             MasterGrid = new UDTDataGrid<DataSet>(DataSetList.Sets);
@@ -32,6 +33,11 @@ namespace UDTApp.ViewModels
 
         public UDTButtonGrid<DataItem> DetailGrid { get; set; }
         public UDTDataGrid<DataSet> MasterGrid { get; set; }
+
+        private bool parentHasError()
+        {
+            return HasErrors;
+        }
 
         private void SetEditProps(DataItem dataSet, string value)
         {

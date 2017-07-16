@@ -90,6 +90,7 @@
     <Compile Include="Models\DataSetList.cs" />
     <Compile Include="Models\DataSetRelation.cs" />
     <Compile Include="Models\ModelBase.cs" />
+    <Compile Include="Models\UDTUserData.cs" />
     <Compile Include="ViewModels\DataViewModel.cs" />
     <Compile Include="ViewModels\ISubPage.cs" />
     <Compile Include="ViewModels\PageOneViewModel.cs" />
