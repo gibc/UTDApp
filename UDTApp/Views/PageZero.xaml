@@ -13,15 +13,62 @@
     
     <UserControl.Resources>
 
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+
+        <Style x:Key="OnOffToggleImageStyle" TargetType="ToggleButton">
+            <Setter Property="Width" Value="20" />
+            <Setter Property="Height" Value="20" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Style.Triggers>
+                <Trigger Property="IsChecked" Value="True">
+                    <Setter Property="Content" Value="-" />
+                </Trigger>
+                <Trigger Property="IsChecked" Value="False">
+                    <Setter Property="Content" Value="+" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!--<DataTemplate DataType    = "{x:Type local:UDTData}">
+            <StackPanel>
+                <TextBlock Text="{Binding Path=Name}"/>
+                <ToggleButton Background="Transparent" x:Name="toggleButton" Style="{StaticResource OnOffToggleImageStyle}"/>
+                <ListView Margin="10,0,0,0" BorderThickness="0" ItemsSource = "{Binding Path=ChildData}"
+                              Visibility="{Binding IsChecked, ElementName=toggleButton, Converter={StaticResource BoolToVis}}"/>
+                <ToggleButton  Background="Transparent" x:Name="toggleButton2" Style="{StaticResource OnOffToggleImageStyle}"/>
+                <ListView  Margin="10,0,0,0"  BorderThickness="0" ItemsSource = "{Binding Path=Teams}"
+                              Visibility="{Binding IsChecked, ElementName=toggleButton2, Converter={StaticResource BoolToVis}}"/>
+            </StackPanel>
+        </DataTemplate>-->
+
         <DataTemplate DataType    = "{x:Type local:UDTData}">
-            <Button vm:Ex.SecurityId ="{Binding ChildData}"  Background="MistyRose" Width="80" Content="{Binding TypeName}">
+            <StackPanel HorizontalAlignment="Left">
+                <Button vm:Ex.SecurityId ="{Binding ChildData}" AllowDrop="True" Background="MistyRose" 
+                        Width="80" Content="{Binding TypeName}" HorizontalAlignment="Left">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="PreviewMouseMove" >
-                        <prism:InvokeCommandAction Command="{Binding DataContext.MouseMoveCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" />
+                            <!--<prism:InvokeCommandAction Command="{Binding DataContext.MouseMoveCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" />-->
+                            <prism:InvokeCommandAction Command="{Binding MouseMoveCommand }" />
+                        </i:EventTrigger>
+                    <i:EventTrigger EventName="DragEnter" >
+                        <!--<prism:InvokeCommandAction Command="{Binding DataContext.DragEnterCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" />-->
+                        <prism:InvokeCommandAction Command="{Binding DragEnterCommand}" />
+                    </i:EventTrigger>
+                    <i:EventTrigger EventName="PreviewDrop" >
+                        <!--<prism:InvokeCommandAction Command="{Binding DataContext.DragDropCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" />-->
+                        <prism:InvokeCommandAction Command="{Binding DragDropCommand}" />
+                    </i:EventTrigger>
+                    <i:EventTrigger EventName="DragOver" >
+                        <!--<prism:InvokeCommandAction Command="{Binding DataContext.DragOverCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" />-->
+                        <prism:InvokeCommandAction Command="{Binding DragOverCommand}" />
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
             </Button>
+            <ListView HorizontalAlignment="Left" Margin="30,0,0,0" BorderThickness="0" ItemsSource = "{Binding Path=ChildData}"/>
+            </StackPanel>
         </DataTemplate>
+        
         <DataTemplate DataType    = "{x:Type local:UDTTxtItem}">
             <Button Background="LightBlue" Width="100" Content="{Binding TypeName}"/>
         </DataTemplate>
@@ -37,11 +84,17 @@
 
     </UserControl.Resources>
     <Grid>
-        <StackPanel>
-            <Label Content="Page Zero" HorizontalAlignment="Left" Margin="54,131,0,0" VerticalAlignment="Top" Width="160" FontSize="24" FontWeight="Bold"/>
-
-            <ListBox ItemsSource="{Binding UDTItems}"></ListBox>
-        </StackPanel>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto" MinWidth="500"/>
+            <ColumnDefinition Width="150"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="400"/>
+        </Grid.RowDefinitions>
+        <ListBox Grid.Column="0" Grid.Row="1" ItemsSource="{Binding SchemaList}"></ListBox>
+        <Label Grid.Column="0" Grid.Row="0" Content="{Binding DbSchema.Count}"/>
+        <ListBox Grid.Column="1" Grid.Row="1" ItemsSource="{Binding UDTItems}"></ListBox>
 
     </Grid>
 </UserControl>

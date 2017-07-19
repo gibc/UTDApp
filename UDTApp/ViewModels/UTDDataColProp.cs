@@ -36,6 +36,7 @@ namespace UDTApp.ViewModels
             DependencyProperty.RegisterAttached(
                   "SecurityId", typeof(ObservableCollection<UDTData>), typeof(Ex),
             new PropertyMetadata(default(ObservableCollection<UDTData>)));
+
         public static ObservableCollection<UDTData> GetSecurityId(
             DependencyObject d)
         {
