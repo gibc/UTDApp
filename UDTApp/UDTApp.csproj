@@ -90,6 +90,7 @@
     <Compile Include="Models\DataSetList.cs" />
     <Compile Include="Models\DataSetRelation.cs" />
     <Compile Include="Models\ModelBase.cs" />
+    <Compile Include="Models\UDTData.cs" />
     <Compile Include="Models\UDTUserData.cs" />
     <Compile Include="ViewModels\DataViewModel.cs" />
     <Compile Include="ViewModels\ISubPage.cs" />
@@ -99,12 +100,14 @@
     <Compile Include="ViewModels\PageThreeViewModelSave.cs" />
     <Compile Include="ViewModels\PageTwoViewModel.cs" />
     <Compile Include="ViewModels\PageTwoViewModelSave.cs" />
+    <Compile Include="ViewModels\PageZeroViewModel.cs" />
     <Compile Include="ViewModels\SetUpViewModel.cs" />
     <Compile Include="ViewModels\SubPageOne.cs" />
     <Compile Include="ViewModels\SubPageThree.cs" />
     <Compile Include="ViewModels\SubPageTwo.cs" />
     <Compile Include="ViewModels\UDTButtonGrid.cs" />
     <Compile Include="ViewModels\UDTDataGrid.cs" />
+    <Compile Include="ViewModels\UTDDataColProp.cs" />
     <Compile Include="ViewModels\ViewModelBase.cs" />
     <Compile Include="Views\PageOne.xaml.cs">
       <DependentUpon>PageOne.xaml</DependentUpon>

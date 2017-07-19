@@ -89,3 +89,4 @@ C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\obj\Debug\Views\PageTwoSave.g.cs
 C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\obj\Debug\Views\PageTwoSave.baml
 C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\obj\Debug\Views\PageThreeSave.baml
 C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\obj\Debug\Views\PageThreeSave.g.cs
+C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\obj\Debug\GeneratedInternalTypeHelper.g.cs

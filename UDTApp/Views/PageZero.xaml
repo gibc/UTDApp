@@ -4,9 +4,44 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
+             xmlns:prism="http://prismlibrary.com/"
+             prism:ViewModelLocator.AutoWireViewModel="True"
+             xmlns:local="clr-namespace:UDTApp.Models"
+             xmlns:vm="clr-namespace:UDTApp.ViewModels"
+             xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" 
              d:DesignHeight="300" d:DesignWidth="300">
+    
+    <UserControl.Resources>
+
+        <DataTemplate DataType    = "{x:Type local:UDTData}">
+            <Button vm:Ex.SecurityId ="{Binding ChildData}"  Background="MistyRose" Width="80" Content="{Binding TypeName}">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="PreviewMouseMove" >
+                        <prism:InvokeCommandAction Command="{Binding DataContext.MouseMoveCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" />
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </Button>
+        </DataTemplate>
+        <DataTemplate DataType    = "{x:Type local:UDTTxtItem}">
+            <Button Background="LightBlue" Width="100" Content="{Binding TypeName}"/>
+        </DataTemplate>
+        <DataTemplate DataType    = "{x:Type local:UDTIntItem}">
+            <Button Background="LightGreen" Width="100" Content="{Binding TypeName}"/>
+        </DataTemplate>
+        <DataTemplate DataType    = "{x:Type local:UDTDecimalItem}">
+            <Button Background="LightSalmon" Width="100" Content="{Binding TypeName}"/>
+        </DataTemplate>
+        <DataTemplate DataType    = "{x:Type local:UDTDateItem}">
+            <Button Background="LightYellow" Width="100" Content="{Binding TypeName}"/>
+        </DataTemplate>
+
+    </UserControl.Resources>
     <Grid>
-        <Label Content="Page Zero" HorizontalAlignment="Left" Margin="54,131,0,0" VerticalAlignment="Top" Width="160" FontSize="24" FontWeight="Bold"/>
+        <StackPanel>
+            <Label Content="Page Zero" HorizontalAlignment="Left" Margin="54,131,0,0" VerticalAlignment="Top" Width="160" FontSize="24" FontWeight="Bold"/>
+
+            <ListBox ItemsSource="{Binding UDTItems}"></ListBox>
+        </StackPanel>
 
     </Grid>
 </UserControl>

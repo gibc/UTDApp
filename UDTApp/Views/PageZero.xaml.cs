@@ -24,5 +24,10 @@ namespace UDTApp.Views
         {
             InitializeComponent();
         }
+
+        private void MouseMove(object sender, MouseEventArgs e)
+        {
+
+        }
     }
 }

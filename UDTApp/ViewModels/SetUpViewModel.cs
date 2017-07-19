@@ -38,16 +38,16 @@ namespace UDTApp.ViewModels
             _regionManager = regionManager;
             _container = container;
             WindowLoadedCommand = new DelegateCommand(windowLoaded);
-            PageNames = new List<string>() { cons.PageOne, cons.PageTwo, cons.PageThree };
+            PageNames = new List<string>() { cons.PageZero, cons.PageOne, cons.PageTwo, cons.PageThree };
             NextCommand = new DelegateCommand(moveNext, canMoveNext);
             PreviousCommand = new DelegateCommand(movePrevious, canMovePevious);
         }
 
         private void windowLoaded()
         {
-            //dynamic view = new PageZero();
-            //_regionManager.AddToRegion(cons.SetUpRegion, view);
-            dynamic view = new PageOne();
+            dynamic view = new PageZero();
+            _regionManager.AddToRegion(cons.SetUpRegion, view);
+             view = new PageOne();
             _regionManager.AddToRegion(cons.SetUpRegion, view);
             view = new PageTwo();
             _regionManager.AddToRegion(cons.SetUpRegion, view);
