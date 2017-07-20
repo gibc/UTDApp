@@ -13,11 +13,37 @@ using UDTApp.ViewModels;
 
 namespace UDTApp.Models
 {
-    public class UDTData : UDTItem
+    public class UDTData : UDTBase, UDTItem
     {
         public UDTData()
         {
-            ChildData = new ObservableCollection<UDTData>();
+            ChildData = new ObservableCollection<UDTItem>();
+        }
+
+        public string Type { get; set; }
+        public string Name { get; set; }
+        public string TypeName { get { return "Item Group"; } set{} }
+        // on write child data insert or update UDTRelation record
+        //   where 
+        //     parent and child names are parent and child colleciton name
+        //     child column name is pareent collection name 
+        // on read UDT data set do select * from DataRelation where ParentName = [Name]
+        //  for ecah relation
+        //     create UDTData collection
+        //     select * from [ChildName] where [ChildColumnName] = [Id of this record]
+        //        for each record add record to collection
+        // To create CRUD UI
+        //   find UDTData collectons with ChildData.count = 0;
+        //     create display and edit page for each UDTData item
+        public ObservableCollection<UDTItem> ChildData { get; set; }
+        // add this if we want children to have more than one parent
+        public ObservableCollection<UDTParentColumn> ParentColumnNames { get; set; }
+    }
+
+    public class UDTBase
+    {
+        public UDTBase()
+        {
             MouseMoveCommand = new DelegateCommand<MouseEventArgs>(mouseMove);
             DragEnterCommand = new DelegateCommand<DragEventArgs>(dragEnter);
             DragDropCommand = new DelegateCommand<DragEventArgs>(dragDrop);
@@ -40,14 +66,14 @@ namespace UDTApp.Models
             Button btn = dragArgs.Source as Button;
             if (!dragArgs.Handled && btn != null)
             {
-                ObservableCollection<UDTData> col = Ex.GetSecurityId(btn);
-                UDTData dataItem = (UDTData)dragArgs.Data.GetData(typeof(UDTData));
-                col.Add(dataItem);
+                ObservableCollection<UDTItem> col = Ex.GetSecurityId(btn);
+                UDTItem udtItem = getItemFromDragArgs(dragArgs);
+                if(udtItem != null)
+                    col.Add(udtItem);
                 dragArgs.Handled = true;
                 _currentItem = null;
             }
         }
-
 
         private UDTItem _currentItem = null;
         private void dragEnter(DragEventArgs dragArgs)
@@ -55,15 +81,9 @@ namespace UDTApp.Models
             Button btn = dragArgs.Source as Button;
             if (btn != null)
             {
+                UDTItem udtItem = getItemFromDragArgs(dragArgs);
+                _currentItem = udtItem;
 
-                string[] frmts = dragArgs.Data.GetFormats();
-                if (dragArgs.Data.GetDataPresent(typeof(UDTData)))
-                {
-                    UDTData dataItem = (UDTData)dragArgs.Data.GetData(typeof(UDTData));
-                    _currentItem = dataItem as UDTItem;
-
-
-                }
             }
         }
 
@@ -72,17 +92,21 @@ namespace UDTApp.Models
         {
 
             Button btn = data.Source as Button;
-            ObservableCollection<UDTData> col = Ex.GetSecurityId(btn);
-            //ObservableCollection<UDTData> col = UTDDataColProp.GetDataCol(btn);
+            ObservableCollection<UDTItem> col = Ex.GetSecurityId(btn);
 
             if (btn != null && data.LeftButton == MouseButtonState.Pressed && !inMove)
             {
                 inMove = true;
                 Debug.Write(string.Format(">>>Enter mouseMove\r", _currentItem));
 
-                DragDrop.DoDragDrop(btn,
-                                 new UDTData(),
-                                 DragDropEffects.Copy);
+                UDTItem udtItem = (UDTItem)Activator.CreateInstance(this.GetType());
+
+                if(udtItem != null)
+                { 
+                    DragDrop.DoDragDrop(btn,
+                      udtItem,
+                      DragDropEffects.Copy);
+                }
 
                 Debug.Write(string.Format("<<<Exit mouseMove\r", _currentItem));
                 data.Handled = true;
@@ -90,25 +114,20 @@ namespace UDTApp.Models
             }
         }
 
-        public string Type { get; set; }
-        public string Name { get; set; }
-        public string TypeName { get { return "Item Group"; } set{} }
-        // on write child data insert or update UDTRelation record
-        //   where 
-        //     parent and child names are parent and child colleciton name
-        //     child column name is pareent collection name 
-        // on read UDT data set do select * from DataRelation where ParentName = [Name]
-        //  for ecah relation
-        //     create UDTData collection
-        //     select * from [ChildName] where [ChildColumnName] = [Id of this record]
-        //        for each record add record to collection
-        // To create CRUD UI
-        //   find UDTData collectons with ChildData.count = 0;
-        //     create display and edit page for each UDTData item
-        public ObservableCollection<UDTData> ChildData { get; set; }
-        public ObservableCollection<UDTItem> DataItems { get; set; }
-        // add this if we want children to have more than on parent
-        public ObservableCollection<UDTParentColumn> ParentColumnNames { get; set; }
+        private UDTItem getItemFromDragArgs(DragEventArgs dragArgs)
+        {
+            UDTItem udtItem = (UDTData)dragArgs.Data.GetData(typeof(UDTData));
+            if (udtItem != null) return udtItem;
+            udtItem = (UDTTxtItem)dragArgs.Data.GetData(typeof(UDTTxtItem));
+            if (udtItem != null) return udtItem;
+            udtItem = (UDTIntItem)dragArgs.Data.GetData(typeof(UDTIntItem));
+            if (udtItem != null) return udtItem;
+            udtItem = (UDTDecimalItem)dragArgs.Data.GetData(typeof(UDTDecimalItem));
+            if (udtItem != null) return udtItem;
+            udtItem = (UDTDateItem)dragArgs.Data.GetData(typeof(UDTDateItem));
+            return udtItem;
+        }
+
     }
 
     public class UDTRelation
@@ -130,13 +149,13 @@ namespace UDTApp.Models
         string TypeName { get; set; }
     }
 
-    public class UDTTxtItem : UDTItem
+    public class UDTTxtItem : UDTBase, UDTItem
     {
-        public UDTTxtItem(string name)
+        public UDTTxtItem()
         { 
             Type = "[varchar](255) NULL ";
             TypeName = "Text Item";
-            Name = name;
+            Name = "";
         }
         public string Type { get; set; }
         public string Name { get; set; }
@@ -144,39 +163,39 @@ namespace UDTApp.Models
     }
 
 
-    public class UDTIntItem : UDTItem
+    public class UDTIntItem : UDTBase, UDTItem
     {
-        public UDTIntItem(string name)
+        public UDTIntItem()
         {
             Type = "[int] NULL ";
             TypeName = "Number Item";
-            Name = name;
+            Name = "";
         }        
         public string Type { get; set; }
         public string Name { get; set; }
         public string TypeName { get; set; }
 
     }
-    public class UDTDecimalItem : UDTItem
+    public class UDTDecimalItem : UDTBase, UDTItem
     {
-        public UDTDecimalItem(string name)
+        public UDTDecimalItem()
         {
             Type = "[decimal](10, 5) NULL ";
             TypeName = "Real Number Item";
-            Name = name;
+            Name = "";
         }                
         public string Type { get; set; }
         public string Name { get; set; }
         public string TypeName { get; set; }
 
     }
-    public class UDTDateItem : UDTItem
+    public class UDTDateItem : UDTBase, UDTItem
     {
-        public UDTDateItem(string name)
+        public UDTDateItem()
         {
             Type = "[datetime] NULL";
             TypeName = "DateTime Item";
-            Name = name;
+            Name = "";
         }                
         public string Type { get; set; }
         public string Name { get; set; }
@@ -193,10 +212,10 @@ namespace UDTApp.Models
                 {
                     _itemList = new Collection<UDTItem>();
                     _itemList.Add(new UDTData());
-                    _itemList.Add(new UDTTxtItem(""));
-                    _itemList.Add(new UDTIntItem(""));
-                    _itemList.Add(new UDTDecimalItem(""));
-                    _itemList.Add(new UDTDateItem(""));
+                    _itemList.Add(new UDTTxtItem());
+                    _itemList.Add(new UDTIntItem());
+                    _itemList.Add(new UDTDecimalItem());
+                    _itemList.Add(new UDTDateItem());
                 }
                 return _itemList;
             }

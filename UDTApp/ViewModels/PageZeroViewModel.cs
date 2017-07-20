@@ -38,7 +38,7 @@ namespace UDTApp.ViewModels
             get { return UDTItemList.ItemList; }
         }
 
-        private ObservableCollection<UDTData> DbSchema = new ObservableCollection<UDTData>();
+        private ObservableCollection<UDTItem> DbSchema = new ObservableCollection<UDTItem>();
         public List<UDTItem> SchemaList { get; set; }
 
         private void dragOver(DragEventArgs dragArgs)
@@ -52,7 +52,7 @@ namespace UDTApp.ViewModels
             Button btn = dragArgs.Source as Button;
             if (!dragArgs.Handled && btn != null)
             {
-                ObservableCollection<UDTData> col = Ex.GetSecurityId(btn);
+                ObservableCollection<UDTItem> col = Ex.GetSecurityId(btn);
                 UDTData dataItem = (UDTData)dragArgs.Data.GetData(typeof(UDTData));
                 col.Add(dataItem);
                 dragArgs.Handled = true;
@@ -84,7 +84,7 @@ namespace UDTApp.ViewModels
         {
 
             Button btn = data.Source as Button;
-            ObservableCollection<UDTData> col = Ex.GetSecurityId(btn);
+            ObservableCollection<UDTItem> col = Ex.GetSecurityId(btn);
             //ObservableCollection<UDTData> col = UTDDataColProp.GetDataCol(btn);
 
             if (btn != null && data.LeftButton == MouseButtonState.Pressed && !inMove)

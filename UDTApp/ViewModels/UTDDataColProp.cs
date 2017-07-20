@@ -34,16 +34,16 @@ namespace UDTApp.ViewModels
         public static readonly DependencyProperty
             SecurityIdProperty =
             DependencyProperty.RegisterAttached(
-                  "SecurityId", typeof(ObservableCollection<UDTData>), typeof(Ex),
-            new PropertyMetadata(default(ObservableCollection<UDTData>)));
+                  "SecurityId", typeof(ObservableCollection<UDTItem>), typeof(Ex),
+            new PropertyMetadata(default(ObservableCollection<UDTItem>)));
 
-        public static ObservableCollection<UDTData> GetSecurityId(
+        public static ObservableCollection<UDTItem> GetSecurityId(
             DependencyObject d)
         {
-            return (ObservableCollection<UDTData>)d.GetValue(SecurityIdProperty);
+            return (ObservableCollection<UDTItem>)d.GetValue(SecurityIdProperty);
         }
         public static void SetSecurityId(
-            DependencyObject d, ObservableCollection<UDTData> value)
+            DependencyObject d, ObservableCollection<UDTItem> value)
         {
             d.SetValue(SecurityIdProperty, value);
         }
