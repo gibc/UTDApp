@@ -1,7 +1,10 @@
 ﻿using Prism.Commands;
+using Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -20,9 +23,20 @@ namespace UDTApp.Models
             ChildData = new ObservableCollection<UDTItem>();
         }
 
+ 
         public string Type { get; set; }
-        public string Name { get; set; }
-        public string TypeName { get { return "Item Group"; } set{} }
+
+        private string _name = "";
+        [Required]
+        [StringLength(15, MinimumLength = 5, ErrorMessage = "Name must be between 5 and 15 characters.")]
+        [RegularExpression(@"^[a-zA-Z]+$", ErrorMessage = "Name can include only letter characters")]
+        public string Name 
+        {
+            get { return _name; }
+            set { SetProperty(ref _name, value); }
+        }
+
+        public string TypeName { get { return "Group"; } set{} }
         // on write child data insert or update UDTRelation record
         //   where 
         //     parent and child names are parent and child colleciton name
@@ -40,7 +54,7 @@ namespace UDTApp.Models
         public ObservableCollection<UDTParentColumn> ParentColumnNames { get; set; }
     }
 
-    public class UDTBase
+    public class UDTBase : ValidatableBindableBase//: ValidatableBindableBase, INotifyDataErrorInfo
     {
         public UDTBase()
         {
@@ -48,12 +62,17 @@ namespace UDTApp.Models
             DragEnterCommand = new DelegateCommand<DragEventArgs>(dragEnter);
             DragDropCommand = new DelegateCommand<DragEventArgs>(dragDrop);
             DragOverCommand = new DelegateCommand<DragEventArgs>(dragOver);
+
+            objId = Guid.NewGuid();
         }
 
         public DelegateCommand<MouseEventArgs> MouseMoveCommand { get; set; }
         public DelegateCommand<DragEventArgs> DragEnterCommand { get; set; }
         public DelegateCommand<DragEventArgs> DragDropCommand { get; set; }
         public DelegateCommand<DragEventArgs> DragOverCommand { get; set; }
+
+        public Guid objId;
+        public Guid dragObjId;
 
         private void dragOver(DragEventArgs dragArgs)
         {
@@ -66,9 +85,16 @@ namespace UDTApp.Models
             Button btn = dragArgs.Source as Button;
             if (!dragArgs.Handled && btn != null)
             {
+
                 ObservableCollection<UDTItem> col = Ex.GetSecurityId(btn);
                 UDTItem udtItem = getItemFromDragArgs(dragArgs);
-                if(udtItem != null)
+                UDTBase udtBase = udtItem as UDTBase;
+
+                // prevent copy to self
+                if (udtBase.dragObjId == this.objId) return;
+
+                udtItem.Name = "<Enter Name Here>";
+                if (udtItem != null)
                     col.Add(udtItem);
                 dragArgs.Handled = true;
                 _currentItem = null;
@@ -82,6 +108,7 @@ namespace UDTApp.Models
             if (btn != null)
             {
                 UDTItem udtItem = getItemFromDragArgs(dragArgs);
+
                 _currentItem = udtItem;
 
             }
@@ -100,9 +127,11 @@ namespace UDTApp.Models
                 Debug.Write(string.Format(">>>Enter mouseMove\r", _currentItem));
 
                 UDTItem udtItem = (UDTItem)Activator.CreateInstance(this.GetType());
+                UDTBase udtBase = udtItem as UDTBase;
+                udtBase.dragObjId = this.objId;
 
-                if(udtItem != null)
-                { 
+                if (udtItem != null)
+                {
                     DragDrop.DoDragDrop(btn,
                       udtItem,
                       DragDropEffects.Copy);
@@ -154,7 +183,7 @@ namespace UDTApp.Models
         public UDTTxtItem()
         { 
             Type = "[varchar](255) NULL ";
-            TypeName = "Text Item";
+            TypeName = "Text";
             Name = "";
         }
         public string Type { get; set; }
@@ -168,7 +197,7 @@ namespace UDTApp.Models
         public UDTIntItem()
         {
             Type = "[int] NULL ";
-            TypeName = "Number Item";
+            TypeName = "Number";
             Name = "";
         }        
         public string Type { get; set; }
@@ -181,7 +210,7 @@ namespace UDTApp.Models
         public UDTDecimalItem()
         {
             Type = "[decimal](10, 5) NULL ";
-            TypeName = "Real Number Item";
+            TypeName = "Real Number";
             Name = "";
         }                
         public string Type { get; set; }
@@ -194,7 +223,7 @@ namespace UDTApp.Models
         public UDTDateItem()
         {
             Type = "[datetime] NULL";
-            TypeName = "DateTime Item";
+            TypeName = "DateTime";
             Name = "";
         }                
         public string Type { get; set; }

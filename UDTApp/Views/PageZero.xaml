@@ -15,6 +15,7 @@
 
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
 
+ 
         <Style x:Key="OnOffToggleImageStyle" TargetType="ToggleButton">
             <Setter Property="Width" Value="20" />
             <Setter Property="Height" Value="20" />
@@ -42,26 +43,90 @@
             </StackPanel>
         </DataTemplate>-->
 
+        <Style TargetType="{x:Type TextBox}">
+            <Setter Property="Validation.ErrorTemplate">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <DockPanel>
+                            <Border BorderBrush="Red" BorderThickness="2" CornerRadius="2">
+                                <AdornedElementPlaceholder/>
+                            </Border>
+                        </DockPanel>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="Validation.HasError" Value="true">
+                    <Setter Property="ToolTip" Value="{Binding RelativeSource={x:Static RelativeSource.Self}, Path=(Validation.Errors)[0].ErrorContent}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!--<ControlTemplate x:Key="validationErrorTemplate">
+            <Canvas>
+            <DockPanel  >
+                <TextBlock Foreground="Red" Text="{Binding Path=[0].ErrorContent}"
+                    DockPanel.Dock="Right">              
+                </TextBlock>
+                <AdornedElementPlaceholder 
+                   x:Name="ErrorAdorner"
+                />
+
+            </DockPanel>
+            </Canvas>
+        </ControlTemplate>-->
+
         <DataTemplate DataType    = "{x:Type local:UDTData}">
-            <StackPanel HorizontalAlignment="Left">
-                <Button vm:Ex.SecurityId ="{Binding ChildData}" AllowDrop="True" Background="MistyRose" 
-                        Width="80" Content="{Binding TypeName}" HorizontalAlignment="Left">
-                <i:Interaction.Triggers>
-                    <i:EventTrigger EventName="PreviewMouseMove" >
-                            <prism:InvokeCommandAction Command="{Binding MouseMoveCommand }" />
-                        </i:EventTrigger>
-                    <i:EventTrigger EventName="DragEnter" >
-                        <prism:InvokeCommandAction Command="{Binding DragEnterCommand}" />
-                    </i:EventTrigger>
-                    <i:EventTrigger EventName="PreviewDrop" >
-                        <prism:InvokeCommandAction Command="{Binding DragDropCommand}" />
-                    </i:EventTrigger>
-                    <i:EventTrigger EventName="DragOver" >
-                        <prism:InvokeCommandAction Command="{Binding DragOverCommand}" />
-                    </i:EventTrigger>
-                </i:Interaction.Triggers>
-            </Button>
-            <ListView HorizontalAlignment="Left" Margin="30,0,0,0" BorderThickness="0" ItemsSource = "{Binding Path=ChildData}"/>
+
+            <StackPanel ClipToBounds="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                
+                <Popup  IsOpen="{Binding ElementName=NameEdit, Path=(Validation.HasError), Mode=OneWay}" 
+                        PlacementTarget="{Binding ElementName=NameEdit}"
+                        Placement="Right" HorizontalOffset="60" VerticalOffset="-10">
+                    <Border BorderThickness="1" BorderBrush="Red" Background="White">
+                        <TextBlock Foreground="Black" Margin="3 3 3 3" 
+                           Text="{Binding ElementName=NameEdit, Path=(Validation.Errors).CurrentItem.ErrorContent}"/>
+                    </Border>
+                </Popup>
+
+                <Border  BorderThickness="0,0,0,0" BorderBrush="Black">
+                    <WrapPanel>
+                       
+                        <TextBox Name="NameEdit" Height="20" Margin="0,0,0,0" BorderThickness="2,2,0,2" BorderBrush="Black" Background="MistyRose"
+                             Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                             HorizontalAlignment="Center" VerticalContentAlignment="Center" />
+
+                        <Button Height="20" vm:Ex.SecurityId ="{Binding ChildData}" AllowDrop="True" Background="MistyRose" 
+                            Width="40" Content="{Binding TypeName}" HorizontalAlignment="Left" VerticalContentAlignment="Center"
+                            HorizontalContentAlignment="Left"  BorderThickness="0,2,2,2" BorderBrush="Black"> 
+                            
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="PreviewMouseMove" >
+                                    <prism:InvokeCommandAction Command="{Binding MouseMoveCommand }" />
+                                </i:EventTrigger>
+                                <i:EventTrigger EventName="DragEnter" >
+                                    <prism:InvokeCommandAction Command="{Binding DragEnterCommand}" />
+                                </i:EventTrigger>
+                                <i:EventTrigger EventName="PreviewDrop" >
+                                    <prism:InvokeCommandAction Command="{Binding DragDropCommand}" />
+                                </i:EventTrigger>
+                                <i:EventTrigger EventName="DragOver" >
+                                    <prism:InvokeCommandAction Command="{Binding DragOverCommand}" />
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                            
+                        </Button>
+                    
+                    <!--<TextBox Margin="10,0,200,0" BorderThickness="0" 
+                             Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                             Validation.ErrorTemplate="{StaticResource validationErrorTemplate}"
+                             HorizontalAlignment="Center"/>-->
+
+
+                </WrapPanel>
+                </Border>
+               <ListView HorizontalAlignment="Left" Margin="30,0,0,0" BorderThickness="0,0,0,0" 
+                         ItemsSource = "{Binding Path=ChildData}"/>
             </StackPanel>
         </DataTemplate>
         
@@ -118,7 +183,7 @@
         </DataTemplate>
 
     </UserControl.Resources>
-    <Grid>
+    <Grid >
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="auto" MinWidth="500"/>
             <ColumnDefinition Width="150"/>
