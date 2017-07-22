@@ -27,19 +27,19 @@ namespace UDTApp.ViewModels
             DragDropCommand = new DelegateCommand<DragEventArgs>(dragDrop);
             DragOverCommand = new DelegateCommand<DragEventArgs>(dragOver);
 
-            SchemaList = new List<UDTItem>();
+            SchemaList = new List<UDTBase>();
             UDTData baseObj = new UDTData();
             baseObj.ChildData = DbSchema;
             SchemaList.Add(baseObj);
 
         }
 
-        public Collection<UDTItem> UDTItems {
+        public Collection<UDTBase> UDTItems {
             get { return UDTItemList.ItemList; }
         }
 
-        private ObservableCollection<UDTItem> DbSchema = new ObservableCollection<UDTItem>();
-        public List<UDTItem> SchemaList { get; set; }
+        private ObservableCollection<UDTBase> DbSchema = new ObservableCollection<UDTBase>();
+        public List<UDTBase> SchemaList { get; set; }
 
         private void dragOver(DragEventArgs dragArgs)
         {
@@ -52,7 +52,7 @@ namespace UDTApp.ViewModels
             Button btn = dragArgs.Source as Button;
             if (!dragArgs.Handled && btn != null)
             {
-                ObservableCollection<UDTItem> col = Ex.GetSecurityId(btn);
+                ObservableCollection<UDTBase> col = Ex.GetSecurityId(btn);
                 UDTData dataItem = (UDTData)dragArgs.Data.GetData(typeof(UDTData));
                 col.Add(dataItem);
                 dragArgs.Handled = true;
@@ -61,7 +61,7 @@ namespace UDTApp.ViewModels
         }
 
 
-        private UDTItem _currentItem = null;
+        private UDTBase _currentItem = null;
         private void dragEnter(DragEventArgs dragArgs)
         {
             Button btn = dragArgs.Source as Button;
@@ -72,7 +72,7 @@ namespace UDTApp.ViewModels
                 if (dragArgs.Data.GetDataPresent(typeof(UDTData)))
                 {
                     UDTData dataItem = (UDTData)dragArgs.Data.GetData(typeof(UDTData));
-                    _currentItem = dataItem as UDTItem;
+                    _currentItem = dataItem as UDTBase;
 
  
                 }
@@ -84,7 +84,7 @@ namespace UDTApp.ViewModels
         {
 
             Button btn = data.Source as Button;
-            ObservableCollection<UDTItem> col = Ex.GetSecurityId(btn);
+            ObservableCollection<UDTBase> col = Ex.GetSecurityId(btn);
             //ObservableCollection<UDTData> col = UTDDataColProp.GetDataCol(btn);
 
             if (btn != null && data.LeftButton == MouseButtonState.Pressed && !inMove)

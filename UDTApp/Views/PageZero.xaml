@@ -15,7 +15,42 @@
 
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
 
- 
+        <ControlTemplate x:Key="MyPop">
+            <Popup IsOpen="{Binding ElementName=NameEdit, Path=(Validation.HasError), Mode=OneWay}" 
+                            PlacementTarget="{Binding ElementName=NameEdit}"
+                            Placement="Right" HorizontalOffset="60" VerticalOffset="-10">
+
+                <Border BorderThickness="1" BorderBrush="Red" Background="White">
+                    <TextBlock Foreground="Black" Margin="3 3 3 3" 
+                               Text="{Binding ElementName=NameEdit, Path=(Validation.Errors).CurrentItem.ErrorContent}"/>
+                </Border>
+            </Popup>
+        </ControlTemplate>
+
+        <ControlTemplate x:Key="ButtonDrag">
+            <Button Height="20" vm:Ex.SecurityId ="{Binding ChildData}" AllowDrop="True" Background="{Binding backgroundBrush}" 
+                            Width="50" Content="{Binding TypeName}" HorizontalAlignment="Left" VerticalContentAlignment="Center"
+                            HorizontalContentAlignment="Left"  BorderThickness="0,2,2,2" BorderBrush="Black">
+
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="PreviewMouseMove" >
+                        <prism:InvokeCommandAction Command="{Binding MouseMoveCommand }" />
+                    </i:EventTrigger>
+                    <i:EventTrigger EventName="DragEnter" >
+                        <prism:InvokeCommandAction Command="{Binding DragEnterCommand}" />
+                    </i:EventTrigger>
+                    <i:EventTrigger EventName="PreviewDrop" >
+                        <prism:InvokeCommandAction Command="{Binding DragDropCommand}" />
+                    </i:EventTrigger>
+                    <i:EventTrigger EventName="DragOver" >
+                        <prism:InvokeCommandAction Command="{Binding DragOverCommand}" />
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+
+            </Button>
+        </ControlTemplate>
+
+
         <Style x:Key="OnOffToggleImageStyle" TargetType="ToggleButton">
             <Setter Property="Width" Value="20" />
             <Setter Property="Height" Value="20" />
@@ -80,23 +115,26 @@
 
             <StackPanel ClipToBounds="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                 
-                <Popup  IsOpen="{Binding ElementName=NameEdit, Path=(Validation.HasError), Mode=OneWay}" 
+                <!--<Popup  IsOpen="{Binding ElementName=NameEdit, Path=(Validation.HasError), Mode=OneWay}" 
                         PlacementTarget="{Binding ElementName=NameEdit}"
                         Placement="Right" HorizontalOffset="60" VerticalOffset="-10">
+                    
                     <Border BorderThickness="1" BorderBrush="Red" Background="White">
                         <TextBlock Foreground="Black" Margin="3 3 3 3" 
                            Text="{Binding ElementName=NameEdit, Path=(Validation.Errors).CurrentItem.ErrorContent}"/>
                     </Border>
-                </Popup>
+                </Popup>-->
+
+                <ContentControl Template="{StaticResource MyPop}"/>
 
                 <Border  BorderThickness="0,0,0,0" BorderBrush="Black">
                     <WrapPanel>
-                       
-                        <TextBox Name="NameEdit" Height="20" Margin="0,0,0,0" BorderThickness="2,2,0,2" BorderBrush="Black" Background="MistyRose"
+
+                        <TextBox Name="NameEdit" Height="20" Margin="0,0,0,0" BorderThickness="2,2,0,2" BorderBrush="Black" Background="{Binding backgroundBrush}"
                              Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                              HorizontalAlignment="Center" VerticalContentAlignment="Center" />
 
-                        <Button Height="20" vm:Ex.SecurityId ="{Binding ChildData}" AllowDrop="True" Background="MistyRose" 
+                        <!--<Button Height="20" vm:Ex.SecurityId ="{Binding ChildData}" AllowDrop="True" Background="MistyRose" 
                             Width="40" Content="{Binding TypeName}" HorizontalAlignment="Left" VerticalContentAlignment="Center"
                             HorizontalContentAlignment="Left"  BorderThickness="0,2,2,2" BorderBrush="Black"> 
                             
@@ -115,71 +153,86 @@
                                 </i:EventTrigger>
                             </i:Interaction.Triggers>
                             
-                        </Button>
-                    
-                    <!--<TextBox Margin="10,0,200,0" BorderThickness="0" 
-                             Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                             Validation.ErrorTemplate="{StaticResource validationErrorTemplate}"
-                             HorizontalAlignment="Center"/>-->
+                        </Button>-->
 
+                        <ContentControl Template="{StaticResource ButtonDrag}"/>
 
-                </WrapPanel>
+                    </WrapPanel>
                 </Border>
-               <ListView HorizontalAlignment="Left" Margin="30,0,0,0" BorderThickness="0,0,0,0" 
+                
+                <ListView HorizontalAlignment="Left" Margin="30,0,0,0" BorderThickness="0,0,0,0" 
                          ItemsSource = "{Binding Path=ChildData}"/>
             </StackPanel>
         </DataTemplate>
         
         <DataTemplate DataType    = "{x:Type local:UDTTxtItem}">
-            <Button Background="LightBlue" Width="100" Content="{Binding TypeName}">
-                <i:Interaction.Triggers>
-                    <i:EventTrigger EventName="PreviewMouseMove" >
-                        <prism:InvokeCommandAction Command="{Binding MouseMoveCommand }" />
-                    </i:EventTrigger>
-                    <i:EventTrigger EventName="DragOver" >
-                        <prism:InvokeCommandAction Command="{Binding DragOverCommand}" />
-                    </i:EventTrigger>
-                </i:Interaction.Triggers>
-            </Button>
+
+            <StackPanel ClipToBounds="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+
+                <ContentControl Template="{StaticResource MyPop}"/>
+
+                <Border  BorderThickness="0,0,0,0" BorderBrush="Black">
+                    <WrapPanel>
+
+                        <TextBox Name="NameEdit" Height="20" Margin="0,0,0,0" BorderThickness="2,2,0,2" BorderBrush="Black" Background="{Binding backgroundBrush}"
+                             Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                             HorizontalAlignment="Center" VerticalContentAlignment="Center" />
+
+
+                        <ContentControl Template="{StaticResource ButtonDrag}"/>
+
+                    </WrapPanel>
+                </Border>
+
+            </StackPanel>
         </DataTemplate>
         
         <DataTemplate DataType    = "{x:Type local:UDTIntItem}">
-            <Button Background="LightGreen" Width="100" Content="{Binding TypeName}">
-                <i:Interaction.Triggers>
-                    <i:EventTrigger EventName="PreviewMouseMove" >
-                        <prism:InvokeCommandAction Command="{Binding MouseMoveCommand }" />
-                    </i:EventTrigger>
-                    <i:EventTrigger EventName="DragOver" >
-                        <prism:InvokeCommandAction Command="{Binding DragOverCommand}" />
-                    </i:EventTrigger>
-                </i:Interaction.Triggers>
-            </Button>
+            <StackPanel ClipToBounds="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                <ContentControl Template="{StaticResource MyPop}"/>
+                <Border  BorderThickness="0,0,0,0" BorderBrush="Black">
+                    <WrapPanel>
+
+                        <TextBox Name="NameEdit" Height="20" Margin="0,0,0,0" BorderThickness="2,2,0,2" BorderBrush="Black" Background="{Binding backgroundBrush}"
+                             Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                             HorizontalAlignment="Center" VerticalContentAlignment="Center" />
+
+                        <ContentControl Template="{StaticResource ButtonDrag}"/>
+                    </WrapPanel>
+                </Border>
+            </StackPanel>
         </DataTemplate>
         
         <DataTemplate DataType    = "{x:Type local:UDTDecimalItem}">
-            <Button Background="LightSalmon" Width="100" Content="{Binding TypeName}">
-                <i:Interaction.Triggers>
-                    <i:EventTrigger EventName="PreviewMouseMove" >
-                        <prism:InvokeCommandAction Command="{Binding MouseMoveCommand }" />
-                    </i:EventTrigger>
-                    <i:EventTrigger EventName="DragOver" >
-                        <prism:InvokeCommandAction Command="{Binding DragOverCommand}" />
-                    </i:EventTrigger>
-                </i:Interaction.Triggers>
-            </Button>
+            <StackPanel ClipToBounds="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                <ContentControl Template="{StaticResource MyPop}"/>
+                <Border  BorderThickness="0,0,0,0" BorderBrush="Black">
+                    <WrapPanel>
+
+                        <TextBox Name="NameEdit" Height="20" Margin="0,0,0,0" BorderThickness="2,2,0,2" BorderBrush="Black" Background="{Binding backgroundBrush}"
+                             Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                             HorizontalAlignment="Center" VerticalContentAlignment="Center" />
+
+                        <ContentControl Template="{StaticResource ButtonDrag}"/>
+                    </WrapPanel>
+                </Border>
+            </StackPanel>
         </DataTemplate>
         
         <DataTemplate DataType    = "{x:Type local:UDTDateItem}">
-            <Button Background="LightYellow" Width="100" Content="{Binding TypeName}">
-                <i:Interaction.Triggers>
-                    <i:EventTrigger EventName="PreviewMouseMove" >
-                        <prism:InvokeCommandAction Command="{Binding MouseMoveCommand }" />
-                    </i:EventTrigger>
-                    <i:EventTrigger EventName="DragOver" >
-                        <prism:InvokeCommandAction Command="{Binding DragOverCommand}" />
-                    </i:EventTrigger>
-                </i:Interaction.Triggers>               
-            </Button>
+            <StackPanel ClipToBounds="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                <ContentControl Template="{StaticResource MyPop}"/>
+                <Border  BorderThickness="0,0,0,0" BorderBrush="Black">
+                    <WrapPanel>
+
+                        <TextBox Name="NameEdit" Height="20" Margin="0,0,0,0" BorderThickness="2,2,0,2" BorderBrush="Black" Background="{Binding backgroundBrush}"
+                             Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                             HorizontalAlignment="Center" VerticalContentAlignment="Center" />
+
+                        <ContentControl Template="{StaticResource ButtonDrag}"/>
+                    </WrapPanel>
+                </Border>
+            </StackPanel>
         </DataTemplate>
 
     </UserControl.Resources>
