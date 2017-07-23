@@ -15,6 +15,8 @@
 
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
 
+        <vm:InverseBooleanConverter x:Key="invertBoolConverter"/>
+
         <ControlTemplate x:Key="MyPop">
             <Popup IsOpen="{Binding ElementName=NameEdit, Path=(Validation.HasError), Mode=OneWay}" 
                             PlacementTarget="{Binding ElementName=NameEdit}"
@@ -28,7 +30,9 @@
         </ControlTemplate>
 
         <ControlTemplate x:Key="ButtonDrag">
-            <Button Height="20" vm:Ex.SecurityId ="{Binding ChildData}" AllowDrop="True" Background="{Binding backgroundBrush}" 
+            <Button Height="20" vm:Ex.SecurityId ="{Binding ChildData}" 
+                    AllowDrop="{Binding AllowDrop}" 
+                    Background="{Binding backgroundBrush}" 
                             Width="50" Content="{Binding TypeName}" HorizontalAlignment="Left" VerticalContentAlignment="Center"
                             HorizontalContentAlignment="Left"  BorderThickness="0,2,2,2" BorderBrush="Black">
 
@@ -113,7 +117,7 @@
 
         <DataTemplate DataType    = "{x:Type local:UDTData}">
 
-            <StackPanel ClipToBounds="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <StackPanel Margin="0 5 0 0" ClipToBounds="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                 
                 <!--<Popup  IsOpen="{Binding ElementName=NameEdit, Path=(Validation.HasError), Mode=OneWay}" 
                         PlacementTarget="{Binding ElementName=NameEdit}"
@@ -160,14 +164,14 @@
                     </WrapPanel>
                 </Border>
                 
-                <ListView HorizontalAlignment="Left" Margin="30,0,0,0" BorderThickness="0,0,0,0" 
+                <ItemsControl HorizontalAlignment="Left" Margin="30,0,0,0" Background="Transparent" BorderThickness="0,0,0,0" 
                          ItemsSource = "{Binding Path=ChildData}"/>
             </StackPanel>
         </DataTemplate>
         
         <DataTemplate DataType    = "{x:Type local:UDTTxtItem}">
 
-            <StackPanel ClipToBounds="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <StackPanel Margin="0 5 0 0"  ClipToBounds="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
 
                 <ContentControl Template="{StaticResource MyPop}"/>
 
@@ -188,7 +192,7 @@
         </DataTemplate>
         
         <DataTemplate DataType    = "{x:Type local:UDTIntItem}">
-            <StackPanel ClipToBounds="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <StackPanel  Margin="0 5 0 0" ClipToBounds="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                 <ContentControl Template="{StaticResource MyPop}"/>
                 <Border  BorderThickness="0,0,0,0" BorderBrush="Black">
                     <WrapPanel>
@@ -204,7 +208,7 @@
         </DataTemplate>
         
         <DataTemplate DataType    = "{x:Type local:UDTDecimalItem}">
-            <StackPanel ClipToBounds="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <StackPanel  Margin="0 5 0 0" ClipToBounds="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                 <ContentControl Template="{StaticResource MyPop}"/>
                 <Border  BorderThickness="0,0,0,0" BorderBrush="Black">
                     <WrapPanel>
@@ -220,7 +224,7 @@
         </DataTemplate>
         
         <DataTemplate DataType    = "{x:Type local:UDTDateItem}">
-            <StackPanel ClipToBounds="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <StackPanel  Margin="0 5 0 0" ClipToBounds="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                 <ContentControl Template="{StaticResource MyPop}"/>
                 <Border  BorderThickness="0,0,0,0" BorderBrush="Black">
                     <WrapPanel>

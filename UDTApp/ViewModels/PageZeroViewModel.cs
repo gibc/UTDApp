@@ -30,6 +30,8 @@ namespace UDTApp.ViewModels
             SchemaList = new List<UDTBase>();
             UDTData baseObj = new UDTData();
             baseObj.ChildData = DbSchema;
+            baseObj.ToolBoxItem = false;
+            baseObj.Name = "Master";
             SchemaList.Add(baseObj);
 
         }

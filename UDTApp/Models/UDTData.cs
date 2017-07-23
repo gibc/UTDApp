@@ -26,7 +26,10 @@ namespace UDTApp.Models
             backgroundBrush = Brushes.MistyRose;
         }
 
-
+        override public bool AllowDrop
+        {
+            get { return !ToolBoxItem; }
+        }
         // on write child data insert or update UDTRelation record
         //   where 
         //     parent and child names are parent and child colleciton name
@@ -70,11 +73,31 @@ namespace UDTApp.Models
             set; 
         }
 
+        private UDTData parentObj = null;
+
+        private static UDTData _masterGroup = null;
+        public UDTData MasterGroup 
+        { 
+            get
+            {
+                if (_masterGroup == null)
+                    _masterGroup = getMasterGroup(this) as UDTData;
+                return _masterGroup;
+            }
+        }
+
+        private UDTBase getMasterGroup(UDTBase group)
+        {
+            if (group.parentObj == null) return group;
+            return getMasterGroup(group.parentObj);
+        }
+
         public string Type { get; set; }
         private string _name = "";
         [Required]
         [StringLength(15, MinimumLength = 5, ErrorMessage = "Name must be between 5 and 15 characters.")]
         [RegularExpression(@"^[a-zA-Z]+$", ErrorMessage = "Name can include only letter characters")]
+        [CustomValidation(typeof(UDTBase), "CheckDuplicateColumnName")]
         public string Name
         {
             get { return _name; }
@@ -82,6 +105,19 @@ namespace UDTApp.Models
         }
         public string TypeName { get; set; }
 
+        private bool _toolBoxItem = true;
+        public bool ToolBoxItem 
+        { 
+            get {return _toolBoxItem; }
+            set { _toolBoxItem = value; } 
+        }
+
+        private bool _allowDrop = false;
+        virtual public bool AllowDrop
+        {
+            get { return _allowDrop; }
+            set { _allowDrop = value; }
+        }
 
         private void dragOver(DragEventArgs dragArgs)
         {
@@ -101,10 +137,15 @@ namespace UDTApp.Models
 
                 // prevent copy to self
                 if (udtBase.dragObjId == this.objId) return;
+                
+                if(udtItem.ToolBoxItem)
+                    udtItem.Name = "<Enter Name Here>";
 
-                udtItem.Name = "<Enter Name Here>";
-                if (udtItem != null && col != null)
+                if (udtItem != null && col != null && !col.Contains(udtItem))
+                {
+                    udtItem.parentObj = this as UDTData;
                     col.Add(udtItem);
+                }
                 dragArgs.Handled = true;
                 _currentItem = null;
             }
@@ -135,11 +176,20 @@ namespace UDTApp.Models
                 inMove = true;
                 Debug.Write(string.Format(">>>Enter mouseMove\r", _currentItem));
 
-                UDTBase udtItem = (UDTBase)Activator.CreateInstance(this.GetType());
-                UDTBase udtBase = udtItem as UDTBase;
-                udtBase.dragObjId = this.objId;
+                UDTBase udtItem;
+                if (this.ToolBoxItem)
+                {
+                    udtItem = (UDTBase)Activator.CreateInstance(this.GetType());
+                    udtItem.ToolBoxItem = false;
+                    udtItem.Name = "<enter name here>";
+                }
+                else
+                    udtItem = this;
 
-                if (udtItem != null)
+                //UDTBase udtBase = udtItem as UDTBase;
+                udtItem.dragObjId = this.objId;
+
+                if (udtItem != null )
                 {
                     DragDrop.DoDragDrop(btn,
                       udtItem,
@@ -164,6 +214,42 @@ namespace UDTApp.Models
             if (udtItem != null) return udtItem;
             udtItem = (UDTDateItem)dragArgs.Data.GetData(typeof(UDTDateItem));
             return udtItem;
+        }
+
+        public static System.ComponentModel.DataAnnotations.ValidationResult CheckDuplicateColumnName(string name, ValidationContext context)
+        {
+            UDTBase dataObj = context.ObjectInstance as UDTBase;
+            if(dataObj != null && dataObj.parentObj != null && dataObj.GetType() != typeof(UDTData))
+            {
+                foreach(UDTBase obj in dataObj.parentObj.ChildData)
+                {
+                    if (obj.Name == name && obj.objId != dataObj.objId)
+                        return new System.ComponentModel.DataAnnotations.ValidationResult("Duplicate item name. Item names must be unique within an item group.");
+                }
+            }
+            else if (dataObj != null && dataObj.parentObj != null && dataObj.GetType() == typeof(UDTData))
+            {
+                if (dataObj.findGroupName(dataObj.MasterGroup, dataObj.objId, name))
+                    return new System.ComponentModel.DataAnnotations.ValidationResult("Duplicate group name. Group names must be unique.");
+            }
+
+            return System.ComponentModel.DataAnnotations.ValidationResult.Success;
+
+        }
+
+        private bool findGroupName(UDTData dataItem, Guid currentObjId, string name)
+        {
+            foreach (UDTBase item in dataItem.ChildData)
+            {
+                if(item.GetType() == typeof(UDTData))
+                {
+                    if (item.Name == name && item.objId != currentObjId)
+                        return true;
+                    return findGroupName(item as UDTData, currentObjId, name);
+                }
+            }
+            return false;
+            
         }
 
     }
