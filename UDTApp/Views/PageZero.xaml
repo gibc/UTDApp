@@ -18,13 +18,35 @@
         <vm:InverseBooleanConverter x:Key="invertBoolConverter"/>
 
         <ControlTemplate x:Key="MyPop">
-            <Popup IsOpen="{Binding ElementName=NameEdit, Path=(Validation.HasError), Mode=OneWay}" 
+            <!--<Popup IsOpen="{Binding ElementName=NameEdit, Path=(Validation.HasError), Mode=OneWay}" 
+                   DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Mode=Self}}"
                             PlacementTarget="{Binding ElementName=NameEdit}"
-                            Placement="Right" HorizontalOffset="60" VerticalOffset="-10">
+                            Placement="Right" HorizontalOffset="60" VerticalOffset="-10">-->
+            <Popup IsOpen="{Binding PopUpOpen, Mode=OneWay}" 
+                DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Mode=Self}}"
+                        PlacementTarget="{Binding ElementName=NameEdit}"
+                        Placement="Right" HorizontalOffset="60" VerticalOffset="-10">
 
-                <Border BorderThickness="1" BorderBrush="Red" Background="White">
-                    <TextBlock Foreground="Black" Margin="3 3 3 3" 
-                               Text="{Binding ElementName=NameEdit, Path=(Validation.Errors).CurrentItem.ErrorContent}"/>
+                    <Border BorderThickness="1" BorderBrush="Red" Background="White">
+                    <StackPanel FocusManager.FocusedElement="{Binding ElementName=NameBox}">
+                        <TextBlock Foreground="Black" Margin="3 3 3 3" 
+                            Text="{Binding ElementName=NameEdit, Path=(Validation.Errors).CurrentItem.ErrorContent}"/>
+                        <WrapPanel HorizontalAlignment="Center">
+                            <Label Height="25"  Content="Name: "/>
+                            <TextBox Name="NameBox" Height="25" VerticalContentAlignment="Center"
+                                Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></TextBox>
+                        </WrapPanel>
+                        <WrapPanel HorizontalAlignment="Center">
+                            <Button Width="60" Margin="5,0,0,0" HorizontalAlignment="Left" Content="Save">
+                                <i:Interaction.Triggers>
+                                    <i:EventTrigger EventName="Click" >
+                                        <prism:InvokeCommandAction Command="{Binding SaveNameCommand }" />
+                                    </i:EventTrigger>
+                                </i:Interaction.Triggers>
+                            </Button>
+                            <Button Width ="60" Margin="5,0,0,0" HorizontalAlignment="Right" Content="Cancel"/>
+                        </WrapPanel>
+                    </StackPanel>
                 </Border>
             </Popup>
         </ControlTemplate>

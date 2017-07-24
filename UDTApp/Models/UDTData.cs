@@ -55,6 +55,7 @@ namespace UDTApp.Models
             DragEnterCommand = new DelegateCommand<DragEventArgs>(dragEnter);
             DragDropCommand = new DelegateCommand<DragEventArgs>(dragDrop);
             DragOverCommand = new DelegateCommand<DragEventArgs>(dragOver);
+            SaveNameCommand = new DelegateCommand<EventArgs>(saveName);
 
             objId = Guid.NewGuid();
             backgroundBrush = Brushes.Black;
@@ -64,6 +65,7 @@ namespace UDTApp.Models
         public DelegateCommand<DragEventArgs> DragEnterCommand { get; set; }
         public DelegateCommand<DragEventArgs> DragDropCommand { get; set; }
         public DelegateCommand<DragEventArgs> DragOverCommand { get; set; }
+        public DelegateCommand<EventArgs> SaveNameCommand { get; set; }
 
         public Guid objId;
         public Guid dragObjId;
@@ -92,6 +94,20 @@ namespace UDTApp.Models
             return getMasterGroup(group.parentObj);
         }
 
+        private bool _popUpOpen = false;
+        public bool PopUpOpen 
+        {
+            get 
+            { 
+                if (HasErrors)
+                {
+                    _popUpOpen = true;
+                }
+                return _popUpOpen;
+            }
+            set { SetProperty(ref _popUpOpen, value);  }
+        }
+
         public string Type { get; set; }
         private string _name = "";
         [Required]
@@ -101,7 +117,11 @@ namespace UDTApp.Models
         public string Name
         {
             get { return _name; }
-            set { SetProperty(ref _name, value); }
+            set 
+            { 
+                SetProperty(ref _name, value);
+                if (HasErrors) PopUpOpen = true;
+            }
         }
         public string TypeName { get; set; }
 
@@ -117,6 +137,11 @@ namespace UDTApp.Models
         {
             get { return _allowDrop; }
             set { _allowDrop = value; }
+        }
+
+        private void saveName(EventArgs eventArgs)
+        {
+            PopUpOpen = false;
         }
 
         private void dragOver(DragEventArgs dragArgs)
