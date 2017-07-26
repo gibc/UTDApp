@@ -18,23 +18,22 @@
         <vm:InverseBooleanConverter x:Key="invertBoolConverter"/>
 
         <ControlTemplate x:Key="MyPop">
-            <!--<Popup IsOpen="{Binding ElementName=NameEdit, Path=(Validation.HasError), Mode=OneWay}" 
-                   DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Mode=Self}}"
-                            PlacementTarget="{Binding ElementName=NameEdit}"
-                            Placement="Right" HorizontalOffset="60" VerticalOffset="-10">-->
-            <Popup IsOpen="{Binding PopUpOpen, Mode=OneWay}" 
+
+            <Popup IsOpen="{Binding PopUpOpen, Mode=OneWay}" Opacity="0.0" AllowsTransparency="True"
                 DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Mode=Self}}"
                         PlacementTarget="{Binding ElementName=NameEdit}"
                         Placement="Right" HorizontalOffset="60" VerticalOffset="-10">
 
                     <Border BorderThickness="1" BorderBrush="Red" Background="White">
-                    <StackPanel FocusManager.FocusedElement="{Binding ElementName=NameBox}">
-                        <TextBlock Foreground="Black" Margin="3 3 3 3" 
-                            Text="{Binding ElementName=NameEdit, Path=(Validation.Errors).CurrentItem.ErrorContent}"/>
+                    <StackPanel VerticalAlignment="Center" MinHeight="70" MinWidth="250" FocusManager.FocusedElement="{Binding ElementName=NameBox}">
+                        <TextBlock Visibility="{Binding ErrorTextVisable, Converter={StaticResource BoolToVis}}" HorizontalAlignment="Center" Foreground="Red" Margin="3 3 3 3" 
+                            Text="{Binding ElementName=NameEdit, Path=(Validation.Errors).CurrentItem.ErrorContent, FallbackValue='Valid Item Name'}"/>
                         <WrapPanel HorizontalAlignment="Center">
-                            <Label Height="25"  Content="Name: "/>
-                            <TextBox Name="NameBox" Height="25" VerticalContentAlignment="Center"
-                                Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></TextBox>
+                            <Label Height="25"  Content="Item Name: " />
+                            <TextBox Name="NameBox" Height="25" VerticalContentAlignment="Center" 
+                                vm:FocusExtension.IsFocused="{Binding PopUpOpen}"
+                                Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                            </TextBox>
                         </WrapPanel>
                         <WrapPanel HorizontalAlignment="Center">
                             <Button Width="60" Margin="5,0,0,0" HorizontalAlignment="Left" Content="Save">
@@ -44,19 +43,39 @@
                                     </i:EventTrigger>
                                 </i:Interaction.Triggers>
                             </Button>
-                            <Button Width ="60" Margin="5,0,0,0" HorizontalAlignment="Right" Content="Cancel"/>
+                            <Button Width ="60" Margin="5,0,0,0" HorizontalAlignment="Right" Content="Delete">
+                                <i:Interaction.Triggers>
+                                    <i:EventTrigger EventName="Click" >
+                                        <prism:InvokeCommandAction Command="{Binding DeleteItemCommand }" />
+                                    </i:EventTrigger>
+                                </i:Interaction.Triggers>
+                            </Button>
                         </WrapPanel>
                     </StackPanel>
                 </Border>
             </Popup>
         </ControlTemplate>
+        
+        <ControlTemplate x:Key="EditButton">
+            <Button Visibility="{Binding SchemaItem, Converter={StaticResource BoolToVis}}" Content="edit" Height="12" Width="15" FontSize="7" 
+                                HorizontalAlignment="Center" VerticalAlignment="Center" VerticalContentAlignment="Top">
+                <Button.LayoutTransform>
+                    <RotateTransform Angle="-90" />
+                </Button.LayoutTransform>
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="Click" >
+                        <prism:InvokeCommandAction Command="{Binding PopupOpenCommand}" />
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </Button>
+        </ControlTemplate>
 
         <ControlTemplate x:Key="ButtonDrag">
-            <Button Height="20" vm:Ex.SecurityId ="{Binding ChildData}" 
+            <Button Height="20" vm:Ex.SecurityId ="{Binding ChildData}"
                     AllowDrop="{Binding AllowDrop}" 
                     Background="{Binding backgroundBrush}" 
-                            Width="50" Content="{Binding TypeName}" HorizontalAlignment="Left" VerticalContentAlignment="Center"
-                            HorizontalContentAlignment="Left"  BorderThickness="0,2,2,2" BorderBrush="Black">
+                    Width="50" Content="{Binding TypeName}" HorizontalAlignment="Left" VerticalContentAlignment="Center"
+                    HorizontalContentAlignment="Left"  BorderThickness="0,2,2,2" BorderBrush="Black">
 
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="PreviewMouseMove" >
@@ -71,6 +90,8 @@
                     <i:EventTrigger EventName="DragOver" >
                         <prism:InvokeCommandAction Command="{Binding DragOverCommand}" />
                     </i:EventTrigger>
+
+
                 </i:Interaction.Triggers>
 
             </Button>
@@ -141,20 +162,10 @@
 
             <StackPanel Margin="0 5 0 0" ClipToBounds="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                 
-                <!--<Popup  IsOpen="{Binding ElementName=NameEdit, Path=(Validation.HasError), Mode=OneWay}" 
-                        PlacementTarget="{Binding ElementName=NameEdit}"
-                        Placement="Right" HorizontalOffset="60" VerticalOffset="-10">
-                    
-                    <Border BorderThickness="1" BorderBrush="Red" Background="White">
-                        <TextBlock Foreground="Black" Margin="3 3 3 3" 
-                           Text="{Binding ElementName=NameEdit, Path=(Validation.Errors).CurrentItem.ErrorContent}"/>
-                    </Border>
-                </Popup>-->
-
                 <ContentControl Template="{StaticResource MyPop}"/>
 
                 <Border  BorderThickness="0,0,0,0" BorderBrush="Black">
-                    <WrapPanel>
+                    <WrapPanel >
 
                         <TextBox Name="NameEdit" Height="20" Margin="0,0,0,0" BorderThickness="2,2,0,2" BorderBrush="Black" Background="{Binding backgroundBrush}"
                              Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
@@ -183,6 +194,8 @@
 
                         <ContentControl Template="{StaticResource ButtonDrag}"/>
 
+                        <ContentControl Template="{StaticResource EditButton}"/>
+
                     </WrapPanel>
                 </Border>
                 
@@ -207,6 +220,9 @@
 
                         <ContentControl Template="{StaticResource ButtonDrag}"/>
 
+                        <ContentControl Template="{StaticResource EditButton}"/>
+
+
                     </WrapPanel>
                 </Border>
 
@@ -224,6 +240,9 @@
                              HorizontalAlignment="Center" VerticalContentAlignment="Center" />
 
                         <ContentControl Template="{StaticResource ButtonDrag}"/>
+                        
+                        <ContentControl Template="{StaticResource EditButton}"/>
+
                     </WrapPanel>
                 </Border>
             </StackPanel>
@@ -240,6 +259,9 @@
                              HorizontalAlignment="Center" VerticalContentAlignment="Center" />
 
                         <ContentControl Template="{StaticResource ButtonDrag}"/>
+                        
+                        <ContentControl Template="{StaticResource EditButton}"/>
+
                     </WrapPanel>
                 </Border>
             </StackPanel>
@@ -256,6 +278,9 @@
                              HorizontalAlignment="Center" VerticalContentAlignment="Center" />
 
                         <ContentControl Template="{StaticResource ButtonDrag}"/>
+
+                        <ContentControl Template="{StaticResource EditButton}"/>
+
                     </WrapPanel>
                 </Border>
             </StackPanel>
@@ -271,7 +296,11 @@
             <RowDefinition Height="30"/>
             <RowDefinition Height="400"/>
         </Grid.RowDefinitions>
-        <ListBox Grid.Column="0" Grid.Row="1" ItemsSource="{Binding SchemaList}"></ListBox>
+        <!--<ListBox Grid.Column="0" Grid.Row="1" ItemsSource="{Binding SchemaList}" 
+                 vm:AttachedAdorner.Adorner="{x:Type vm:NoteAdorner}" AllowDrop="{Binding AnyErrors}"  >-->
+        <ListBox Grid.Column="0" Grid.Row="1" ItemsSource="{Binding SchemaList}" 
+                 vm:AttachedAdorner.Adorner="{Binding Path=AdornerType, Mode=TwoWay}" >   
+        </ListBox>
         <Label Grid.Column="0" Grid.Row="0" Content="{Binding DbSchema.Count}"/>
         <ListBox Grid.Column="1" Grid.Row="1" ItemsSource="{Binding UDTItems}"></ListBox>
 

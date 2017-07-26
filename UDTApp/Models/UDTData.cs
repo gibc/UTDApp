@@ -55,7 +55,9 @@ namespace UDTApp.Models
             DragEnterCommand = new DelegateCommand<DragEventArgs>(dragEnter);
             DragDropCommand = new DelegateCommand<DragEventArgs>(dragDrop);
             DragOverCommand = new DelegateCommand<DragEventArgs>(dragOver);
-            SaveNameCommand = new DelegateCommand<EventArgs>(saveName);
+            SaveNameCommand = new DelegateCommand<EventArgs>(saveName, canSaveName);
+            DeleteItemCommand = new DelegateCommand<EventArgs>(deleteItem);
+            PopupOpenCommand = new DelegateCommand<EventArgs>(popupOpen);
 
             objId = Guid.NewGuid();
             backgroundBrush = Brushes.Black;
@@ -66,9 +68,12 @@ namespace UDTApp.Models
         public DelegateCommand<DragEventArgs> DragDropCommand { get; set; }
         public DelegateCommand<DragEventArgs> DragOverCommand { get; set; }
         public DelegateCommand<EventArgs> SaveNameCommand { get; set; }
+        public DelegateCommand<EventArgs> DeleteItemCommand { get; set; }
+        public DelegateCommand<EventArgs> PopupOpenCommand { get; set; }
+
 
         public Guid objId;
-        public Guid dragObjId;
+        public Guid dragObjId = Guid.Empty;
         public SolidColorBrush backgroundBrush 
         {
             get; 
@@ -94,21 +99,68 @@ namespace UDTApp.Models
             return getMasterGroup(group.parentObj);
         }
 
+        private bool _anyErrors = true;
+        public bool AnyErrors
+        {
+            get { return _anyErrors; }
+            set { if (setAnyError != null) setAnyError(value); }
+        }
+
+        public Action<bool> setAnyError { get; set; }
+
         private bool _popUpOpen = false;
         public bool PopUpOpen 
         {
             get 
             { 
-                if (HasErrors)
-                {
-                    _popUpOpen = true;
-                }
+                //if (HasErrors)
+                //{
+                //    _popUpOpen = true;
+                //}
                 return _popUpOpen;
             }
-            set { SetProperty(ref _popUpOpen, value);  }
+            set 
+            { 
+                SetProperty(ref _popUpOpen, value); 
+                //setEnable(MasterGroup, !value); 
+                //if (MasterGroup != null) MasterGroup.IsEnabled = !value;
+            }
+        }
+
+        private bool _errorTextVisable = false;
+        public bool ErrorTextVisable 
+        {
+            get 
+            { 
+                return _errorTextVisable;
+            }
+            set { SetProperty(ref _errorTextVisable, value); }
+        }
+
+        private bool _isEnabled = true;
+        public bool IsEnabled
+        {
+            get
+            {
+                return _isEnabled;
+            }
+            set { SetProperty(ref _isEnabled, value);  }
+        }
+
+        void setEnable(UDTData data, bool value)
+        {
+            if (data == null) return;
+            if(data.parentObj != null) 
+                data.IsEnabled = value;
+            foreach(UDTBase item in data.ChildData)
+            {
+                if (item.GetType() == typeof(UDTData))
+                    setEnable(item as UDTData, value);
+            }
         }
 
         public string Type { get; set; }
+
         private string _name = "";
         [Required]
         [StringLength(15, MinimumLength = 5, ErrorMessage = "Name must be between 5 and 15 characters.")]
@@ -121,6 +173,9 @@ namespace UDTApp.Models
             { 
                 SetProperty(ref _name, value);
                 if (HasErrors) PopUpOpen = true;
+                ErrorTextVisable = HasErrors;
+                if(MasterGroup != null) MasterGroup.AnyErrors = HasErrors;
+                SaveNameCommand.RaiseCanExecuteChanged();
             }
         }
         public string TypeName { get; set; }
@@ -129,8 +184,10 @@ namespace UDTApp.Models
         public bool ToolBoxItem 
         { 
             get {return _toolBoxItem; }
-            set { _toolBoxItem = value; } 
+            set { _toolBoxItem = value; SchemaItem = !value; } 
         }
+
+        public bool SchemaItem { get; set; }
 
         private bool _allowDrop = false;
         virtual public bool AllowDrop
@@ -142,6 +199,31 @@ namespace UDTApp.Models
         private void saveName(EventArgs eventArgs)
         {
             PopUpOpen = false;
+        }
+
+        private void deleteItem(EventArgs eventArgs)
+        {
+            removeItem(MasterGroup, this);
+        }
+
+        private void removeItem(UDTData data, UDTBase item)
+        {
+            data.ChildData.Remove(item);
+            foreach(UDTBase obj in data.ChildData)
+            {
+                if(obj.GetType() == typeof(UDTData))
+                    removeItem(obj as UDTData, item);
+            }
+        }
+
+        private void popupOpen(EventArgs eventArgs)
+        {
+            PopUpOpen = true;
+        }
+
+        private bool canSaveName(EventArgs eventArgs)
+        {
+            return !HasErrors;
         }
 
         private void dragOver(DragEventArgs dragArgs)
@@ -164,12 +246,13 @@ namespace UDTApp.Models
                 if (udtBase.dragObjId == this.objId) return;
                 
                 if(udtItem.ToolBoxItem)
-                    udtItem.Name = "<Enter Name Here>";
+                    udtItem.Name = "<Name>";
 
                 if (udtItem != null && col != null && !col.Contains(udtItem))
                 {
                     udtItem.parentObj = this as UDTData;
                     col.Add(udtItem);
+                    udtItem.PopUpOpen = true;
                 }
                 dragArgs.Handled = true;
                 _currentItem = null;
@@ -206,7 +289,7 @@ namespace UDTApp.Models
                 {
                     udtItem = (UDTBase)Activator.CreateInstance(this.GetType());
                     udtItem.ToolBoxItem = false;
-                    udtItem.Name = "<enter name here>";
+                    udtItem.Name = "<Name>";
                 }
                 else
                     udtItem = this;

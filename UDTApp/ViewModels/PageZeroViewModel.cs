@@ -13,7 +13,7 @@ using UDTApp.Models;
 
 namespace UDTApp.ViewModels
 {
-    public class PageZeroViewModel
+    public class PageZeroViewModel : ValidatableBindableBase
     {
         public DelegateCommand<MouseEventArgs> MouseMoveCommand { get; set; }
         public DelegateCommand<DragEventArgs> DragEnterCommand { get; set; }
@@ -32,9 +32,44 @@ namespace UDTApp.ViewModels
             baseObj.ChildData = DbSchema;
             baseObj.ToolBoxItem = false;
             baseObj.Name = "Master";
+            baseObj.setAnyError = setAnyErrors;
             SchemaList.Add(baseObj);
 
         }
+
+        private UDTData masterItem = null;
+
+        private bool _anyErrors = false;
+        public bool AnyErrors 
+        { 
+            get 
+            {
+                return _anyErrors; 
+            }
+            set { SetProperty(ref _anyErrors, value); }
+        }
+
+        
+        private void setAnyErrors(bool value)
+        {
+            if (value)
+                AdornerType = typeof(NoteAdorner);
+            else
+                AdornerType = null;
+                //AdornerType = typeof(HideAdorer);
+            
+        }
+
+        private Type _adornerType = typeof(NoteAdorner); 
+        public Type AdornerType
+        {
+            get 
+            {
+                //return typeof(NoteAdorner); 
+                return _adornerType;
+            }
+            set { SetProperty(ref _adornerType, value); }
+        }  
 
         public Collection<UDTBase> UDTItems {
             get { return UDTItemList.ItemList; }
