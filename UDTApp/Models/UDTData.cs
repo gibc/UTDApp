@@ -8,11 +8,14 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 using UDTApp.ViewModels;
 
 namespace UDTApp.Models
@@ -51,16 +54,33 @@ namespace UDTApp.Models
     {
         public UDTBase()
         {
-            MouseMoveCommand = new DelegateCommand<MouseEventArgs>(mouseMove);
-            DragEnterCommand = new DelegateCommand<DragEventArgs>(dragEnter);
-            DragDropCommand = new DelegateCommand<DragEventArgs>(dragDrop);
-            DragOverCommand = new DelegateCommand<DragEventArgs>(dragOver);
+            MouseMoveCommand = new DelegateCommand<MouseEventArgs>(mouseMove, disable);
+            DragEnterCommand = new DelegateCommand<DragEventArgs>(dragEnter, disable);
+            DragDropCommand = new DelegateCommand<DragEventArgs>(dragDrop, disable);
+            DragOverCommand = new DelegateCommand<DragEventArgs>(dragOver, disable);
+
             SaveNameCommand = new DelegateCommand<EventArgs>(saveName, canSaveName);
             DeleteItemCommand = new DelegateCommand<EventArgs>(deleteItem);
             PopupOpenCommand = new DelegateCommand<EventArgs>(popupOpen);
+            PopupLoadCommand = new DelegateCommand<EventArgs>(popupLoad);
+            //MouseLeftButtonUpCommand = new DelegateCommand<EventArgs>(buttonRelease);
+
 
             objId = Guid.NewGuid();
             backgroundBrush = Brushes.Black;
+        }
+
+        private bool disable(EventArgs eventArgs) 
+        {
+            if (ToolBoxItem) return true;
+            if (parentObj == null) return true;
+            //if (inDrag) return true;
+            //if(MasterGroup != null)
+            //{
+            //    Debug.Write(string.Format("In disable !AnyError {0}\r", !MasterGroup.AnyErrors));
+            //    return !MasterGroup.AnyErrors;
+            //}
+            return !AnyErrors;
         }
 
         public DelegateCommand<MouseEventArgs> MouseMoveCommand { get; set; }
@@ -70,6 +90,8 @@ namespace UDTApp.Models
         public DelegateCommand<EventArgs> SaveNameCommand { get; set; }
         public DelegateCommand<EventArgs> DeleteItemCommand { get; set; }
         public DelegateCommand<EventArgs> PopupOpenCommand { get; set; }
+        public DelegateCommand<EventArgs> PopupLoadCommand { get; set; }
+        //public DelegateCommand<EventArgs> MouseLeftButtonUpCommand { get; set; }
 
 
         public Guid objId;
@@ -103,7 +125,50 @@ namespace UDTApp.Models
         public bool AnyErrors
         {
             get { return _anyErrors; }
-            set { if (setAnyError != null) setAnyError(value); }
+            set 
+            {
+                //if (setAnyError != null)
+                //    setAnyError(value); 
+                SetProperty(ref _anyErrors, value);
+                MouseMoveCommand.RaiseCanExecuteChanged();
+                DragEnterCommand.RaiseCanExecuteChanged();
+                DragDropCommand.RaiseCanExecuteChanged();
+                DragOverCommand.RaiseCanExecuteChanged();
+                Debug.Write(string.Format("AnyErrors after CanExChanged {0}\r", value));
+
+                //Application.Current.Dispatcher.Invoke(
+                //DispatcherPriority.Background,
+                //new ThreadStart(delegate { }));
+            }
+        }
+
+        //public void DoEvents()
+        //{
+        //    DispatcherFrame frame = new DispatcherFrame();
+        //    Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Background,
+        //        new DispatcherOperationCallback(ExitFrame), frame);
+        //    Dispatcher.PushFrame(frame);
+        //}
+
+        //public object ExitFrame(object f)
+        //{
+        //    ((DispatcherFrame)f).Continue = false;
+
+        //    return null;
+        //}
+
+        private void SetAnyErrorAll(UDTData dataItem, bool value)
+        {
+            //if (inDrag) return;
+            Debug.Write(string.Format(">>>> Enter SetAnyErrorAll value {0}\r", value));
+            dataItem.AnyErrors = value;
+            foreach(UDTBase obj in dataItem.ChildData)
+            {
+                if (obj.GetType() == typeof(UDTData))
+                    SetAnyErrorAll(obj as UDTData, value);
+                else
+                    obj.AnyErrors = value;
+            }            
         }
 
         public Action<bool> setAnyError { get; set; }
@@ -117,13 +182,20 @@ namespace UDTApp.Models
                 //{
                 //    _popUpOpen = true;
                 //}
+                Debug.Write(string.Format("Get PopUpOpen {0}\r", _popUpOpen));
+
                 return _popUpOpen;
             }
             set 
             { 
-                SetProperty(ref _popUpOpen, value); 
-                //setEnable(MasterGroup, !value); 
-                //if (MasterGroup != null) MasterGroup.IsEnabled = !value;
+                SetProperty(ref _popUpOpen, value);
+                Debug.Write(string.Format("Set PopUpOpen {0}\r", value));
+
+                //if (MasterGroup != null && MasterGroup.setAnyError != null && !inDrag)
+                //{
+                //    MasterGroup.setAnyError(!value);
+                //    MasterGroup.setAnyError(value);
+                //}
             }
         }
 
@@ -147,15 +219,27 @@ namespace UDTApp.Models
             set { SetProperty(ref _isEnabled, value);  }
         }
 
-        void setEnable(UDTData data, bool value)
+        public int EditBoxMinWidth
         {
-            if (data == null) return;
-            if(data.parentObj != null) 
-                data.IsEnabled = value;
-            foreach(UDTBase item in data.ChildData)
+            get
             {
-                if (item.GetType() == typeof(UDTData))
-                    setEnable(item as UDTData, value);
+                if (ToolBoxItem)
+                    return 0;
+                return 50;
+            }
+        }
+
+        public bool EditBoxEnabled
+        {
+            get
+            {
+                if (ToolBoxItem) 
+                    return false;
+                //if (HasErrors) 
+                //    return true;
+                //if(AnyErrors)              
+                //   return false;
+                return true;
             }
         }
 
@@ -172,9 +256,15 @@ namespace UDTApp.Models
             set 
             { 
                 SetProperty(ref _name, value);
-                if (HasErrors) PopUpOpen = true;
+                if (HasErrors)
+                    PopUpOpen = true;
+                else
+                    PopUpOpen = false;
                 ErrorTextVisable = HasErrors;
-                if(MasterGroup != null) MasterGroup.AnyErrors = HasErrors;
+                //if (MasterGroup != null) MasterGroup.AnyErrors = HasErrors;
+                if (MasterGroup != null) SetAnyErrorAll(MasterGroup, HasErrors);
+                //AnyErrors = HasErrors;
+                RaisePropertyChanged("EditBoxEnabled");
                 SaveNameCommand.RaiseCanExecuteChanged();
             }
         }
@@ -203,6 +293,7 @@ namespace UDTApp.Models
 
         private void deleteItem(EventArgs eventArgs)
         {
+            PopUpOpen = false;
             removeItem(MasterGroup, this);
         }
 
@@ -218,8 +309,22 @@ namespace UDTApp.Models
 
         private void popupOpen(EventArgs eventArgs)
         {
-            PopUpOpen = true;
+            //PopUpOpen = true;
+            removeItem(MasterGroup, this);
         }
+
+        private void popupLoad(EventArgs eventArgs)
+        {
+            //Keyboard.Focus(firstButton)
+            //var pu = eventArgs.Source;
+            RoutedEventArgs args = eventArgs as RoutedEventArgs;
+            Popup pu = args.Source as Popup;
+            TextBox tb = pu.FindName("NameBox") as TextBox;
+            var fe = Keyboard.Focus(tb);
+        }
+
+        //private void buttonRelease(EventArgs eventArgs)
+        //{ }
 
         private bool canSaveName(EventArgs eventArgs)
         {
@@ -234,6 +339,7 @@ namespace UDTApp.Models
 
         private void dragDrop(DragEventArgs dragArgs)
         {
+            inDrag = false;
             Button btn = dragArgs.Source as Button;
             if (!dragArgs.Handled && btn != null)
             {
@@ -244,15 +350,17 @@ namespace UDTApp.Models
 
                 // prevent copy to self
                 if (udtBase.dragObjId == this.objId) return;
-                
-                if(udtItem.ToolBoxItem)
-                    udtItem.Name = "<Name>";
+
+                udtItem.Name = "<Name>";
+
+                //if(udtItem.ToolBoxItem)
+                //    udtItem.Name = "<Name>";
 
                 if (udtItem != null && col != null && !col.Contains(udtItem))
                 {
                     udtItem.parentObj = this as UDTData;
                     col.Add(udtItem);
-                    udtItem.PopUpOpen = true;
+                    //udtItem.PopUpOpen = true;
                 }
                 dragArgs.Handled = true;
                 _currentItem = null;
@@ -273,6 +381,7 @@ namespace UDTApp.Models
         }
 
         private bool inMove = false;
+        private static bool inDrag = false;
         private void mouseMove(MouseEventArgs data)
         {
 
@@ -282,6 +391,7 @@ namespace UDTApp.Models
             if (btn != null && data.LeftButton == MouseButtonState.Pressed && !inMove)
             {
                 inMove = true;
+                inDrag = true;
                 Debug.Write(string.Format(">>>Enter mouseMove\r", _currentItem));
 
                 UDTBase udtItem;
@@ -289,7 +399,7 @@ namespace UDTApp.Models
                 {
                     udtItem = (UDTBase)Activator.CreateInstance(this.GetType());
                     udtItem.ToolBoxItem = false;
-                    udtItem.Name = "<Name>";
+                    //udtItem.Name = "<Name>";
                 }
                 else
                     udtItem = this;
@@ -307,6 +417,7 @@ namespace UDTApp.Models
                 Debug.Write(string.Format("<<<Exit mouseMove\r", _currentItem));
                 data.Handled = true;
                 inMove = false;
+                inDrag = false;
             }
         }
 
@@ -380,7 +491,7 @@ namespace UDTApp.Models
         { 
             Type = "[varchar](255) NULL ";
             TypeName = "Text";
-            Name = "";
+            //Name = "";
             backgroundBrush = Brushes.LightBlue;
 
         }
@@ -394,7 +505,7 @@ namespace UDTApp.Models
         {
             Type = "[int] NULL ";
             TypeName = "Number";
-            Name = "";
+            //Name = "";
             backgroundBrush = Brushes.LightGreen;
 
         }    
@@ -407,7 +518,7 @@ namespace UDTApp.Models
         {
             Type = "[decimal](10, 5) NULL ";
             TypeName = "Real";
-            Name = "";
+            //Name = "";
             backgroundBrush = Brushes.LightSalmon;
         }                
  
@@ -419,7 +530,7 @@ namespace UDTApp.Models
         {
             Type = "[datetime] NULL";
             TypeName = "Date";
-            Name = "";
+            //Name = "";
             backgroundBrush = Brushes.LightYellow;
         }                
  

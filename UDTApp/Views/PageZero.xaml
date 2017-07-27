@@ -24,11 +24,17 @@
                         PlacementTarget="{Binding ElementName=NameEdit}"
                         Placement="Right" HorizontalOffset="60" VerticalOffset="-10">
 
-                    <Border BorderThickness="1" BorderBrush="Red" Background="White">
-                    <StackPanel VerticalAlignment="Center" MinHeight="70" MinWidth="250" FocusManager.FocusedElement="{Binding ElementName=NameBox}">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="Loaded" >
+                        <prism:InvokeCommandAction Command="{Binding PopupLoadCommand }" />
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+
+                <Border BorderThickness="1" BorderBrush="Red" Background="White">
+                    <StackPanel VerticalAlignment="Center" MinHeight="20" MinWidth="200" FocusManager.FocusedElement="{Binding ElementName=NameBox}">
                         <TextBlock Visibility="{Binding ErrorTextVisable, Converter={StaticResource BoolToVis}}" HorizontalAlignment="Center" Foreground="Red" Margin="3 3 3 3" 
                             Text="{Binding ElementName=NameEdit, Path=(Validation.Errors).CurrentItem.ErrorContent, FallbackValue='Valid Item Name'}"/>
-                        <WrapPanel HorizontalAlignment="Center">
+                        <!--<WrapPanel HorizontalAlignment="Center">
                             <Label Height="25"  Content="Item Name: " />
                             <TextBox Name="NameBox" Height="25" VerticalContentAlignment="Center" 
                                 vm:FocusExtension.IsFocused="{Binding PopUpOpen}"
@@ -50,28 +56,33 @@
                                     </i:EventTrigger>
                                 </i:Interaction.Triggers>
                             </Button>
-                        </WrapPanel>
+                        </WrapPanel>-->
                     </StackPanel>
                 </Border>
             </Popup>
         </ControlTemplate>
         
         <ControlTemplate x:Key="EditButton">
-            <Button Visibility="{Binding SchemaItem, Converter={StaticResource BoolToVis}}" Content="edit" Height="12" Width="15" FontSize="7" 
-                                HorizontalAlignment="Center" VerticalAlignment="Center" VerticalContentAlignment="Top">
-                <Button.LayoutTransform>
-                    <RotateTransform Angle="-90" />
-                </Button.LayoutTransform>
+            <Grid ZIndex ="20">
+            <Button Visibility="{Binding SchemaItem, Converter={StaticResource BoolToVis}}" Content="X" Height="auto" Width="auto" FontSize="12" 
+                                HorizontalAlignment="Center" VerticalAlignment="Center" VerticalContentAlignment="Top" Background="Transparent" 
+                    BorderBrush="Transparent" ToolTip="Delete Item" >
+                <Button.RenderTransform>
+                     <TransformGroup>
+                        <TranslateTransform X="-11" Y="-4" />
+                    </TransformGroup>
+                </Button.RenderTransform>
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="Click" >
                         <prism:InvokeCommandAction Command="{Binding PopupOpenCommand}" />
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
             </Button>
+            </Grid>
         </ControlTemplate>
 
         <ControlTemplate x:Key="ButtonDrag">
-            <Button Height="20" vm:Ex.SecurityId ="{Binding ChildData}"
+            <Button Height="20" vm:Ex.SecurityId ="{Binding ChildData}" 
                     AllowDrop="{Binding AllowDrop}" 
                     Background="{Binding backgroundBrush}" 
                     Width="50" Content="{Binding TypeName}" HorizontalAlignment="Left" VerticalContentAlignment="Center"
@@ -96,8 +107,8 @@
 
             </Button>
         </ControlTemplate>
-
-
+        
+ 
         <Style x:Key="OnOffToggleImageStyle" TargetType="ToggleButton">
             <Setter Property="Width" Value="20" />
             <Setter Property="Height" Value="20" />
@@ -167,9 +178,12 @@
                 <Border  BorderThickness="0,0,0,0" BorderBrush="Black">
                     <WrapPanel >
 
-                        <TextBox Name="NameEdit" Height="20" Margin="0,0,0,0" BorderThickness="2,2,0,2" BorderBrush="Black" Background="{Binding backgroundBrush}"
+                        <TextBox Name="NameEdit" Height="20" MinWidth="{Binding EditBoxMinWidth}" Margin="0,0,0,0" BorderThickness="2,2,0,2" BorderBrush="Black" Background="{Binding backgroundBrush}"
                              Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                             HorizontalAlignment="Center" VerticalContentAlignment="Center" />
+                             HorizontalAlignment="Center" VerticalContentAlignment="Center" 
+                                 vm:FocusExtension.IsFocused="{Binding PopUpOpen}" 
+                                 ToolTip="Edit Item Name" IsEnabled="{Binding EditBoxEnabled}"/>
+
 
                         <!--<Button Height="20" vm:Ex.SecurityId ="{Binding ChildData}" AllowDrop="True" Background="MistyRose" 
                             Width="40" Content="{Binding TypeName}" HorizontalAlignment="Left" VerticalContentAlignment="Center"
@@ -213,9 +227,11 @@
                 <Border  BorderThickness="0,0,0,0" BorderBrush="Black">
                     <WrapPanel>
 
-                        <TextBox Name="NameEdit" Height="20" Margin="0,0,0,0" BorderThickness="2,2,0,2" BorderBrush="Black" Background="{Binding backgroundBrush}"
+                        <TextBox Name="NameEdit" Height="20" MinWidth="{Binding EditBoxMinWidth}" Margin="0,0,0,0" BorderThickness="2,2,0,2" BorderBrush="Black" Background="{Binding backgroundBrush}"
                              Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                             HorizontalAlignment="Center" VerticalContentAlignment="Center" />
+                             HorizontalAlignment="Center" VerticalContentAlignment="Center" 
+                                 vm:FocusExtension.IsFocused="{Binding PopUpOpen}" 
+                                 ToolTip="Edit Item Name"  IsEnabled="{Binding EditBoxEnabled}"/>
 
 
                         <ContentControl Template="{StaticResource ButtonDrag}"/>
@@ -235,9 +251,11 @@
                 <Border  BorderThickness="0,0,0,0" BorderBrush="Black">
                     <WrapPanel>
 
-                        <TextBox Name="NameEdit" Height="20" Margin="0,0,0,0" BorderThickness="2,2,0,2" BorderBrush="Black" Background="{Binding backgroundBrush}"
+                        <TextBox Name="NameEdit" Height="20" MinWidth="{Binding EditBoxMinWidth}" Margin="0,0,0,0" BorderThickness="2,2,0,2" BorderBrush="Black" Background="{Binding backgroundBrush}"
                              Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                             HorizontalAlignment="Center" VerticalContentAlignment="Center" />
+                             HorizontalAlignment="Center" VerticalContentAlignment="Center" 
+                                 vm:FocusExtension.IsFocused="{Binding PopUpOpen}" 
+                                 ToolTip="Edit Item Name" IsEnabled="{Binding EditBoxEnabled}"/>
 
                         <ContentControl Template="{StaticResource ButtonDrag}"/>
                         
@@ -254,9 +272,11 @@
                 <Border  BorderThickness="0,0,0,0" BorderBrush="Black">
                     <WrapPanel>
 
-                        <TextBox Name="NameEdit" Height="20" Margin="0,0,0,0" BorderThickness="2,2,0,2" BorderBrush="Black" Background="{Binding backgroundBrush}"
+                        <TextBox Name="NameEdit" Height="20" MinWidth="{Binding EditBoxMinWidth}" Margin="0,0,0,0" BorderThickness="2,2,0,2" BorderBrush="Black" Background="{Binding backgroundBrush}"
                              Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                             HorizontalAlignment="Center" VerticalContentAlignment="Center" />
+                             HorizontalAlignment="Center" VerticalContentAlignment="Center" 
+                                 vm:FocusExtension.IsFocused="{Binding PopUpOpen}" 
+                                 ToolTip="Edit Item Name" IsEnabled="{Binding EditBoxEnabled}"/>
 
                         <ContentControl Template="{StaticResource ButtonDrag}"/>
                         
@@ -273,9 +293,11 @@
                 <Border  BorderThickness="0,0,0,0" BorderBrush="Black">
                     <WrapPanel>
 
-                        <TextBox Name="NameEdit" Height="20" Margin="0,0,0,0" BorderThickness="2,2,0,2" BorderBrush="Black" Background="{Binding backgroundBrush}"
+                        <TextBox Name="NameEdit" Height="20" MinWidth="{Binding EditBoxMinWidth}" Margin="0,0,0,0" BorderThickness="2,2,0,2" BorderBrush="Black" Background="{Binding backgroundBrush}"
                              Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                             HorizontalAlignment="Center" VerticalContentAlignment="Center" />
+                             HorizontalAlignment="Center" VerticalContentAlignment="Center" 
+                                 vm:FocusExtension.IsFocused="{Binding PopUpOpen}" 
+                                 ToolTip="Edit Item Name"  IsEnabled="{Binding EditBoxEnabled}"/>
 
                         <ContentControl Template="{StaticResource ButtonDrag}"/>
 

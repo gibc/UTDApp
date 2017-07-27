@@ -105,7 +105,9 @@ namespace UDTApp.ViewModels
                 tb.SelectAll();
                 //uie.RaiseEvent()
                 uie.Focus(); // Don't care about false values.
-                
+  
+                bool var = tb.IsKeyboardFocused;
+              
             }
         }
     }
@@ -134,6 +136,7 @@ namespace UDTApp.ViewModels
               {
                     if(dependencyPropertyChangedEventArgs.NewValue == null)
                     {
+                        if (adornerLayer.GetAdorners(frameworkElement) == null) return;
                         List<Adorner> adorners = adornerLayer.GetAdorners(frameworkElement).ToList<Adorner>();
                         foreach (Adorner adron in adorners)
                         { 
@@ -193,6 +196,7 @@ namespace UDTApp.ViewModels
             base(adornedElement)
         {
             Opacity = 0.2;
+ 
         }
 
         protected override void OnRender(DrawingContext drawingContext)

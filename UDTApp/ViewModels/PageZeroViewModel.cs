@@ -68,7 +68,15 @@ namespace UDTApp.ViewModels
                 //return typeof(NoteAdorner); 
                 return _adornerType;
             }
-            set { SetProperty(ref _adornerType, value); }
+            set 
+            { 
+                SetProperty(ref _adornerType, value);
+                if(value == null)
+                    Debug.Write(string.Format("Set AdornerType NULL\r"));
+                else
+                    Debug.Write(string.Format("Set AdornerType {0}\r", value));
+
+            }
         }  
 
         public Collection<UDTBase> UDTItems {
