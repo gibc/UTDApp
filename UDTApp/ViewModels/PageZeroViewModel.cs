@@ -32,6 +32,7 @@ namespace UDTApp.ViewModels
             baseObj.ChildData = DbSchema;
             baseObj.ToolBoxItem = false;
             baseObj.Name = "Master";
+            baseObj.parentObj = new UDTData();
             baseObj.setAnyError = setAnyErrors;
             SchemaList.Add(baseObj);
 

@@ -64,9 +64,10 @@
         
         <ControlTemplate x:Key="EditButton">
             <Grid ZIndex ="20">
-            <Button Visibility="{Binding SchemaItem, Converter={StaticResource BoolToVis}}" Content="X" Height="auto" Width="auto" FontSize="12" 
-                                HorizontalAlignment="Center" VerticalAlignment="Center" VerticalContentAlignment="Top" Background="Transparent" 
-                    BorderBrush="Transparent" ToolTip="Delete Item" >
+            <Button Visibility="{Binding SchemaItem, Converter={StaticResource BoolToVis}}" Content="X" Height="auto" 
+                    Width="auto" FontSize="12" IsEnabled="False"
+                    HorizontalAlignment="Center" VerticalAlignment="Center" VerticalContentAlignment="Top" 
+                    Background="Transparent" BorderBrush="Transparent" ToolTip="Delete Item" >
                 <Button.RenderTransform>
                      <TransformGroup>
                         <TranslateTransform X="-11" Y="-4" />
