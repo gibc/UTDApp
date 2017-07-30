@@ -1,14 +1,17 @@
-﻿using Prism.Commands;
+﻿using Microsoft.Win32;
+using Prism.Commands;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Xml.Serialization;
 using UDTApp.Models;
 
 namespace UDTApp.ViewModels
@@ -19,6 +22,8 @@ namespace UDTApp.ViewModels
         public DelegateCommand<DragEventArgs> DragEnterCommand { get; set; }
         public DelegateCommand<DragEventArgs> DragDropCommand { get; set; }
         public DelegateCommand<DragEventArgs> DragOverCommand { get; set; }
+        public DelegateCommand SaveToXmlCommand { get; set; }
+        public DelegateCommand ReadFromFileCommand { get; set; }
 
         public PageZeroViewModel()
         {
@@ -26,6 +31,8 @@ namespace UDTApp.ViewModels
             DragEnterCommand = new DelegateCommand<DragEventArgs>(dragEnter);
             DragDropCommand = new DelegateCommand<DragEventArgs>(dragDrop);
             DragOverCommand = new DelegateCommand<DragEventArgs>(dragOver);
+            SaveToXmlCommand = new DelegateCommand(saveToXml);
+            ReadFromFileCommand = new DelegateCommand(readFromXml);
 
             SchemaList = new List<UDTBase>();
             UDTData baseObj = new UDTData();
@@ -78,14 +85,94 @@ namespace UDTApp.ViewModels
                     Debug.Write(string.Format("Set AdornerType {0}\r", value));
 
             }
-        }  
+        } 
+
+        private void saveToXml()
+        {
+            string xml = SerializeToString(SchemaList);
+            //SchemaList = readFromXml(xml);
+
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Filter = "Xml (*.xml)|*.xml";
+            if (saveFileDialog.ShowDialog().Value)
+            {
+                FileStream xmlFile = File.Open(saveFileDialog.FileName, FileMode.OpenOrCreate);
+                Byte[] info = new UTF8Encoding(true).GetBytes(xml);
+                xmlFile.Write(info, 0, info.Length);
+                xmlFile.Close();
+            }
+        }
+
+        void readFromXml()
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Xml (*.xml)|*.xml";
+            if (openFileDialog.ShowDialog().Value)
+            {
+                StreamReader xmlFile = File.OpenText(openFileDialog.FileName);
+                string xml = xmlFile.ReadToEnd();
+                xmlFile.Close();
+
+                List<UDTBase> schema = readFromXml(xml);
+                SchemaList = schema;
+            }
+
+        }
+
+        private static string SerializeToString(object obj)
+        {
+            XmlSerializer serializer = new XmlSerializer(obj.GetType());
+ 
+            using (StringWriter writer = new StringWriter())
+            {
+                serializer.Serialize(writer, obj);
+ 
+                return writer.ToString();
+            }   
+        }
+
+        private List<UDTBase> readFromXml(string xml)
+        {
+            var serializer = new XmlSerializer(typeof(List<UDTBase>));
+
+            List<UDTBase> result;
+
+            using (TextReader reader = new StringReader(xml))
+            {
+                result = serializer.Deserialize(reader) as List<UDTBase>;
+            }
+
+            setParentRefs(result[0] as UDTData);
+
+            return result;
+        }
+
+        private void setParentRefs(UDTData dataItem)
+        {
+            foreach (UDTBase child in dataItem.ChildData)
+            {
+                if (child.GetType() == typeof(UDTData))
+                    setParentRefs(child as UDTData);
+                child.parentObj = dataItem;
+                child.createCommnadDelegates();
+
+            }
+        }
 
         public Collection<UDTBase> UDTItems {
             get { return UDTItemList.ItemList; }
         }
 
         private ObservableCollection<UDTBase> DbSchema = new ObservableCollection<UDTBase>();
-        public List<UDTBase> SchemaList { get; set; }
+
+        private List<UDTBase> _schemaList = null; 
+        public List<UDTBase> SchemaList {
+            get { return _schemaList; }
+            set
+            {
+                SetProperty(ref _schemaList, value);
+            }
+        }
 
         private void dragOver(DragEventArgs dragArgs)
         {

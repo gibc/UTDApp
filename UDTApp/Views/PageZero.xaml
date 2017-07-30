@@ -325,7 +325,23 @@
                  vm:AttachedAdorner.Adorner="{Binding Path=AdornerType, Mode=TwoWay}" >   
         </ListBox>
         <Label Grid.Column="0" Grid.Row="0" Content="{Binding DbSchema.Count}"/>
-        <ListBox Grid.Column="1" Grid.Row="1" ItemsSource="{Binding UDTItems}"></ListBox>
+        <StackPanel Grid.Column="1" Grid.Row="1">
+            <ListBox  ItemsSource="{Binding UDTItems}"></ListBox>
+            <Button Content="SaveToXml">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="Click" >
+                        <prism:InvokeCommandAction Command="{Binding SaveToXmlCommand}" />
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </Button>
+            <Button Content="ReadFromXmlFile">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="Click" >
+                        <prism:InvokeCommandAction Command="{Binding ReadFromFileCommand}" />
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </Button>        
+        </StackPanel>
 
     </Grid>
 </UserControl>

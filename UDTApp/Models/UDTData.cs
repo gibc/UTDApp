@@ -16,6 +16,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
+using System.Xml.Serialization;
 using UDTApp.ViewModels;
 
 namespace UDTApp.Models
@@ -50,6 +51,12 @@ namespace UDTApp.Models
         public ObservableCollection<UDTParentColumn> ParentColumnNames { get; set; }
     }
 
+    [XmlInclude(typeof(UDTTxtItem))]
+    [XmlInclude(typeof(UDTIntItem))]
+    [XmlInclude(typeof(UDTData))]
+    [XmlInclude(typeof(UDTDateItem))]
+    [XmlInclude(typeof(UDTDecimalItem))]
+    [XmlRoot("UDTBase"), XmlType("UDTBase")]
     public class UDTBase : ValidatableBindableBase//: ValidatableBindableBase, INotifyDataErrorInfo
     {
         public UDTBase()
@@ -70,6 +77,21 @@ namespace UDTApp.Models
             backgroundBrush = Brushes.Black;
         }
 
+        public void createCommnadDelegates()
+        {
+            MouseMoveCommand = new DelegateCommand<MouseEventArgs>(mouseMove, disable);
+            DragEnterCommand = new DelegateCommand<DragEventArgs>(dragEnter, disable);
+            DragDropCommand = new DelegateCommand<DragEventArgs>(dragDrop, disable);
+            DragOverCommand = new DelegateCommand<DragEventArgs>(dragOver, disable);
+
+            SaveNameCommand = new DelegateCommand<EventArgs>(saveName, canSaveName);
+            DeleteItemCommand = new DelegateCommand<EventArgs>(deleteItem);
+            PopupOpenCommand = new DelegateCommand<EventArgs>(popupOpen, disable);
+            PopupLoadCommand = new DelegateCommand<EventArgs>(popupLoad);
+
+            _masterGroup = null;
+        }
+
         private bool disable(EventArgs eventArgs) 
         {
             if (ToolBoxItem) return true;
@@ -82,26 +104,53 @@ namespace UDTApp.Models
             //}
             return !AnyErrors;
         }
-
+        
+        [XmlIgnoreAttribute]
         public DelegateCommand<MouseEventArgs> MouseMoveCommand { get; set; }
+        [XmlIgnoreAttribute]
         public DelegateCommand<DragEventArgs> DragEnterCommand { get; set; }
+        [XmlIgnoreAttribute]
         public DelegateCommand<DragEventArgs> DragDropCommand { get; set; }
+        [XmlIgnoreAttribute]
         public DelegateCommand<DragEventArgs> DragOverCommand { get; set; }
+        [XmlIgnoreAttribute]
         public DelegateCommand<EventArgs> SaveNameCommand { get; set; }
+        [XmlIgnoreAttribute]
         public DelegateCommand<EventArgs> DeleteItemCommand { get; set; }
+        [XmlIgnoreAttribute]
         public DelegateCommand<EventArgs> PopupOpenCommand { get; set; }
+        [XmlIgnoreAttribute]
         public DelegateCommand<EventArgs> PopupLoadCommand { get; set; }
-        //public DelegateCommand<EventArgs> MouseLeftButtonUpCommand { get; set; }
 
 
         public Guid objId;
         public Guid dragObjId = Guid.Empty;
+
+        private SolidColorBrush _backgroundBrush = null;
+        [XmlIgnoreAttribute]
         public SolidColorBrush backgroundBrush 
         {
-            get; 
-            set; 
+            get
+            {
+                if (_backgroundBrush == null)
+                {
+                    var color = (Color)ColorConverter.ConvertFromString(brushColor);
+                    _backgroundBrush = new SolidColorBrush(color);
+                }
+                return _backgroundBrush;
+            }
+
+            set { _backgroundBrush = value; }
         }
 
+        private string _brushColor = null;
+        public string brushColor
+        {
+            get { return backgroundBrush.Color.ToString(); }
+            set { _brushColor = value; }
+        }
+
+        [XmlIgnoreAttribute]
         public UDTData parentObj = null;
         private bool newDrop = false;
 
@@ -159,6 +208,7 @@ namespace UDTApp.Models
             }            
         }
 
+        [XmlIgnoreAttribute]
         public Action<bool> setAnyError { get; set; }
 
         private bool _popUpOpen = false;
@@ -496,11 +546,9 @@ namespace UDTApp.Models
             TypeName = "Text";
             //Name = "";
             backgroundBrush = Brushes.LightBlue;
-
         }
 
     }
-
 
     public class UDTIntItem : UDTBase//, UDTItem
     {
@@ -510,7 +558,6 @@ namespace UDTApp.Models
             TypeName = "Number";
             //Name = "";
             backgroundBrush = Brushes.LightGreen;
-
         }    
 
 

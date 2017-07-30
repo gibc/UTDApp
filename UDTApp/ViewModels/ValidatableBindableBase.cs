@@ -12,11 +12,14 @@ using System.Runtime.CompilerServices;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using System.Linq.Expressions;
+using System.Xml.Serialization;
 
 namespace UDTApp.ViewModels
 {
     public class ValidatableBindableBase : BindableBase, INotifyDataErrorInfo
     {
+        public ValidatableBindableBase() { }
+
         ErrorsContainer<string> _errorsContainer;
 
         public event EventHandler<DataErrorsChangedEventArgs> ErrorsChanged = delegate { };
@@ -36,7 +39,7 @@ namespace UDTApp.ViewModels
             get { return ErrorsContainer.HasErrors; }
         }
 
-
+        [XmlIgnoreAttribute]
         public Func<Boolean> ValidationEnabled = null;
 
         public Dictionary<string, List<string>> GetAllErrors()
