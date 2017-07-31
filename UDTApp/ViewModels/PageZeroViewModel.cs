@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Configuration;
+using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.IO;
@@ -27,6 +28,7 @@ namespace UDTApp.ViewModels
         public DelegateCommand SaveToXmlCommand { get; set; }
         public DelegateCommand ReadFromFileCommand { get; set; }
         public DelegateCommand CreateDataBaseCommand { get; set; }
+        public DelegateCommand ReadDataBaseCommand { get; set; }
 
         public PageZeroViewModel()
         {
@@ -36,7 +38,8 @@ namespace UDTApp.ViewModels
             DragOverCommand = new DelegateCommand<DragEventArgs>(dragOver);
             SaveToXmlCommand = new DelegateCommand(saveToXml);
             ReadFromFileCommand = new DelegateCommand(readFromXml);
-            CreateDataBaseCommand = new DelegateCommand(createDatabasse);
+            CreateDataBaseCommand = new DelegateCommand(createDatabase);
+            ReadDataBaseCommand = new DelegateCommand(readDatabase);
 
             SchemaList = new List<UDTBase>();
             UDTData baseObj = new UDTData();
@@ -167,7 +170,7 @@ namespace UDTApp.ViewModels
             }
         }
 
-        private void createDatabasse()
+        private void createDatabase()
         {
             //addParentColumns(SchemaList[0] as UDTData);
             createSQLDatabase(SchemaList[0].Name);
@@ -305,6 +308,63 @@ namespace UDTApp.ViewModels
                 if (item.GetType() == typeof(UDTData))
                 {
                     createDBTable(item as UDTData, dbName, tableGuids);                  
+                }
+            }
+        }
+
+        private void readDatabase()
+        {
+            readTable(SchemaList[0] as UDTData, SchemaList[0].Name);
+        }
+
+        private void readTable(UDTData dataItem, string dbName, string parentColName = "", int parentId = -1)
+        {
+            using (SqlConnection conn = new SqlConnection())
+            {
+                conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
+                SqlCommand cmd = new SqlCommand();
+                SqlDataReader reader;
+
+                string sqlTxt;
+                int recId = -1;
+                if (parentId == -1)
+                    sqlTxt = string.Format("USE [{0}] select * from {1} ", dbName, dataItem.Name);
+                else
+                    sqlTxt = string.Format("USE [{0}] select * from {1} where {2} = {3} ", dbName,
+                        dataItem.Name, parentColName, parentId);
+
+                cmd.CommandText = sqlTxt;
+                cmd.CommandType = CommandType.Text;
+                cmd.Connection = conn;
+                conn.Open();
+
+                reader = cmd.ExecuteReader();
+                // Data is accessible through the DataReader object here.      
+                try
+                {
+                    while (reader.Read())
+                    {
+                        recId = (int)reader["Id"];
+                        foreach (UDTBase childItem in dataItem.ChildData)
+                        {
+                            if (childItem.GetType() != typeof(UDTData))
+                            {
+                                var data = reader[childItem.Name];
+                            }
+                            else
+                            {
+                                readTable(childItem as UDTData, dbName, dataItem.Name, recId);
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+                finally
+                {
+                    reader.Close();
                 }
             }
         }

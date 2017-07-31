@@ -348,6 +348,13 @@
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
             </Button>
+            <Button Content="ReadFromDataBase">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="Click" >
+                        <prism:InvokeCommandAction Command="{Binding ReadDataBaseCommand}" />
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </Button>
         </StackPanel>
 
     </Grid>
