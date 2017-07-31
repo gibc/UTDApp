@@ -28,6 +28,7 @@ namespace UDTApp.Models
             ChildData = new ObservableCollection<UDTBase>();
             TypeName = "Group";
             backgroundBrush = Brushes.MistyRose;
+            ParentColumnNames = new ObservableCollection<UDTParentColumn>();
         }
 
         override public bool AllowDrop
@@ -75,21 +76,6 @@ namespace UDTApp.Models
 
             objId = Guid.NewGuid();
             backgroundBrush = Brushes.Black;
-        }
-
-        public void createCommnadDelegates()
-        {
-            MouseMoveCommand = new DelegateCommand<MouseEventArgs>(mouseMove, disable);
-            DragEnterCommand = new DelegateCommand<DragEventArgs>(dragEnter, disable);
-            DragDropCommand = new DelegateCommand<DragEventArgs>(dragDrop, disable);
-            DragOverCommand = new DelegateCommand<DragEventArgs>(dragOver, disable);
-
-            SaveNameCommand = new DelegateCommand<EventArgs>(saveName, canSaveName);
-            DeleteItemCommand = new DelegateCommand<EventArgs>(deleteItem);
-            PopupOpenCommand = new DelegateCommand<EventArgs>(popupOpen, disable);
-            PopupLoadCommand = new DelegateCommand<EventArgs>(popupLoad);
-
-            _masterGroup = null;
         }
 
         private bool disable(EventArgs eventArgs) 
@@ -154,22 +140,20 @@ namespace UDTApp.Models
         public UDTData parentObj = null;
         private bool newDrop = false;
 
-        private static UDTData _masterGroup = null;
         public UDTData MasterGroup 
         { 
             get
             {
-                if (_masterGroup == null)
-                    _masterGroup = getMasterGroup(this) as UDTData;
-                return _masterGroup;
+                if (PageZeroViewModel._schemaList.Count <= 0) return null;
+                return PageZeroViewModel._schemaList[0] as UDTData;
             }
         }
 
-        private UDTBase getMasterGroup(UDTBase group)
-        {
-            if (group.parentObj == null) return group;
-            return getMasterGroup(group.parentObj);
-        }
+        //private UDTBase getMasterGroup(UDTBase group)
+        //{
+        //    if (group.parentObj == null) return group;
+        //    return getMasterGroup(group.parentObj);
+        //}
 
         private bool _anyErrors = true;
         public bool AnyErrors
@@ -193,7 +177,7 @@ namespace UDTApp.Models
 
         private void SetAnyErrorAll(UDTData dataItem, bool value)
         {
-            //Debug.Write(string.Format(">>>> Enter SetAnyErrorAll value {0}\r", value));
+            Debug.Write(string.Format(">>>> Enter SetAnyErrorAll value {0} Name: {1}\r", value, dataItem.Name));
             dataItem.AnyErrors = value;
             dataItem.EditBoxEnabled = !value;
             foreach(UDTBase obj in dataItem.ChildData)

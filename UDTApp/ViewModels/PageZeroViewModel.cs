@@ -24,6 +24,7 @@ namespace UDTApp.ViewModels
         public DelegateCommand<DragEventArgs> DragOverCommand { get; set; }
         public DelegateCommand SaveToXmlCommand { get; set; }
         public DelegateCommand ReadFromFileCommand { get; set; }
+        public DelegateCommand CreateDataBaseCommand { get; set; }
 
         public PageZeroViewModel()
         {
@@ -33,6 +34,7 @@ namespace UDTApp.ViewModels
             DragOverCommand = new DelegateCommand<DragEventArgs>(dragOver);
             SaveToXmlCommand = new DelegateCommand(saveToXml);
             ReadFromFileCommand = new DelegateCommand(readFromXml);
+            CreateDataBaseCommand = new DelegateCommand(createDatabasse);
 
             SchemaList = new List<UDTBase>();
             UDTData baseObj = new UDTData();
@@ -40,7 +42,8 @@ namespace UDTApp.ViewModels
             baseObj.ToolBoxItem = false;
             baseObj.Name = "Master";
             baseObj.parentObj = new UDTData();
-            baseObj.setAnyError = setAnyErrors;
+            baseObj.AnyErrors = false;
+            baseObj.EditBoxEnabled = true;
             SchemaList.Add(baseObj);
 
         }
@@ -154,8 +157,66 @@ namespace UDTApp.ViewModels
                 if (child.GetType() == typeof(UDTData))
                     setParentRefs(child as UDTData);
                 child.parentObj = dataItem;
-                child.createCommnadDelegates();
 
+            }
+        }
+
+        private void createDatabasse()
+        {
+            addParentColumns(SchemaList[0] as UDTData);
+            createDBTable(SchemaList[0] as UDTData);
+        }
+
+        private void addParentColumns(UDTData dataItem)
+        {
+            foreach (UDTBase item in dataItem.ChildData)
+            {
+                if (item.GetType() == typeof(UDTData))
+                {
+                    UDTData childItem = item as UDTData;
+                    UDTParentColumn pc = new UDTParentColumn();
+                    pc.ParentColumnName = dataItem.Name;
+                    childItem.ParentColumnNames.Add(pc);
+                    addParentColumns(childItem);
+                }
+            }
+        }
+
+        private void createDBTable(UDTData dataItem)
+        {
+            string ddl;
+
+            //CREATE TABLE Persons (
+            //   [RecordId] [int] IDENTITY(1,1) NOT NULL,
+            //    PersonID int,
+            //    LastName varchar(255),
+            //    FirstName varchar(255),
+            //    Address varchar(255),
+            //    City varchar(255) 
+            //);
+
+            ddl = string.Format("CREATE TABLE {0} (", dataItem.Name);
+            ddl += string.Format("Id IDENTITY(1,1) NOT NULL, ");
+            foreach(UDTBase item in dataItem.ChildData)
+            {
+                if(item.GetType() != typeof(UDTData))
+                {
+                    ddl += string.Format("{0} {1}, ", item.Name, item.Type);
+                }
+            }
+            foreach (UDTParentColumn col in dataItem.ParentColumnNames)
+            {
+                ddl += string.Format("{0} int, ", col.ParentColumnName);
+            }
+            ddl = ddl.Substring(0, ddl.Length - 2);
+            ddl += "); ";
+
+            foreach (UDTBase item in dataItem.ChildData)
+            {
+                if (item.GetType() == typeof(UDTData))
+                {
+                    createDBTable(item as UDTData);                  
+                }
             }
         }
 
@@ -165,7 +226,7 @@ namespace UDTApp.ViewModels
 
         private ObservableCollection<UDTBase> DbSchema = new ObservableCollection<UDTBase>();
 
-        private List<UDTBase> _schemaList = null; 
+        public static List<UDTBase> _schemaList = null; 
         public List<UDTBase> SchemaList {
             get { return _schemaList; }
             set

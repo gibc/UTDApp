@@ -340,7 +340,14 @@
                         <prism:InvokeCommandAction Command="{Binding ReadFromFileCommand}" />
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
-            </Button>        
+            </Button>
+            <Button Content="CreateDataBase">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="Click" >
+                        <prism:InvokeCommandAction Command="{Binding CreateDataBaseCommand}" />
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </Button>
         </StackPanel>
 
     </Grid>
