@@ -28,7 +28,8 @@ namespace UDTApp.Models
             ChildData = new ObservableCollection<UDTBase>();
             TypeName = "Group";
             backgroundBrush = Brushes.MistyRose;
-            ParentColumnNames = new ObservableCollection<UDTParentColumn>();
+            //ParentColumnNames = new ObservableCollection<UDTParentColumn>();
+            ParentColumnNames = new List<string>();
         }
 
         override public bool AllowDrop
@@ -48,8 +49,9 @@ namespace UDTApp.Models
         //   find UDTData collectons with ChildData.count = 0;
         //     create display and edit page for each UDTData item
         public ObservableCollection<UDTBase> ChildData { get; set; }
-        // add this if we want children to have more than one parent
-        public ObservableCollection<UDTParentColumn> ParentColumnNames { get; set; }
+        // add this if we want group children to have more than one parent
+        //public ObservableCollection<UDTParentColumn> ParentColumnNames { get; set; }
+        public List<string> ParentColumnNames { get; set; }
     }
 
     [XmlInclude(typeof(UDTTxtItem))]
@@ -387,14 +389,18 @@ namespace UDTApp.Models
                 // prevent copy to self
                 if (udtBase.dragObjId == this.objId) return;
 
-                udtItem.Name = "<Name>";
+                if(udtItem.Name == "") udtItem.Name = "<Name>";
 
-                //if(udtItem.ToolBoxItem)
-                //    udtItem.Name = "<Name>";
-
+                UDTData udtData;
                 if (udtItem != null && col != null && !col.Contains(udtItem))
                 {
                     udtItem.parentObj = this as UDTData;
+                    if (udtItem.GetType() == typeof(UDTData))
+                    {
+                        udtData = udtItem as UDTData;
+                        udtData.ParentColumnNames.Add(this.Name);
+                    }
+                        
                     udtItem.newDrop = true;
                     col.Add(udtItem);
                     //udtItem.PopUpOpen = true;
@@ -517,10 +523,10 @@ namespace UDTApp.Models
         public string ChildColumnName { get; set; }
     }
 
-    public class UDTParentColumn
-    {
-        public string ParentColumnName { get; set; }
-    }
+    //public class UDTParentColumn
+    //{
+    //    public string ParentColumnName { get; set; }
+    //}
 
     public class UDTTxtItem : UDTBase //, UDTItem
     {

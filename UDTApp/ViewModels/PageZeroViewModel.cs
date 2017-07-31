@@ -3,6 +3,8 @@ using Prism.Commands;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Configuration;
+using System.Data.SqlClient;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -40,7 +42,7 @@ namespace UDTApp.ViewModels
             UDTData baseObj = new UDTData();
             baseObj.ChildData = DbSchema;
             baseObj.ToolBoxItem = false;
-            baseObj.Name = "Master";
+            baseObj.Name = "UDTMaster";
             baseObj.parentObj = new UDTData();
             baseObj.AnyErrors = false;
             baseObj.EditBoxEnabled = true;
@@ -155,7 +157,11 @@ namespace UDTApp.ViewModels
             foreach (UDTBase child in dataItem.ChildData)
             {
                 if (child.GetType() == typeof(UDTData))
+                {
+                    //UDTData childData = child as UDTData;
+                    //childData.ParentColumnNames.Add(dataItem.Name);
                     setParentRefs(child as UDTData);
+                }
                 child.parentObj = dataItem;
 
             }
@@ -163,59 +169,142 @@ namespace UDTApp.ViewModels
 
         private void createDatabasse()
         {
-            addParentColumns(SchemaList[0] as UDTData);
-            createDBTable(SchemaList[0] as UDTData);
+            //addParentColumns(SchemaList[0] as UDTData);
+            createSQLDatabase(SchemaList[0].Name);
+            List<Guid> tableGuids = new List<Guid>();
+            createDBTable(SchemaList[0] as UDTData, SchemaList[0].Name, tableGuids);
         }
 
-        private void addParentColumns(UDTData dataItem)
+        //private void addParentColumns(UDTData dataItem)
+        //{
+        //    foreach (UDTBase item in dataItem.ChildData)
+        //    {
+        //        if (item.GetType() == typeof(UDTData))
+        //        {
+        //            UDTData childItem = item as UDTData;
+        //            UDTParentColumn pc = new UDTParentColumn();
+        //            pc.ParentColumnName = dataItem.Name;
+        //            childItem.ParentColumnNames.Add(pc);
+        //            addParentColumns(childItem);
+        //        }
+        //    }
+        //}
+
+        private void createSQLDatabase(string DBName)
         {
-            foreach (UDTBase item in dataItem.ChildData)
+            using (SqlConnection conn = new SqlConnection())
             {
-                if (item.GetType() == typeof(UDTData))
+
+                conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
+                SqlCommand cmd = new SqlCommand(
+                    string.Format("select count(*) from (select * from sys.databases where name = '{0}') rows", DBName)
+                    );
+
+                cmd.Connection = conn;
+                conn.Open();
+                try
                 {
-                    UDTData childItem = item as UDTData;
-                    UDTParentColumn pc = new UDTParentColumn();
-                    pc.ParentColumnName = dataItem.Name;
-                    childItem.ParentColumnNames.Add(pc);
-                    addParentColumns(childItem);
+                    int dbCount = (int)cmd.ExecuteScalar();
+                    if (dbCount < 1)
+                    {
+                        cmd.CommandText = string.Format("CREATE DATABASE {0} ", DBName);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+                finally
+                {
                 }
             }
         }
 
-        private void createDBTable(UDTData dataItem)
+        public bool TableExists(string tableName)
+        {
+
+            string sqlTxt = string.Format(@"select count(*) from 
+                (SELECT * FROM UDTUser.dbo.sysobjects WHERE xtype = 'U' AND name = '{0}') rows",
+                tableName);
+
+            bool retVal = true;
+            using (SqlConnection conn = new SqlConnection())
+            {
+
+                conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
+
+                SqlCommand cmd = new SqlCommand(sqlTxt);
+
+                cmd.Connection = conn;
+                conn.Open();
+                try
+                {
+                    int dbCount = (int)cmd.ExecuteScalar();
+                    retVal = (dbCount >= 1);
+
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+                finally
+                {
+
+                }
+            }
+            return retVal;
+        }
+
+        private void createDBTable(UDTData dataItem, string dbName, List<Guid> tableGuids)
         {
             string ddl;
 
-            //CREATE TABLE Persons (
-            //   [RecordId] [int] IDENTITY(1,1) NOT NULL,
-            //    PersonID int,
-            //    LastName varchar(255),
-            //    FirstName varchar(255),
-            //    Address varchar(255),
-            //    City varchar(255) 
-            //);
+            if (tableGuids.Contains(dataItem.objId)) return;
 
-            ddl = string.Format("CREATE TABLE {0} (", dataItem.Name);
-            ddl += string.Format("Id IDENTITY(1,1) NOT NULL, ");
-            foreach(UDTBase item in dataItem.ChildData)
+            if(!TableExists(dataItem.Name))
             {
-                if(item.GetType() != typeof(UDTData))
+                using (SqlConnection conn = new SqlConnection())
                 {
-                    ddl += string.Format("{0} {1}, ", item.Name, item.Type);
+                    ddl = string.Format("USE [{0}] CREATE TABLE {1} (", dbName, dataItem.Name);
+                    ddl += string.Format("[Id] [int] IDENTITY(1,1) NOT NULL, ");
+                    foreach (UDTBase item in dataItem.ChildData)
+                    {
+                        if (item.GetType() != typeof(UDTData))
+                        {
+                            ddl += string.Format("{0} {1}, ", item.Name, item.Type);
+                        }
+                    }
+                    foreach (string colName in dataItem.ParentColumnNames)
+                    {
+                        ddl += string.Format("{0} int, ", colName);
+                    }
+                    ddl = ddl.Substring(0, ddl.Length - 2);
+                    ddl += "); ";
+
+                    tableGuids.Add(dataItem.objId);
+
+                    conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
+                    SqlCommand cmd = new SqlCommand(ddl);
+
+                    cmd.Connection = conn;
+                    conn.Open();
+                    try
+                    { 
+                        cmd.ExecuteNonQuery();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                    }
                 }
             }
-            foreach (UDTParentColumn col in dataItem.ParentColumnNames)
-            {
-                ddl += string.Format("{0} int, ", col.ParentColumnName);
-            }
-            ddl = ddl.Substring(0, ddl.Length - 2);
-            ddl += "); ";
 
             foreach (UDTBase item in dataItem.ChildData)
             {
                 if (item.GetType() == typeof(UDTData))
                 {
-                    createDBTable(item as UDTData);                  
+                    createDBTable(item as UDTData, dbName, tableGuids);                  
                 }
             }
         }
