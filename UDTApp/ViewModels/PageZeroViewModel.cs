@@ -16,6 +16,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Xml.Serialization;
 using UDTApp.Models;
+//using UDTApp.Models;
 
 namespace UDTApp.ViewModels
 {
@@ -314,11 +315,59 @@ namespace UDTApp.ViewModels
 
         private void readDatabase()
         {
-            readTable(SchemaList[0] as UDTData, SchemaList[0].Name);
+            System.Data.DataSet dataSet = new System.Data.DataSet(SchemaList[0].Name);
+            readTable(dataSet, SchemaList[0] as UDTData, SchemaList[0].Name);
         }
 
-        private void readTable(UDTData dataItem, string dbName, string parentColName = "", int parentId = -1)
+        DataTable createDataTable(UDTData dataItem)
         {
+            DataTable tbl = new DataTable(dataItem.Name);
+            foreach(UDTBase item in dataItem.ChildData)
+            {
+                if(item.GetType() != typeof(UDTData))
+                {
+                    DataColumn col = new DataColumn();
+                    col.ColumnName = item.Name;
+                    col.DataType = typeof(int);
+                    if(item.GetType() == typeof(UDTTxtItem))
+                    {
+                        col.DataType = typeof(string);
+                    }
+                    else if (item.GetType() == typeof(UDTDateItem))
+                    {
+                        col.DataType = typeof(DateTime);
+                    }
+                    else if (item.GetType() == typeof(UDTDecimalItem))
+                    {
+                        col.DataType = typeof(decimal);
+                    }
+                    else if (item.GetType() == typeof(UDTIntItem))
+                    {
+                        col.DataType = typeof(int);
+                    }
+                    tbl.Columns.Add(col);
+                }
+            }
+            foreach (string colName in dataItem.ParentColumnNames)
+            {
+                DataColumn col = new DataColumn();
+                col.ColumnName = colName;
+                col.DataType = typeof(int);
+                tbl.Columns.Add(col);
+            }
+            DataColumn idCol = new DataColumn();
+            idCol.ColumnName = "Id";
+            idCol.DataType = typeof(int);
+            tbl.Columns.Add(idCol);
+
+            return tbl;
+        }
+
+        private void readTable(System.Data.DataSet dataSet, UDTData dataItem, string dbName, string parentColName = "", int parentId = -1)
+        {
+            if(!dataSet.Tables.Contains(dataItem.Name))
+                dataSet.Tables.Add(createDataTable(dataItem));
+            DataTable dataTable = dataSet.Tables[dataItem.Name];
             using (SqlConnection conn = new SqlConnection())
             {
                 conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
@@ -326,7 +375,7 @@ namespace UDTApp.ViewModels
                 SqlDataReader reader;
 
                 string sqlTxt;
-                int recId = -1;
+                //int recId = -1;
                 if (parentId == -1)
                     sqlTxt = string.Format("USE [{0}] select * from {1} ", dbName, dataItem.Name);
                 else
@@ -344,18 +393,26 @@ namespace UDTApp.ViewModels
                 {
                     while (reader.Read())
                     {
-                        recId = (int)reader["Id"];
+                        DataRow dataRow = dataTable.NewRow();
+                        //recId = (int)reader["Id"];
+                        dataRow["Id"] = (int)reader["Id"];
                         foreach (UDTBase childItem in dataItem.ChildData)
                         {
                             if (childItem.GetType() != typeof(UDTData))
                             {
                                 var data = reader[childItem.Name];
+                                dataRow[childItem.Name] = reader[childItem.Name];
                             }
                             else
                             {
-                                readTable(childItem as UDTData, dbName, dataItem.Name, recId);
+                                readTable(dataSet, childItem as UDTData, dbName, dataItem.Name, (int)dataRow["Id"]);
                             }
                         }
+                        foreach(string colName in dataItem.ParentColumnNames)
+                        {
+                            dataRow[colName] = reader[colName];
+                        }
+                        dataTable.Rows.Add(dataRow);
                     }
                 }
                 catch (Exception ex)
