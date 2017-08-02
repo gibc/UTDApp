@@ -14,7 +14,7 @@
     <UserControl.Resources>
 
         <DataTemplate DataType="{x:Type vm:UDTDataButton}">
-            <Button Command="{Binding ButtonClickCommand}" Content="{Binding dataItem.Name}" Width="100" Height="20"></Button>
+            <Button Command="{Binding ButtonClickCommand}" Content="{Binding buttonName}" Width="Auto" Height="20"></Button>
         </DataTemplate>
         
     </UserControl.Resources>
@@ -35,10 +35,15 @@
         </Grid.RowDefinitions>
         
         <StackPanel Grid.Column="0">
-            <DataGrid ItemsSource="{Binding gridData}"/>
+            <DataGrid ItemsSource="{Binding gridData}" 
+                      SelectedItem="{Binding SelectedItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                      SelectedIndex="{Binding SelectedIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
         </StackPanel>
         <StackPanel Grid.Column="1">
-            <ListBox ItemsSource="{Binding childTables}"/>
+            <ListBox ItemsSource="{Binding childTables}" HorizontalContentAlignment="Center" />
+            <ContentControl Content="{Binding returnBtn}"/>
+            <Button Content="Add Row" Command="{Binding AddRowCommand}" />
+            <Button Content="Delete Row" Command="{Binding DeleteRowCommand}" />
             <Button Content="Save DataSet" Command="{Binding UpdateDatasetCommand}" />
         </StackPanel>
 
