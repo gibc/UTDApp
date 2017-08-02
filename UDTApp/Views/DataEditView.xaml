@@ -39,6 +39,7 @@
         </StackPanel>
         <StackPanel Grid.Column="1">
             <ListBox ItemsSource="{Binding childTables}"/>
+            <Button Content="Save DataSet" Command="{Binding UpdateDatasetCommand}" />
         </StackPanel>
 
     </Grid>

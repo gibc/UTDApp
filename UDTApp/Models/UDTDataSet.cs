@@ -304,5 +304,145 @@ namespace UDTApp.Models
                 }
             }
         }
+
+        public void saveDataset()
+        {
+            foreach(DataTable tbl in DataSet.Tables)
+            {
+                foreach(DataRow row in tbl.Rows)
+                {
+                    if(row.RowState == DataRowState.Added)
+                    {
+                        addRow(row);
+                    }
+                    else if (row.RowState == DataRowState.Deleted)
+                    {
+                        deleteRow(row);
+                    }
+                    else if (row.RowState == DataRowState.Modified)
+                    {
+                        updateRow(row);
+                    }
+                }
+            }
+
+            DataSet.AcceptChanges();
+        }
+
+        private void deleteRow(DataRow row)
+        {
+            //DELETE FROM table_name
+            //WHERE condition;
+            string sqlTxt = string.Format("USE [{0}] delete from {1} where Id = {2}", 
+                DataSet.DataSetName, row.Table.TableName, row["Id"]);
+            using (SqlConnection conn = new SqlConnection())
+            {
+
+                conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
+                SqlCommand cmd = new SqlCommand(sqlTxt);
+
+                cmd.Connection = conn;
+                conn.Open();
+                try
+                {
+                    cmd.ExecuteNonQuery();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+                finally
+                {
+                }
+            }
+        }
+
+        private void addRow(DataRow row)
+        {
+            //INSERT INTO table_name (column1, column2, column3, ...)
+            //VALUES (value1, value2, value3, ...);
+            string sqlTxt = string.Format("USE [{0}] insert into {1} (", 
+                DataSet.DataSetName, row.Table.TableName);
+            foreach (DataColumn col in row.Table.Columns)
+            {
+                sqlTxt += string.Format("{0}, ", col.ColumnName);
+            }
+            sqlTxt = sqlTxt.Substring(0, sqlTxt.Length - 2);
+            sqlTxt += ") values (";
+            foreach (DataColumn col in row.Table.Columns)
+            {
+                if (col.DataType == typeof(String))
+                    sqlTxt += string.Format("'{0}', ", row[col.ColumnName]);
+                else if (col.DataType == typeof(decimal) || col.DataType == typeof(int))
+                    sqlTxt += string.Format("{0}, ", row[col.ColumnName]);
+                else if (col.DataType == typeof(DateTime))
+                    sqlTxt += string.Format("'{0}', ", row[col.ColumnName]);
+            }
+            sqlTxt = sqlTxt.Substring(0, sqlTxt.Length - 2);
+            sqlTxt += ")";
+            using (SqlConnection conn = new SqlConnection())
+            {
+
+                conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
+                SqlCommand cmd = new SqlCommand(sqlTxt);
+
+                cmd.Connection = conn;
+                conn.Open();
+                try
+                {
+                    cmd.ExecuteNonQuery();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+                finally
+                {
+                }
+            }
+        }
+
+        private void updateRow(DataRow row)
+        {
+            //UPDATE table_name
+            //SET column1 = value1, column2 = value2, ...
+            //WHERE condition;
+            string sqlTxt = string.Format("USE [{0}] update {1} set ", DataSet.DataSetName, row.Table.TableName);
+            foreach(DataColumn col in row.Table.Columns)
+            {
+                if(col.ColumnName != "Id")
+                {
+                    if (col.DataType == typeof(String))
+                        sqlTxt += string.Format("{0}='{1}', ", col.ColumnName, row[col.ColumnName]);
+                    else if (col.DataType == typeof(decimal) || col.DataType == typeof(int))
+                        sqlTxt += string.Format("{0}={1}, ", col.ColumnName, row[col.ColumnName]);
+                    else if (col.DataType == typeof(DateTime))
+                        sqlTxt += string.Format("{0}='{1}', ", col.ColumnName, row[col.ColumnName]);
+                }
+            }
+            sqlTxt = sqlTxt.Substring(0, sqlTxt.Length - 2);
+            sqlTxt += string.Format(" where Id = {0} ", row["Id"]);
+
+            using (SqlConnection conn = new SqlConnection())
+            {
+
+                conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
+                SqlCommand cmd = new SqlCommand(sqlTxt);
+
+                cmd.Connection = conn;
+                conn.Open();
+                try
+                {
+                    cmd.ExecuteNonQuery();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+                finally
+                {
+                }
+            }
+        }
     }
 }

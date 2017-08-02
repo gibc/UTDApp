@@ -30,10 +30,12 @@ namespace UDTApp.ViewModels
     public class DataEditViewModel : ValidatableBindableBase
     {
         public DelegateCommand WindowLoadedCommand { get; set; }
+        public DelegateCommand UpdateDatasetCommand { get; set; }
 
         public DataEditViewModel()
         {
             WindowLoadedCommand = new DelegateCommand(windowLoaded);
+            UpdateDatasetCommand = new DelegateCommand(updateDataset);
         }
 
         private void windowLoaded()
@@ -42,6 +44,11 @@ namespace UDTApp.ViewModels
             UDTDataSet.udtDataSet.readDatabase(UDTXml.UDTXmlData.SchemaData[0] as UDTData);
             DisplayTable(UDTXml.UDTXmlData.SchemaData[0] as UDTData);
 
+        }
+
+        private void updateDataset()
+        {
+            UDTDataSet.udtDataSet.saveDataset();
         }
 
         private void DisplayTable(UDTData dataItem)
