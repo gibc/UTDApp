@@ -1,191 +1,50 @@
-﻿using Microsoft.Win32;
-using Prism.Commands;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Xml.Serialization;
-using UDTApp.Models;
-//using UDTApp.Models;
+using UDTApp.ViewModels;
 
-namespace UDTApp.ViewModels
+namespace UDTApp.Models
 {
-    public class PageZeroViewModel : ValidatableBindableBase
+    public class UDTDataSet : ValidatableBindableBase
     {
-        public DelegateCommand<MouseEventArgs> MouseMoveCommand { get; set; }
-        public DelegateCommand<DragEventArgs> DragEnterCommand { get; set; }
-        public DelegateCommand<DragEventArgs> DragDropCommand { get; set; }
-        public DelegateCommand<DragEventArgs> DragOverCommand { get; set; }
-        public DelegateCommand SaveToXmlCommand { get; set; }
-        public DelegateCommand ReadFromFileCommand { get; set; }
-        public DelegateCommand CreateDataBaseCommand { get; set; }
-        public DelegateCommand ReadDataBaseCommand { get; set; }
-
-        public PageZeroViewModel()
+        public UDTDataSet()
         {
-            MouseMoveCommand = new DelegateCommand<MouseEventArgs>(mouseMove);
-            DragEnterCommand = new DelegateCommand<DragEventArgs>(dragEnter);
-            DragDropCommand = new DelegateCommand<DragEventArgs>(dragDrop);
-            DragOverCommand = new DelegateCommand<DragEventArgs>(dragOver);
-            SaveToXmlCommand = new DelegateCommand(saveToXml);
-            ReadFromFileCommand = new DelegateCommand(readFromXml);
-            CreateDataBaseCommand = new DelegateCommand(createDatabase);
-            ReadDataBaseCommand = new DelegateCommand(readDatabase);
-
-            SchemaList = new List<UDTBase>();
-            UDTData baseObj = new UDTData();
-            baseObj.ChildData = DbSchema;
-            baseObj.ToolBoxItem = false;
-            baseObj.Name = "UDTMaster";
-            baseObj.parentObj = new UDTData();
-            baseObj.AnyErrors = false;
-            baseObj.EditBoxEnabled = true;
-            SchemaList.Add(baseObj);
 
         }
 
-        private UDTData masterItem = null;
-
-        private bool _anyErrors = false;
-        public bool AnyErrors 
-        { 
-            get 
+        private static UDTDataSet _udtDataSet = null;
+        public static UDTDataSet  udtDataSet
+        {
+            get
             {
-                return _anyErrors; 
-            }
-            set { SetProperty(ref _anyErrors, value); }
-        }
-
-        
-        private void setAnyErrors(bool value)
-        {
-            if (value)
-                AdornerType = typeof(NoteAdorner);
-            else
-                AdornerType = null;
-                //AdornerType = typeof(HideAdorer);
-            
-        }
-
-        private Type _adornerType = typeof(NoteAdorner); 
-        public Type AdornerType
-        {
-            get 
-            {
-                //return typeof(NoteAdorner); 
-                return _adornerType;
-            }
-            set 
-            { 
-                SetProperty(ref _adornerType, value);
-                if(value == null)
-                    Debug.Write(string.Format("Set AdornerType NULL\r"));
-                else
-                    Debug.Write(string.Format("Set AdornerType {0}\r", value));
-
-            }
-        } 
-
-        private void saveToXml()
-        {
-            //string xml = SerializeToString(SchemaList);
-            ////SchemaList = readFromXml(xml);
-
-            //SaveFileDialog saveFileDialog = new SaveFileDialog();
-            //saveFileDialog.Filter = "Xml (*.xml)|*.xml";
-            //if (saveFileDialog.ShowDialog().Value)
-            //{
-            //    FileStream xmlFile = File.Open(saveFileDialog.FileName, FileMode.OpenOrCreate);
-            //    Byte[] info = new UTF8Encoding(true).GetBytes(xml);
-            //    xmlFile.Write(info, 0, info.Length);
-            //    xmlFile.Close();
-            //}
-
-            UDTXml.UDTXmlData.saveToXml(SchemaList);
-        }
-
-        void readFromXml()
-        {
-            //OpenFileDialog openFileDialog = new OpenFileDialog();
-            //openFileDialog.Filter = "Xml (*.xml)|*.xml";
-            //if (openFileDialog.ShowDialog().Value)
-            //{
-            //    StreamReader xmlFile = File.OpenText(openFileDialog.FileName);
-            //    string xml = xmlFile.ReadToEnd();
-            //    xmlFile.Close();
-
-            //    List<UDTBase> schema = readFromXml(xml);
-            //    SchemaList = schema;
-            //}
-
-            List<UDTBase> schema = UDTXml.UDTXmlData.readFromXml();
-            if (schema != null) SchemaList = schema;
-        }
-
-        
-
-        private static string SerializeToString(object obj)
-        {
-            XmlSerializer serializer = new XmlSerializer(obj.GetType());
- 
-            using (StringWriter writer = new StringWriter())
-            {
-                serializer.Serialize(writer, obj);
- 
-                return writer.ToString();
-            }   
-        }
-
-        private List<UDTBase> readFromXml(string xml)
-        {
-            var serializer = new XmlSerializer(typeof(List<UDTBase>));
-
-            List<UDTBase> result;
-
-            using (TextReader reader = new StringReader(xml))
-            {
-                result = serializer.Deserialize(reader) as List<UDTBase>;
-            }
-
-            setParentRefs(result[0] as UDTData);
-
-            return result;
-        }
-
-        private void setParentRefs(UDTData dataItem)
-        {
-            foreach (UDTBase child in dataItem.ChildData)
-            {
-                if (child.GetType() == typeof(UDTData))
+                if (_udtDataSet == null)
                 {
-                    //UDTData childData = child as UDTData;
-                    //childData.ParentColumnNames.Add(dataItem.Name);
-                    setParentRefs(child as UDTData);
+                    _udtDataSet = new UDTDataSet();
                 }
-                child.parentObj = dataItem;
-
+                return _udtDataSet;
             }
         }
 
-        private void createDatabase()
+        public System.Data.DataSet DataSet
         {
-            //createSQLDatabase(SchemaList[0].Name);
-            //List<Guid> tableGuids = new List<Guid>();
-            //createDBTable(SchemaList[0] as UDTData, SchemaList[0].Name, tableGuids);
-
-            UDTDataSet.udtDataSet.createDatabase(SchemaList[0] as UDTData);
+            get;
+            set;
         }
-       
+
+        public void createDatabase(UDTData masterItem)
+        {
+            createSQLDatabase(masterItem.Name);
+            List<Guid> tableGuids = new List<Guid>();
+            createDBTable(masterItem, masterItem.Name, tableGuids);
+        }
+
+
 
         //private void addParentColumns(UDTData dataItem)
         //{
@@ -233,7 +92,7 @@ namespace UDTApp.ViewModels
             }
         }
 
-        public bool TableExists(string tableName)
+        private bool TableExists(string tableName)
         {
 
             string sqlTxt = string.Format(@"select count(*) from 
@@ -274,7 +133,7 @@ namespace UDTApp.ViewModels
 
             if (tableGuids.Contains(dataItem.objId)) return;
 
-            if(!TableExists(dataItem.Name))
+            if (!TableExists(dataItem.Name))
             {
                 using (SqlConnection conn = new SqlConnection())
                 {
@@ -302,7 +161,7 @@ namespace UDTApp.ViewModels
                     cmd.Connection = conn;
                     conn.Open();
                     try
-                    { 
+                    {
                         cmd.ExecuteNonQuery();
                     }
                     catch (Exception ex)
@@ -316,30 +175,29 @@ namespace UDTApp.ViewModels
             {
                 if (item.GetType() == typeof(UDTData))
                 {
-                    createDBTable(item as UDTData, dbName, tableGuids);                  
+                    createDBTable(item as UDTData, dbName, tableGuids);
                 }
             }
         }
 
-        private void readDatabase()
+        public void readDatabase(UDTData masterItem)
         {
-            //System.Data.DataSet dataSet = new System.Data.DataSet(SchemaList[0].Name);
-            //readTable(dataSet, SchemaList[0] as UDTData, SchemaList[0].Name);
-
-            UDTDataSet.udtDataSet.readDatabase(SchemaList[0] as UDTData);
+            DataSet = new System.Data.DataSet(masterItem.Name);
+            readTable(DataSet, masterItem, masterItem.Name);
+            RaisePropertyChanged("udtDataSet");
         }
 
         DataTable createDataTable(UDTData dataItem)
         {
             DataTable tbl = new DataTable(dataItem.Name);
-            foreach(UDTBase item in dataItem.ChildData)
+            foreach (UDTBase item in dataItem.ChildData)
             {
-                if(item.GetType() != typeof(UDTData))
+                if (item.GetType() != typeof(UDTData))
                 {
                     DataColumn col = new DataColumn();
                     col.ColumnName = item.Name;
                     col.DataType = typeof(int);
-                    if(item.GetType() == typeof(UDTTxtItem))
+                    if (item.GetType() == typeof(UDTTxtItem))
                     {
                         col.DataType = typeof(string);
                     }
@@ -375,7 +233,7 @@ namespace UDTApp.ViewModels
 
         private void readTable(System.Data.DataSet dataSet, UDTData dataItem, string dbName, string parentColName = "", int parentId = -1)
         {
-            if(!dataSet.Tables.Contains(dataItem.Name))
+            if (!dataSet.Tables.Contains(dataItem.Name))
                 dataSet.Tables.Add(createDataTable(dataItem));
             DataTable dataTable = dataSet.Tables[dataItem.Name];
             using (SqlConnection conn = new SqlConnection())
@@ -405,7 +263,7 @@ namespace UDTApp.ViewModels
                     {
                         if (childItem.GetType() == typeof(UDTData))
                         {
-                            foreach(DataRow row in dataTable.Rows)
+                            foreach (DataRow row in dataTable.Rows)
                             {
                                 readTable(dataSet, childItem as UDTData, dbName, dataItem.Name, (int)row["Id"]);
                             }
@@ -444,82 +302,6 @@ namespace UDTApp.ViewModels
                 {
                     reader.Close();
                 }
-            }
-        }
-
-        public Collection<UDTBase> UDTItems {
-            get { return UDTItemList.ItemList; }
-        }
-
-        private ObservableCollection<UDTBase> DbSchema = new ObservableCollection<UDTBase>();
-
-        public static List<UDTBase> _schemaList = null; 
-        public List<UDTBase> SchemaList {
-            get { return _schemaList; }
-            set
-            {
-                SetProperty(ref _schemaList, value);
-            }
-        }
-
-        private void dragOver(DragEventArgs dragArgs)
-        {
-            Button btn = dragArgs.Source as Button;
-            dragArgs.Effects = DragDropEffects.Copy;
-        }
-
-        private void dragDrop(DragEventArgs dragArgs)
-        {
-            Button btn = dragArgs.Source as Button;
-            if (!dragArgs.Handled && btn != null)
-            {
-                ObservableCollection<UDTBase> col = Ex.GetSecurityId(btn);
-                UDTData dataItem = (UDTData)dragArgs.Data.GetData(typeof(UDTData));
-                col.Add(dataItem);
-                dragArgs.Handled = true;
-                _currentItem = null;
-            }
-        }
-
-
-        private UDTBase _currentItem = null;
-        private void dragEnter(DragEventArgs dragArgs)
-        {
-            Button btn = dragArgs.Source as Button;
-            if (btn != null)
-            {
- 
-                string[] frmts = dragArgs.Data.GetFormats();
-                if (dragArgs.Data.GetDataPresent(typeof(UDTData)))
-                {
-                    UDTData dataItem = (UDTData)dragArgs.Data.GetData(typeof(UDTData));
-                    _currentItem = dataItem as UDTBase;
-
- 
-                }
-            }
-        }
-
-        private bool inMove = false;
-        private void mouseMove(MouseEventArgs data)
-        {
-
-            Button btn = data.Source as Button;
-            ObservableCollection<UDTBase> col = Ex.GetSecurityId(btn);
-            //ObservableCollection<UDTData> col = UTDDataColProp.GetDataCol(btn);
-
-            if (btn != null && data.LeftButton == MouseButtonState.Pressed && !inMove)
-            {
-                inMove = true;
-                Debug.Write(string.Format(">>>Enter mouseMove\r", _currentItem));
-
-                DragDrop.DoDragDrop(btn,
-                                 new UDTData(),
-                                 DragDropEffects.Copy);
-
-                Debug.Write(string.Format("<<<Exit mouseMove\r", _currentItem));
-                data.Handled = true;
-                inMove = false;
             }
         }
     }

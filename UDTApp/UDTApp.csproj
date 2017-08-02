@@ -91,7 +91,10 @@
     <Compile Include="Models\DataSetRelation.cs" />
     <Compile Include="Models\ModelBase.cs" />
     <Compile Include="Models\UDTData.cs" />
+    <Compile Include="Models\UDTDataSet.cs" />
     <Compile Include="Models\UDTUserData.cs" />
+    <Compile Include="Models\UDTXml.cs" />
+    <Compile Include="ViewModels\DataEditViewModel.cs" />
     <Compile Include="ViewModels\DataViewModel.cs" />
     <Compile Include="ViewModels\ISubPage.cs" />
     <Compile Include="ViewModels\PageOneViewModel.cs" />
@@ -109,6 +112,9 @@
     <Compile Include="ViewModels\UDTDataGrid.cs" />
     <Compile Include="ViewModels\UTDDataColProp.cs" />
     <Compile Include="ViewModels\ViewModelBase.cs" />
+    <Compile Include="Views\DataEditView.xaml.cs">
+      <DependentUpon>DataEditView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\PageOne.xaml.cs">
       <DependentUpon>PageOne.xaml</DependentUpon>
     </Compile>
@@ -134,6 +140,10 @@
       <DependentUpon>SetUp.xaml</DependentUpon>
     </Compile>
     <Page Include="Views\Data.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\DataEditView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

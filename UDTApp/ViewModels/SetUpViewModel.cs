@@ -20,6 +20,7 @@ namespace UDTApp.ViewModels
         public const string PageOne = "PageOne";
         public const string PageTwo = "PageTwo";
         public const string PageThree = "PageThree";
+        public const string DataEditView = "DataEditView";
     }
 
     public class SetUpViewModel : BindableBase
@@ -32,15 +33,18 @@ namespace UDTApp.ViewModels
         public DelegateCommand WindowLoadedCommand { get; set; }
         public DelegateCommand NextCommand { get; set; }
         public DelegateCommand PreviousCommand { get; set; }
+        public DelegateCommand DataEditViewCommand { get; set; }
 
         public SetUpViewModel(IUnityContainer container, IRegionManager regionManager)
         {
             _regionManager = regionManager;
             _container = container;
             WindowLoadedCommand = new DelegateCommand(windowLoaded);
-            PageNames = new List<string>() { cons.PageZero, cons.PageOne, cons.PageTwo, cons.PageThree };
+            PageNames = new List<string>() { cons.PageZero, cons.PageOne, cons.PageTwo, 
+                cons.PageThree, cons.DataEditView};
             NextCommand = new DelegateCommand(moveNext, canMoveNext);
             PreviousCommand = new DelegateCommand(movePrevious, canMovePevious);
+            DataEditViewCommand = new DelegateCommand(dataEditView);
         }
 
         private void windowLoaded()
@@ -53,6 +57,9 @@ namespace UDTApp.ViewModels
             _regionManager.AddToRegion(cons.SetUpRegion, view);
             view = new PageThree();
             _regionManager.AddToRegion(cons.SetUpRegion, view);
+            view = new DataEditView();
+            _regionManager.AddToRegion(cons.SetUpRegion, view);
+
             Navigate();
 
         }
@@ -60,6 +67,11 @@ namespace UDTApp.ViewModels
         private void Navigate()
         {
             _regionManager.RequestNavigate(cons.SetUpRegion, PageNames[pageIndex]);
+        }
+
+        private void dataEditView()
+        {
+            _regionManager.RequestNavigate(cons.SetUpRegion, cons.DataEditView);
         }
 
         private void moveNext()

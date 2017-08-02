@@ -24,6 +24,7 @@
             </StackPanel.Resources>
             <Button Command="{Binding PreviousCommand}" Content="Pervious" Margin="10,10,10,10.333"/>
             <Button Command="{Binding NextCommand}" Content="Next" Margin="10,10,10,10.333"/>
+            <Button Command="{Binding DataEditViewCommand}" Content="EditDataView" Margin="10,10,10,10.333"/>
         </StackPanel>
     </Grid>
 </UserControl>
