@@ -35,13 +35,14 @@
         </Grid.RowDefinitions>
         
         <StackPanel Grid.Column="0">
-            <DataGrid ItemsSource="{Binding gridData}" 
+            <Label Content="{Binding DataViewName}"/>
+            <DataGrid ItemsSource="{Binding gridData}" CanUserAddRows="False"
                       SelectedItem="{Binding SelectedItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                       SelectedIndex="{Binding SelectedIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
         </StackPanel>
         <StackPanel Grid.Column="1">
-            <ListBox ItemsSource="{Binding childTables}" HorizontalContentAlignment="Center" />
             <ContentControl Content="{Binding returnBtn}"/>
+            <ListBox ItemsSource="{Binding childTables}" HorizontalContentAlignment="Center" />
             <Button Content="Add Row" Command="{Binding AddRowCommand}" />
             <Button Content="Delete Row" Command="{Binding DeleteRowCommand}" />
             <Button Content="Save DataSet" Command="{Binding UpdateDatasetCommand}" />

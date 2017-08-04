@@ -138,7 +138,7 @@ namespace UDTApp.Models
                 using (SqlConnection conn = new SqlConnection())
                 {
                     ddl = string.Format("USE [{0}] CREATE TABLE {1} (", dbName, dataItem.Name);
-                    ddl += string.Format("[Id] [int] IDENTITY(1,1) NOT NULL, ");
+                    ddl += string.Format("[Id] [uniqueidentifier] NOT NULL, ");
                     foreach (UDTBase item in dataItem.ChildData)
                     {
                         if (item.GetType() != typeof(UDTData))
@@ -148,7 +148,7 @@ namespace UDTApp.Models
                     }
                     foreach (string colName in dataItem.ParentColumnNames)
                     {
-                        ddl += string.Format("{0} int, ", colName);
+                        ddl += string.Format("{0} [uniqueidentifier], ", colName);
                     }
                     ddl = ddl.Substring(0, ddl.Length - 2);
                     ddl += "); ";
@@ -183,6 +183,7 @@ namespace UDTApp.Models
         public void readDatabase(UDTData masterItem)
         {
             DataSet = new System.Data.DataSet(masterItem.Name);
+            DataSet.EnforceConstraints = true;
             readTable(DataSet, masterItem, masterItem.Name);
             RaisePropertyChanged("udtDataSet");
         }
@@ -220,21 +221,40 @@ namespace UDTApp.Models
             {
                 DataColumn col = new DataColumn();
                 col.ColumnName = colName;
-                col.DataType = typeof(int);
+                col.DataType = typeof(Guid);
+                col.AllowDBNull = true;
                 tbl.Columns.Add(col);
             }
             DataColumn idCol = new DataColumn();
+            //idCol.AutoIncrement = true;
             idCol.ColumnName = "Id";
-            idCol.DataType = typeof(int);
+            idCol.DataType = typeof(Guid);
             tbl.Columns.Add(idCol);
 
             return tbl;
         }
 
-        private void readTable(System.Data.DataSet dataSet, UDTData dataItem, string dbName, string parentColName = "", int parentId = -1)
+        private void readTable(System.Data.DataSet dataSet, UDTData dataItem, string dbName, string parentColName = "")
         {
-            if (!dataSet.Tables.Contains(dataItem.Name))
-                dataSet.Tables.Add(createDataTable(dataItem));
+            if (dataSet.Tables.Contains(dataItem.Name)) return;  // read table only once
+
+            DataTable tbl = createDataTable(dataItem);
+
+            dataSet.Tables.Add(tbl);
+
+            foreach (string colName in dataItem.ParentColumnNames)
+            {
+                string fkName = string.Format("{0}{1}", dataItem.parentObj.Name, dataItem.Name);
+                DataColumn pCol = DataSet.Tables[dataItem.parentObj.Name].Columns["Id"];
+                ForeignKeyConstraint fKConstrint = new ForeignKeyConstraint(
+                      fkName,
+                      pCol,  // parent col
+                      tbl.Columns[colName]); // child column
+                fKConstrint.DeleteRule = Rule.Cascade; 
+                if(!tbl.Constraints.Contains(fKConstrint.ConstraintName))
+                    tbl.Constraints.Add(fKConstrint);
+            }
+
             DataTable dataTable = dataSet.Tables[dataItem.Name];
             using (SqlConnection conn = new SqlConnection())
             {
@@ -242,12 +262,14 @@ namespace UDTApp.Models
                 SqlCommand cmd = new SqlCommand();
                 SqlDataReader reader;
 
+
+                // read all records in table on first call and only call
                 string sqlTxt;
-                if (parentId == -1)
+                //if (parentId == -1)
                     sqlTxt = string.Format("USE [{0}] select * from {1} ", dbName, dataItem.Name);
-                else
-                    sqlTxt = string.Format("USE [{0}] select * from {1} where {2} = {3} ", dbName,
-                        dataItem.Name, parentColName, parentId);
+                //else
+                //    sqlTxt = string.Format("USE [{0}] select * from {1} where {2} = {3} ", dbName,
+                //        dataItem.Name, parentColName, parentId);
 
                 cmd.CommandText = sqlTxt;
                 cmd.CommandType = CommandType.Text;
@@ -255,7 +277,6 @@ namespace UDTApp.Models
                 conn.Open();
 
                 reader = cmd.ExecuteReader();
-                // Data is accessible through the DataReader object here.      
                 try
                 {
                     dataTable.Load(reader);
@@ -265,7 +286,7 @@ namespace UDTApp.Models
                         {
                             foreach (DataRow row in dataTable.Rows)
                             {
-                                readTable(dataSet, childItem as UDTData, dbName, dataItem.Name, (int)row["Id"]);
+                                readTable(dataSet, childItem as UDTData, dbName, dataItem.Name);
                             }
                         }
                     }
@@ -333,8 +354,9 @@ namespace UDTApp.Models
         {
             //DELETE FROM table_name
             //WHERE condition;
+            int id = (int)row["Id", DataRowVersion.Original];
             string sqlTxt = string.Format("USE [{0}] delete from {1} where Id = {2}", 
-                DataSet.DataSetName, row.Table.TableName, row["Id"]);
+                DataSet.DataSetName, row.Table.TableName, id);
             using (SqlConnection conn = new SqlConnection())
             {
 
@@ -365,18 +387,30 @@ namespace UDTApp.Models
                 DataSet.DataSetName, row.Table.TableName);
             foreach (DataColumn col in row.Table.Columns)
             {
+                //if (col.ColumnName == "Id") continue;
+
                 sqlTxt += string.Format("{0}, ", col.ColumnName);
             }
             sqlTxt = sqlTxt.Substring(0, sqlTxt.Length - 2);
             sqlTxt += ") values (";
             foreach (DataColumn col in row.Table.Columns)
             {
+                //if (col.ColumnName == "Id") continue;
+
                 if (col.DataType == typeof(String))
                     sqlTxt += string.Format("'{0}', ", row[col.ColumnName]);
                 else if (col.DataType == typeof(decimal) || col.DataType == typeof(int))
                     sqlTxt += string.Format("{0}, ", row[col.ColumnName]);
                 else if (col.DataType == typeof(DateTime))
                     sqlTxt += string.Format("'{0}', ", row[col.ColumnName]);
+                else if (col.DataType == typeof(Guid))
+                {
+                    var id = row[col.ColumnName];
+                    if(id.GetType() == typeof(Guid))
+                        sqlTxt += string.Format("'{0}', ", row[col.ColumnName]);
+                    else
+                        sqlTxt += string.Format("NULL, ");
+                }
             }
             sqlTxt = sqlTxt.Substring(0, sqlTxt.Length - 2);
             sqlTxt += ")";
@@ -410,7 +444,7 @@ namespace UDTApp.Models
             string sqlTxt = string.Format("USE [{0}] update {1} set ", DataSet.DataSetName, row.Table.TableName);
             foreach(DataColumn col in row.Table.Columns)
             {
-                if(col.ColumnName != "Id")
+                //if(col.ColumnName != "Id")
                 {
                     if (col.DataType == typeof(String))
                         sqlTxt += string.Format("{0}='{1}', ", col.ColumnName, row[col.ColumnName]);
@@ -418,10 +452,18 @@ namespace UDTApp.Models
                         sqlTxt += string.Format("{0}={1}, ", col.ColumnName, row[col.ColumnName]);
                     else if (col.DataType == typeof(DateTime))
                         sqlTxt += string.Format("{0}='{1}', ", col.ColumnName, row[col.ColumnName]);
+                    else if (col.DataType == typeof(Guid))
+                    {
+                        var id = row[col.ColumnName];
+                        if (id.GetType() == typeof(Guid))
+                            sqlTxt += string.Format("{0}='{1}', ", col.ColumnName, row[col.ColumnName]);
+                        else
+                            sqlTxt += string.Format("{0}=NULL, ", col.ColumnName);
+                    }
                 }
             }
             sqlTxt = sqlTxt.Substring(0, sqlTxt.Length - 2);
-            sqlTxt += string.Format(" where Id = {0} ", row["Id"]);
+            sqlTxt += string.Format(" where Id = '{0}' ", row["Id"]);
 
             using (SqlConnection conn = new SqlConnection())
             {

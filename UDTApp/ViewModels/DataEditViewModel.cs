@@ -21,15 +21,15 @@ namespace UDTApp.ViewModels
             canClick = _canClick;
             ButtonClickCommand = new DelegateCommand(btnClick, canClick);
         }
-        public UDTData dataItem { get; set; }
+        private UDTData dataItem { get; set; }
         public string buttonName { get; set; }
-        public Action<UDTData> buttonClick { get; set; }
-        public Func<bool> canClick { get; set; }
+        private Action<UDTData> buttonClick { get; set; }
+        private Func<bool> canClick { get; set; }
         private void btnClick()
         {
             buttonClick(dataItem);
         }
-        public void raiseCanExecuteChnaged()
+        public void raiseCanExecuteChanged()
         {
             ButtonClickCommand.RaiseCanExecuteChanged();
         }
@@ -47,7 +47,7 @@ namespace UDTApp.ViewModels
             WindowLoadedCommand = new DelegateCommand(windowLoaded);
             UpdateDatasetCommand = new DelegateCommand(updateDataset);
             AddRowCommand = new DelegateCommand(addRow);
-            DeleteRowCommand = new DelegateCommand(deleteRow);
+            DeleteRowCommand = new DelegateCommand(deleteRow, canDelete);
         }
 
         DataRowView _selectedItem = null;
@@ -58,7 +58,9 @@ namespace UDTApp.ViewModels
             { 
                 _selectedItem = value;
                 foreach (UDTDataButton btn in childTables)
-                    btn.raiseCanExecuteChnaged();
+                    btn.raiseCanExecuteChanged();
+
+                DeleteRowCommand.RaiseCanExecuteChanged();
             }
         }
 
@@ -66,7 +68,11 @@ namespace UDTApp.ViewModels
         public int SelectedIndex
         {
             get { return _selectedIndex; }
-            set { _selectedIndex = value; }
+            set 
+            { 
+                //_selectedIndex = value;
+                SetProperty(ref _selectedIndex, value);
+            }
         }
 
         private void windowLoaded()
@@ -84,30 +90,52 @@ namespace UDTApp.ViewModels
 
         private void addRow()
         {
-            //DataRow row = gridData.NewRow();
-            //foreach(string colName in currentDataItem.ParentColumnNames)
-            //{
-            //    row[colName] = 1;
-            //}
+            DataRowView row = gridData.AddNew();
+            row["Id"] = Guid.NewGuid();
+            foreach (string colName in currentDataItem.ParentColumnNames)
+            {
+                //row[colName] = parentId;
+                if (colName == currentDataItem.parentObj.Name)
+                    row[colName] = parentIds.Peek();
+                else
+                    row[colName] = DBNull.Value;
+            }
             //gridData.Rows.Add(row);
         }
 
         private void deleteRow()
         {
+            SelectedItem.Delete();
+            //gridData.Table.Rows.Remove(SelectedItem.Delete());
+        }
 
+        private bool canDelete()
+        {
+            return SelectedItem != null;
         }
 
         private UDTData currentDataItem = null;
 
         private void DisplayTable(UDTData dataItem)
         {
+            //if (SelectedItem != null) parentId = (Guid)SelectedItem["Id"];
+            if (SelectedItem != null) parentIds.Push( (Guid)SelectedItem["Id"]);
 
-            DataTable tbl = new DataTable();
             if (dataItem.parentObj != null)
             {
-                string filter = string.Format("{0} = {1}", currentDataItem.Name, SelectedItem["Id"]);
-                DataView dv = new DataView(UDTDataSet.udtDataSet.DataSet.Tables[dataItem.Name],
-                    filter, "", DataViewRowState.CurrentRows);
+                DataTable childTbl = UDTDataSet.udtDataSet.DataSet.Tables[dataItem.Name];
+                DataView dv;
+                if (childTbl.Rows.Count > 0)
+                {
+                    string filter = string.Format("{0} = '{1}'", currentDataItem.Name, SelectedItem["Id"]);
+                    dv = new DataView(childTbl,
+                        filter, "", DataViewRowState.CurrentRows);
+                }
+                else
+                {
+                    dv = new DataView();
+                    dv.Table = childTbl;
+                }
                 gridData = dv;
             }
             else
@@ -116,7 +144,12 @@ namespace UDTApp.ViewModels
             currentDataItem = dataItem;
 
             updateChildButtons(dataItem);
+
         }
+
+        //private Guid parentId = Guid.Empty;
+
+        private Stack<Guid> parentIds = new Stack<Guid>();
 
         private void updateChildButtons(UDTData dataItem)
         {
@@ -132,6 +165,11 @@ namespace UDTApp.ViewModels
             if (dataItem.parentObj != null)
                 returnBtn = new UDTDataButton(dataItem.parentObj as UDTData, returnBtnClick, returnBtnClick, "Back to: ");
             childTables = childList;
+
+            DataViewName = string.Format("Data Group: {0}", dataItem.Name);
+
+            SelectedIndex = 0;
+
         }
 
         private UDTDataButton _returnBtn = null;
@@ -153,6 +191,9 @@ namespace UDTApp.ViewModels
 
         private void returnBtnClick(UDTData dataItem)
         {
+            //parentId = Guid.Empty;
+            parentIds.Pop();
+
             gridData = new DataView(UDTDataSet.udtDataSet.DataSet.Tables[dataItem.Name]);
             currentDataItem = dataItem;
             updateChildButtons(dataItem);
@@ -163,8 +204,16 @@ namespace UDTApp.ViewModels
             return true;
         }
 
-        //private DataTable _gridData = null;
-        //public DataTable gridData
+        private string _dataViewName = ""; 
+        public string DataViewName 
+        { 
+            get { return _dataViewName; }
+            set
+            {
+                SetProperty(ref _dataViewName, value);
+            }
+        }
+ 
         private DataView _gridData = null;
         public DataView gridData
         { 
