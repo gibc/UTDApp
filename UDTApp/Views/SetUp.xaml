@@ -7,7 +7,7 @@
              prism:ViewModelLocator.AutoWireViewModel="True"
              mc:Ignorable="d" 
              xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
-             d:DesignHeight="800" d:DesignWidth="300">
+             d:DesignHeight="1000" d:DesignWidth="300">
 
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Loaded">
@@ -16,7 +16,8 @@
     </i:Interaction.Triggers>
     <Grid>
         <ContentControl prism:RegionManager.RegionName="SetUpRegion" Margin="0,0,0,309"/>
-        <StackPanel  Orientation="Horizontal" HorizontalAlignment="Left" Height="45" Margin="0,0,0,335"  VerticalAlignment="Bottom" Width="280">
+        <StackPanel  Orientation="Horizontal" HorizontalAlignment="Left" 
+                     Height="45" Margin="0,0,0,335"  VerticalAlignment="Bottom" Width="280">
             <StackPanel.Resources>
                 <Style TargetType="{x:Type Button}">
                     <Setter Property="Margin" Value="10,10,10,10"/>

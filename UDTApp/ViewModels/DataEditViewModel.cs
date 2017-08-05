@@ -6,10 +6,78 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
 using UDTApp.Models;
 
 namespace UDTApp.ViewModels
 {
+    public class UDTDataGrid : ValidatableBindableBase
+    {
+        public DelegateCommand<DataGridAutoGeneratingColumnEventArgs> CreateColumnsCommand { get; set; }
+
+        public UDTDataGrid(string _parentColName, UDTData _childDef)
+        {
+            parentColName = _parentColName;
+            childDef = _childDef;
+            CreateColumnsCommand = new DelegateCommand<System.Windows.Controls.DataGridAutoGeneratingColumnEventArgs>(createColumns);
+
+        }
+
+        private DataView _gridData = null;
+        public DataView gridData
+        {
+            get
+            {
+                return _gridData;
+            }
+            set
+            {
+                SetProperty(ref _gridData, value);
+            }
+        }
+
+        private DataRowView _parentRow = null;
+        public DataRowView parentRow
+        {
+            get { return _parentRow; }
+            set
+            {
+                SetProperty(ref _parentRow, value);
+
+                Guid parentId = (Guid)_parentRow["Id"];
+
+                DataTable childTbl = UDTDataSet.udtDataSet.DataSet.Tables[childDef.Name];
+                DataView dv;
+                if (childTbl.Rows.Count > 0)
+                {
+                    string filter = string.Format("{0} = '{1}'", parentColName, parentId);
+                    dv = new DataView(childTbl,
+                        filter, "", DataViewRowState.CurrentRows);
+                }
+                else
+                {
+                    dv = new DataView();
+                    dv.Table = childTbl;
+                }
+
+                gridData = dv;
+            }
+        
+        }
+
+        private string parentColName { get; set; }
+        private UDTData childDef { get; set; }
+
+        public void createColumns(System.Windows.Controls.DataGridAutoGeneratingColumnEventArgs e)
+        {
+            if (e.PropertyType == typeof(Guid))
+            {
+                e.Column.Visibility = Visibility.Hidden;
+            }
+        }
+    }
+
     public class UDTDataTextBox : ValidatableBindableBase
     {
         public UDTDataTextBox(string _colName, UDTBase item)
@@ -123,6 +191,7 @@ namespace UDTApp.ViewModels
         public DelegateCommand UpdateDatasetCommand { get; set; }
         public DelegateCommand AddRowCommand { get; set; }
         public DelegateCommand DeleteRowCommand { get; set; }
+        public DelegateCommand<DataGridAutoGeneratingColumnEventArgs> CreateColumnsCommand { get; set; }
 
         public DataEditViewModel()
         {
@@ -130,6 +199,8 @@ namespace UDTApp.ViewModels
             UpdateDatasetCommand = new DelegateCommand(updateDataset);
             AddRowCommand = new DelegateCommand(addRow);
             DeleteRowCommand = new DelegateCommand(deleteRow, canDelete);
+            CreateColumnsCommand = new DelegateCommand<System.Windows.Controls.DataGridAutoGeneratingColumnEventArgs>(createColumns);
+
         }
 
         DataRowView _selectedItem = null;
@@ -143,6 +214,7 @@ namespace UDTApp.ViewModels
                     btn.raiseCanExecuteChanged();
 
                 if (editBoxes != null && _selectedItem != null) updateEditBoxes(_selectedItem);
+                if (childGrids != null && _selectedItem != null) updateChildGrids(_selectedItem);
 
                 DeleteRowCommand.RaiseCanExecuteChanged();
             }
@@ -256,6 +328,7 @@ namespace UDTApp.ViewModels
             DataViewName = string.Format("Data Group: {0}", dataItem.Name);
 
             editBoxes = createEditBoxes(dataItem);
+            childGrids = createChildGrids(dataItem);
 
             //SelectedIndex = 0;
 
@@ -339,6 +412,29 @@ namespace UDTApp.ViewModels
             }
         }
 
+        private List<UDTDataGrid> _childGrids = null;
+        public List<UDTDataGrid> childGrids
+        {
+            get { return _childGrids; }
+            set
+            {
+                SetProperty(ref _childGrids, value);
+            }
+        }
+
+        List<UDTDataGrid> createChildGrids(UDTData dataItem)
+        {
+            List<UDTDataGrid> childGrids = new List<UDTDataGrid>();
+
+            foreach (UDTBase item in dataItem.ChildData)
+            {
+                if (item.GetType() == typeof(UDTData))
+                    childGrids.Add(new UDTDataGrid(dataItem.Name, item as UDTData));
+            }
+
+            return childGrids;
+        }
+
         List<UDTDataTextBox> createEditBoxes(UDTData dataItem)
         {
             List<UDTDataTextBox> editBoxes = new List<UDTDataTextBox>();
@@ -352,10 +448,24 @@ namespace UDTApp.ViewModels
             return editBoxes;
         }
 
-        void updateEditBoxes(DataRowView selectedRow)
+        private void updateEditBoxes(DataRowView selectedRow)
         {
             foreach (UDTDataTextBox editBox in editBoxes)
                 editBox.row = selectedRow;
+        }
+
+        private void updateChildGrids(DataRowView selectedRow)
+        {
+            foreach (UDTDataGrid childGrid in childGrids)
+                childGrid.parentRow = selectedRow;
+        }
+
+        public void createColumns(System.Windows.Controls.DataGridAutoGeneratingColumnEventArgs e)
+        {
+            if (e.PropertyType == typeof(Guid))
+            {
+                e.Column.Visibility = Visibility.Hidden;
+            }
         }
     }
 }

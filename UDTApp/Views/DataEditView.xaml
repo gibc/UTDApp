@@ -9,12 +9,18 @@
              xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" 
              xmlns:s="clr-namespace:System;assembly=mscorlib"
              xmlns:vm="clr-namespace:UDTApp.ViewModels"
-             d:DesignHeight="300" d:DesignWidth="300">
+             xmlns:cltLib="clr-namespace:UDTAppControlLibrary.Behaviour;assembly=UDTAppControlLibrary"
+             d:DesignHeight="500" d:DesignWidth="500">
 
     <UserControl.Resources>
 
         <DataTemplate DataType="{x:Type vm:UDTDataButton}">
             <Button Command="{Binding ButtonClickCommand}" Content="{Binding buttonName}" Width="Auto" Height="20"></Button>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:UDTDataGrid}">
+            <DataGrid ItemsSource="{Binding gridData}" IsReadOnly="True" 
+                 cltLib:AutoGeneratingColumnEventToCommandBehaviour.Command="{Binding CreateColumnsCommand}"/>
         </DataTemplate>
 
         <DataTemplate DataType="{x:Type vm:UDTDataTextBox}">
@@ -36,25 +42,29 @@
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="auto" MinWidth="500"/>
-            <ColumnDefinition Width="150"/>
+            <ColumnDefinition Width="300"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
         
-        <StackPanel Grid.Column="0">
+        <StackPanel Grid.Column="0" Grid.Row="0">
             <Label Content="{Binding DataViewName}"/>
             <DataGrid ItemsSource="{Binding gridData}" CanUserAddRows="False"
                       SelectedItem="{Binding SelectedItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                      SelectedIndex="{Binding SelectedIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                      SelectedIndex="{Binding SelectedIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                      cltLib:AutoGeneratingColumnEventToCommandBehaviour.Command="{Binding CreateColumnsCommand}"/>
+            <WrapPanel>
+                <Button Content="Add Row" Command="{Binding AddRowCommand}" />
+                <Button Content="Delete Row" Command="{Binding DeleteRowCommand}" />
+                <Button Content="Save DataSet" Command="{Binding UpdateDatasetCommand}" />
+            </WrapPanel>
         </StackPanel>
-        <StackPanel Grid.Column="1">
+        <StackPanel Grid.Column="1" Grid.Row="0" Height="1000">
             <ContentControl Content="{Binding returnBtn}"/>
             <ListBox ItemsSource="{Binding childTables}" HorizontalContentAlignment="Center" />
-            <Button Content="Add Row" Command="{Binding AddRowCommand}" />
-            <Button Content="Delete Row" Command="{Binding DeleteRowCommand}" />
-            <Button Content="Save DataSet" Command="{Binding UpdateDatasetCommand}" />
             <ListBox ItemsSource="{Binding editBoxes}" HorizontalContentAlignment="Left" />
+            <ListBox ItemsSource="{Binding childGrids}" HorizontalContentAlignment="Left" />
         </StackPanel>
 
     </Grid>
