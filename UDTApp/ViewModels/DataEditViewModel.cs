@@ -1,6 +1,7 @@
 ﻿using Prism.Commands;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Linq;
 using System.Text;
@@ -9,6 +10,45 @@ using UDTApp.Models;
 
 namespace UDTApp.ViewModels
 {
+    public class UDTDataTextBox : ValidatableBindableBase
+    {
+        public UDTDataTextBox(string _colName, UDTBase item)
+        {
+            colName = _colName;
+            udtItem = item;
+        }
+
+        private string _editText = null;
+        [Required]
+        public string editText 
+        {
+            get { return _editText; }
+            set 
+            { 
+                SetProperty(ref _editText, value);
+                row[colName] = value;
+            }
+        }
+
+        private DataRowView _row = null;
+        public DataRowView row 
+        {
+            get { return _row; }
+            set 
+            {
+                SetProperty(ref _row, value);
+                if (udtItem.GetType() == typeof(UDTTxtItem))
+                    editText = (string)_row[colName];
+                else if (udtItem.GetType() == typeof(UDTDateItem))
+                    editText = (string)_row[colName].ToString();
+            }
+        }
+
+        public string colName { get; set; }
+        private UDTBase udtItem = null;
+
+    }
+
     public class UDTDataButton
     {
         public DelegateCommand ButtonClickCommand { get; set; }
@@ -59,6 +99,8 @@ namespace UDTApp.ViewModels
                 _selectedItem = value;
                 foreach (UDTDataButton btn in childTables)
                     btn.raiseCanExecuteChanged();
+
+                if (editBoxes != null && _selectedItem != null) updateEditBoxes(_selectedItem);
 
                 DeleteRowCommand.RaiseCanExecuteChanged();
             }
@@ -168,6 +210,8 @@ namespace UDTApp.ViewModels
 
             DataViewName = string.Format("Data Group: {0}", dataItem.Name);
 
+            editBoxes = createEditBoxes(dataItem);
+
             SelectedIndex = 0;
 
         }
@@ -235,6 +279,38 @@ namespace UDTApp.ViewModels
             {
                 SetProperty(ref _childTables, value);
             }
+        }
+
+        private List<UDTDataTextBox> _editBoxes = null;
+        public List<UDTDataTextBox> editBoxes 
+        {
+            get { return _editBoxes; }
+            set
+            {
+                SetProperty(ref _editBoxes, value);
+            }
+        }
+
+        List<UDTDataTextBox> createEditBoxes(UDTData dataItem)
+        {
+            List<UDTDataTextBox> editBoxes = new List<UDTDataTextBox>();
+            
+            foreach(UDTBase item in dataItem.ChildData)
+            {
+                if(item.GetType() == typeof(UDTTxtItem))
+                    editBoxes.Add(new UDTDataTextBox(item.Name, item));
+                else if (item.GetType() == typeof(UDTDateItem))
+                    editBoxes.Add(new UDTDataTextBox(item.Name, item));
+
+            }
+
+            return editBoxes;
+        }
+
+        void updateEditBoxes(DataRowView selectedRow)
+        {
+            foreach (UDTDataTextBox editBox in editBoxes)
+                editBox.row = selectedRow;
         }
     }
 }

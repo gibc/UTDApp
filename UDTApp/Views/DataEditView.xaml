@@ -16,6 +16,14 @@
         <DataTemplate DataType="{x:Type vm:UDTDataButton}">
             <Button Command="{Binding ButtonClickCommand}" Content="{Binding buttonName}" Width="Auto" Height="20"></Button>
         </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:UDTDataTextBox}">
+            <WrapPanel>
+                <Label Content="{Binding colName}" Width="auto" Height="25" HorizontalContentAlignment="Right"></Label>
+                <TextBox Text="{Binding editText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         Width="100" Height="25"></TextBox>
+            </WrapPanel>
+        </DataTemplate>
         
     </UserControl.Resources>
 
@@ -46,6 +54,7 @@
             <Button Content="Add Row" Command="{Binding AddRowCommand}" />
             <Button Content="Delete Row" Command="{Binding DeleteRowCommand}" />
             <Button Content="Save DataSet" Command="{Binding UpdateDatasetCommand}" />
+            <ListBox ItemsSource="{Binding editBoxes}" HorizontalContentAlignment="Left" />
         </StackPanel>
 
     </Grid>

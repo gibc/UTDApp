@@ -354,8 +354,8 @@ namespace UDTApp.Models
         {
             //DELETE FROM table_name
             //WHERE condition;
-            int id = (int)row["Id", DataRowVersion.Original];
-            string sqlTxt = string.Format("USE [{0}] delete from {1} where Id = {2}", 
+            Guid id = (Guid)row["Id", DataRowVersion.Original];
+            string sqlTxt = string.Format("USE [{0}] delete from {1} where Id = '{2}'", 
                 DataSet.DataSetName, row.Table.TableName, id);
             using (SqlConnection conn = new SqlConnection())
             {
@@ -387,15 +387,12 @@ namespace UDTApp.Models
                 DataSet.DataSetName, row.Table.TableName);
             foreach (DataColumn col in row.Table.Columns)
             {
-                //if (col.ColumnName == "Id") continue;
-
                 sqlTxt += string.Format("{0}, ", col.ColumnName);
             }
             sqlTxt = sqlTxt.Substring(0, sqlTxt.Length - 2);
             sqlTxt += ") values (";
             foreach (DataColumn col in row.Table.Columns)
             {
-                //if (col.ColumnName == "Id") continue;
 
                 if (col.DataType == typeof(String))
                     sqlTxt += string.Format("'{0}', ", row[col.ColumnName]);
