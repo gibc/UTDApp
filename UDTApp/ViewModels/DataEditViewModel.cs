@@ -20,13 +20,15 @@ namespace UDTApp.ViewModels
 
         private string _editText = null;
         [Required]
+        [CustomValidation(typeof(UDTDataTextBox), "CheckTextEntry")]
         public string editText 
         {
             get { return _editText; }
             set 
             { 
                 SetProperty(ref _editText, value);
-                row[colName] = value;
+                if(!HasErrors)
+                    row[colName] = value;
             }
         }
 
@@ -41,11 +43,48 @@ namespace UDTApp.ViewModels
                     editText = (string)_row[colName];
                 else if (udtItem.GetType() == typeof(UDTDateItem))
                     editText = (string)_row[colName].ToString();
+                else if (udtItem.GetType() == typeof(UDTIntItem))
+                    editText = (string)_row[colName].ToString();
+                else if (udtItem.GetType() == typeof(UDTDecimalItem))
+                    editText = (string)_row[colName].ToString();
             }
         }
 
         public string colName { get; set; }
-        private UDTBase udtItem = null;
+        public UDTBase udtItem = null;
+
+        public static System.ComponentModel.DataAnnotations.ValidationResult CheckTextEntry(string name, ValidationContext context)
+        {
+            UDTDataTextBox dataObj = context.ObjectInstance as UDTDataTextBox;
+            if (dataObj != null && dataObj.udtItem.GetType() == typeof(UDTDateItem))
+            {
+                DateTime val;
+                if(!DateTime.TryParse(name, out val))
+                {
+                    return new System.ComponentModel.DataAnnotations.ValidationResult("Entry is not a valid date.");
+                }
+            }
+            else if (dataObj != null && dataObj.udtItem.GetType() == typeof(UDTIntItem))
+            {
+                int val;
+                if (!Int32.TryParse(name, out val))
+                {
+                    return new System.ComponentModel.DataAnnotations.ValidationResult("Entry is not a valid number.");
+                }
+            }
+            else if (dataObj != null && dataObj.udtItem.GetType() == typeof(UDTDecimalItem))
+            {
+                decimal val;
+                if (!Decimal.TryParse(name, out val))
+                {
+                    return new System.ComponentModel.DataAnnotations.ValidationResult("Entry is not a valid decimal number.");
+                }
+            }
+
+
+            return System.ComponentModel.DataAnnotations.ValidationResult.Success;
+
+        }
 
     }
 
@@ -73,6 +112,9 @@ namespace UDTApp.ViewModels
         {
             ButtonClickCommand.RaiseCanExecuteChanged();
         }
+
+   
+
     }
 
     public class DataEditViewModel : ValidatableBindableBase
@@ -187,6 +229,9 @@ namespace UDTApp.ViewModels
 
             updateChildButtons(dataItem);
 
+            SelectedIndex = 0;
+
+
         }
 
         //private Guid parentId = Guid.Empty;
@@ -212,7 +257,7 @@ namespace UDTApp.ViewModels
 
             editBoxes = createEditBoxes(dataItem);
 
-            SelectedIndex = 0;
+            //SelectedIndex = 0;
 
         }
 
@@ -238,9 +283,12 @@ namespace UDTApp.ViewModels
             //parentId = Guid.Empty;
             parentIds.Pop();
 
+            updateChildButtons(dataItem);
             gridData = new DataView(UDTDataSet.udtDataSet.DataSet.Tables[dataItem.Name]);
             currentDataItem = dataItem;
-            updateChildButtons(dataItem);
+            //updateChildButtons(dataItem);
+            SelectedIndex = 0;
+
         }
 
         private bool returnBtnClick()
@@ -297,11 +345,8 @@ namespace UDTApp.ViewModels
             
             foreach(UDTBase item in dataItem.ChildData)
             {
-                if(item.GetType() == typeof(UDTTxtItem))
+                if (item.GetType() != typeof(UDTData))
                     editBoxes.Add(new UDTDataTextBox(item.Name, item));
-                else if (item.GetType() == typeof(UDTDateItem))
-                    editBoxes.Add(new UDTDataTextBox(item.Name, item));
-
             }
 
             return editBoxes;
