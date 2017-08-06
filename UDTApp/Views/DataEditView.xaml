@@ -20,10 +20,19 @@
 
         <DataTemplate DataType="{x:Type vm:UDTDataGrid}">
             <GroupBox Header="{Binding childDef.Name}" BorderThickness="1" BorderBrush="DarkBlue">
-                <StackPanel>
-                    <DataGrid ItemsSource="{Binding gridData}" IsReadOnly="True" 
-                    cltLib:AutoGeneratingColumnEventToCommandBehaviour.Command="{Binding CreateColumnsCommand}"/>
-                </StackPanel>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="25"/>
+                    </Grid.RowDefinitions>
+                    <DataGrid ItemsSource="{Binding gridData}" IsReadOnly="True" Grid.Row="0" Grid.Column="0"
+                        cltLib:AutoGeneratingColumnEventToCommandBehaviour.Command="{Binding CreateColumnsCommand}"/>
+                    <Button Command="{Binding ButtonClickCommand}" Content="ViewEdit" Width="auto"  
+                            Grid.Row="1" Grid.Column="0" HorizontalAlignment="Center"/>
+                </Grid>
             </GroupBox>
         </DataTemplate>
 
@@ -54,13 +63,13 @@
         
         <StackPanel Grid.Column="0" Grid.Row="0">
             <ContentControl HorizontalAlignment="Left" Width="auto" Content="{Binding returnBtn}"/>
-            <GroupBox Header="{Binding DataViewName}" BorderThickness="1" BorderBrush="DarkBlue">
+            <GroupBox Header="{Binding DataViewName}" BorderThickness="1" BorderBrush="DarkBlue" Margin="{Binding parentMargin}">
                 <DataGrid ItemsSource="{Binding gridData}" CanUserAddRows="False"
                           SelectedItem="{Binding SelectedItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                           SelectedIndex="{Binding SelectedIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                           cltLib:AutoGeneratingColumnEventToCommandBehaviour.Command="{Binding CreateColumnsCommand}"/>
              </GroupBox>
-            <GroupBox Header ="Seleted Item:" BorderThickness="1" BorderBrush="DarkBlue">
+            <GroupBox Header ="Seleted Item:" BorderThickness="1" BorderBrush="DarkBlue" Margin="{Binding parentMargin}">
                 <ListBox ItemsSource="{Binding editBoxes}" HorizontalContentAlignment="Left">
                     <ListBox.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -75,16 +84,15 @@
                 <Button Content="Save DataSet" Command="{Binding UpdateDatasetCommand}" />
             </WrapPanel>
         </StackPanel>
-        <Label Content="Child Data" Grid.Column="1" Grid.Row="0" Margin="20,0,0,0" Width="100"/>
-        <Border Grid.Column="1" Grid.Row="0" BorderBrush="Transparent" BorderThickness="8">
-        <Expander HorizontalContentAlignment="Left" Grid.Column="1" Grid.Row="0" ExpandDirection="Right" 
-                  BorderBrush="Black" BorderThickness="2" Margin="0,20,20,20">
+        <GroupBox Header="Child Data:" Grid.Column="1" Grid.Row="0" BorderBrush="DarkBlue" 
+                  Margin="0,0,30,0" Visibility="{Binding childGridsVisable}">
+        <Expander Grid.Column="1" Grid.Row="0" ExpandDirection="Right" 
+                  BorderBrush="Black" BorderThickness="0" Margin="0,0,0,0">
             <StackPanel Height="auto">
-                <ListBox ItemsSource="{Binding childTables}" HorizontalContentAlignment="Center" />
-                <ListBox ItemsSource="{Binding childGrids}" HorizontalContentAlignment="Left" />
+                <ListBox ItemsSource="{Binding childGrids}" HorizontalContentAlignment="Center" />
             </StackPanel>
         </Expander>
-        </Border>
+        </GroupBox>
 
     </Grid>
 </UserControl>

@@ -15,12 +15,16 @@ namespace UDTApp.ViewModels
     public class UDTDataGrid : ValidatableBindableBase
     {
         public DelegateCommand<DataGridAutoGeneratingColumnEventArgs> CreateColumnsCommand { get; set; }
+        public DelegateCommand ButtonClickCommand { get; set; }
 
-        public UDTDataGrid(string _parentColName, UDTData _childDef)
+
+        public UDTDataGrid(string _parentColName, UDTData _childDef, Action<UDTData> _buttonClick)
         {
             parentColName = _parentColName;
             childDef = _childDef;
             CreateColumnsCommand = new DelegateCommand<System.Windows.Controls.DataGridAutoGeneratingColumnEventArgs>(createColumns);
+            buttonClick = _buttonClick;
+            ButtonClickCommand = new DelegateCommand(btnClick);
 
         }
 
@@ -45,8 +49,6 @@ namespace UDTApp.ViewModels
             {
                 SetProperty(ref _parentRow, value);
 
-                //Guid parentId = (Guid)_parentRow["Id"];
-
                 DataTable childTbl = UDTDataSet.udtDataSet.DataSet.Tables[childDef.Name];
                 DataView dv;
                 if (childTbl.Rows.Count > 0 && _parentRow["Id"] != DBNull.Value)
@@ -67,8 +69,15 @@ namespace UDTApp.ViewModels
         
         }
 
+        private Action<UDTData> buttonClick { get; set; }
+
         private string parentColName { get; set; }
         public UDTData childDef { get; set; }
+
+        private void btnClick()
+        {
+            buttonClick(childDef);
+        }
 
         public void createColumns(System.Windows.Controls.DataGridAutoGeneratingColumnEventArgs e)
         {
@@ -427,6 +436,26 @@ namespace UDTApp.ViewModels
             }
         }
 
+        private Thickness _parentMargin = new Thickness(0, 0, 0, 0);
+        public Thickness parentMargin
+        {
+            get { return _parentMargin; }
+            set
+            {
+                SetProperty(ref _parentMargin, value);
+            }           
+        }
+
+        private Visibility _childGridsVisable = Visibility.Hidden;
+        public Visibility childGridsVisable
+        {
+            get { return _childGridsVisable; }
+            set
+            {
+                SetProperty(ref _childGridsVisable, value);
+            }        
+        }
+
         List<UDTDataGrid> createChildGrids(UDTData dataItem)
         {
             List<UDTDataGrid> childGrids = new List<UDTDataGrid>();
@@ -434,7 +463,18 @@ namespace UDTApp.ViewModels
             foreach (UDTBase item in dataItem.ChildData)
             {
                 if (item.GetType() == typeof(UDTData))
-                    childGrids.Add(new UDTDataGrid(dataItem.Name, item as UDTData));
+                    childGrids.Add(new UDTDataGrid(dataItem.Name, item as UDTData, childBtnClick));
+            }
+
+            if (childGrids.Count > 0)
+            {
+                childGridsVisable = Visibility.Visible;
+                parentMargin = new Thickness(0, 0, 0, 0);
+            }
+            else
+            { 
+                childGridsVisable = Visibility.Collapsed;
+                parentMargin = new Thickness(0, 0, 30, 0);
             }
 
             return childGrids;
