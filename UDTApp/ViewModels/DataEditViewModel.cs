@@ -45,12 +45,13 @@ namespace UDTApp.ViewModels
             {
                 SetProperty(ref _parentRow, value);
 
-                Guid parentId = (Guid)_parentRow["Id"];
+                //Guid parentId = (Guid)_parentRow["Id"];
 
                 DataTable childTbl = UDTDataSet.udtDataSet.DataSet.Tables[childDef.Name];
                 DataView dv;
-                if (childTbl.Rows.Count > 0)
+                if (childTbl.Rows.Count > 0 && _parentRow["Id"] != DBNull.Value)
                 {
+                    Guid parentId = (Guid)_parentRow["Id"];
                     string filter = string.Format("{0} = '{1}'", parentColName, parentId);
                     dv = new DataView(childTbl,
                         filter, "", DataViewRowState.CurrentRows);
@@ -67,7 +68,7 @@ namespace UDTApp.ViewModels
         }
 
         private string parentColName { get; set; }
-        private UDTData childDef { get; set; }
+        public UDTData childDef { get; set; }
 
         public void createColumns(System.Windows.Controls.DataGridAutoGeneratingColumnEventArgs e)
         {
@@ -107,7 +108,9 @@ namespace UDTApp.ViewModels
             set 
             {
                 SetProperty(ref _row, value);
-                if (udtItem.GetType() == typeof(UDTTxtItem))
+                if (_row[colName] == DBNull.Value)
+                    editText = "";
+                else if (udtItem.GetType() == typeof(UDTTxtItem) && _row[colName] != DBNull.Value)
                     editText = (string)_row[colName];
                 else if (udtItem.GetType() == typeof(UDTDateItem))
                     editText = (string)_row[colName].ToString();
@@ -246,6 +249,8 @@ namespace UDTApp.ViewModels
 
         private void addRow()
         {
+            //DataRow trow = gridData.Table.NewRow();
+            //gridData.AllowNew
             DataRowView row = gridData.AddNew();
             row["Id"] = Guid.NewGuid();
             foreach (string colName in currentDataItem.ParentColumnNames)
@@ -256,7 +261,7 @@ namespace UDTApp.ViewModels
                 else
                     row[colName] = DBNull.Value;
             }
-            //gridData.Rows.Add(row);
+            row.EndEdit();
         }
 
         private void deleteRow()
@@ -322,7 +327,7 @@ namespace UDTApp.ViewModels
             }
             returnBtn = null;
             if (dataItem.parentObj != null)
-                returnBtn = new UDTDataButton(dataItem.parentObj as UDTData, returnBtnClick, returnBtnClick, "Back to: ");
+                returnBtn = new UDTDataButton(dataItem.parentObj as UDTData, returnBtnClick, returnBtnClick, "<< ");
             childTables = childList;
 
             DataViewName = string.Format("Data Group: {0}", dataItem.Name);
