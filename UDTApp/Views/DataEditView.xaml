@@ -54,14 +54,27 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto"/>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="auto"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
-        
-        <StackPanel Grid.Column="0" Grid.Row="0">
+
+        <!--Parent grid-->
+        <GroupBox Header="Parent Data:" Grid.Column="0" Grid.Row="0" BorderBrush="DarkBlue" 
+                  Margin="0,0,0,0" Visibility="{Binding parentGridVisable}">
+            <Expander ExpandDirection="Left" 
+                      BorderBrush="Black" BorderThickness="0" Margin="0,0,0,0">
+                <StackPanel Height="auto">
+                    <ContentControl HorizontalAlignment="Left" Width="auto" Content="{Binding parentGrid}"/>
+                </StackPanel>
+            </Expander>
+        </GroupBox>
+
+        <!--Main / center grid-->
+        <StackPanel Grid.Column="1" Grid.Row="0">
             <ContentControl HorizontalAlignment="Left" Width="auto" Content="{Binding returnBtn}"/>
             <GroupBox Header="{Binding DataViewName}" BorderThickness="1" BorderBrush="DarkBlue" Margin="{Binding parentMargin}">
                 <DataGrid ItemsSource="{Binding gridData}" CanUserAddRows="False"
@@ -84,14 +97,16 @@
                 <Button Content="Save DataSet" Command="{Binding UpdateDatasetCommand}" />
             </WrapPanel>
         </StackPanel>
-        <GroupBox Header="Child Data:" Grid.Column="1" Grid.Row="0" BorderBrush="DarkBlue" 
+        
+        <!--Detail grids-->
+        <GroupBox Header="Child Data:" Grid.Column="2" Grid.Row="0" BorderBrush="DarkBlue" 
                   Margin="0,0,30,0" Visibility="{Binding childGridsVisable}">
-        <Expander Grid.Column="1" Grid.Row="0" ExpandDirection="Right" 
-                  BorderBrush="Black" BorderThickness="0" Margin="0,0,0,0">
-            <StackPanel Height="auto">
-                <ListBox ItemsSource="{Binding childGrids}" HorizontalContentAlignment="Center" />
-            </StackPanel>
-        </Expander>
+            <Expander Grid.Column="1" Grid.Row="0" ExpandDirection="Right" 
+                      BorderBrush="Black" BorderThickness="0" Margin="0,0,0,0">
+                <StackPanel Height="auto">
+                    <ListBox ItemsSource="{Binding childGrids}" HorizontalContentAlignment="Center" />
+                </StackPanel>
+            </Expander>
         </GroupBox>
 
     </Grid>
