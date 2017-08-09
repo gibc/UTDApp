@@ -49,6 +49,11 @@ namespace UDTAppControlLibrary.Behaviour
                     var c = dataGrid.Items.Count;
                     var source = dataGrid.ItemsSource;
                     if (c == 0) return;
+                    //if (c == 0)
+                    //{
+                    //    //dataGrid.ItemsSource = null;
+                    //    return;
+                    //}
                     dataGrid.ItemsSource = null;
                     dataGrid.ItemsSource = source;
                     

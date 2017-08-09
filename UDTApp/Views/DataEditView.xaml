@@ -28,7 +28,7 @@
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="25"/>
                     </Grid.RowDefinitions>
-                    <DataGrid ItemsSource="{Binding gridData}" IsReadOnly="True" Grid.Row="0" Grid.Column="0"
+                    <DataGrid ItemsSource="{Binding gridData, Mode=TwoWay}" IsReadOnly="True" Grid.Row="0" Grid.Column="0"
                         cltLib:AutoGeneratingColumnEventToCommandBehaviour.Command="{Binding CreateColumnsCommand}"/>
                     <Button Command="{Binding ButtonClickCommand}" Content="ViewEdit" Width="auto"  
                             Grid.Row="1" Grid.Column="0" HorizontalAlignment="Center"/>

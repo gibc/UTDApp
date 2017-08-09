@@ -30,6 +30,8 @@ namespace UDTApp.ViewModels
         public DelegateCommand ReadFromFileCommand { get; set; }
         public DelegateCommand CreateDataBaseCommand { get; set; }
         public DelegateCommand ReadDataBaseCommand { get; set; }
+        public DelegateCommand WindowLoadedCommand { get; set; }
+
 
         public PageZeroViewModel()
         {
@@ -41,6 +43,8 @@ namespace UDTApp.ViewModels
             ReadFromFileCommand = new DelegateCommand(readFromXml);
             CreateDataBaseCommand = new DelegateCommand(createDatabase);
             ReadDataBaseCommand = new DelegateCommand(readDatabase);
+            WindowLoadedCommand = new DelegateCommand(windowLoaded);
+
 
             SchemaList = new List<UDTBase>();
             UDTData baseObj = new UDTData();
@@ -321,6 +325,11 @@ namespace UDTApp.ViewModels
             }
         }
 
+        private void windowLoaded()
+        {
+            SchemaList = UDTXml.UDTXmlData.SchemaData;
+        }
+
         private void readDatabase()
         {
             //System.Data.DataSet dataSet = new System.Data.DataSet(SchemaList[0].Name);
@@ -453,7 +462,7 @@ namespace UDTApp.ViewModels
 
         private ObservableCollection<UDTBase> DbSchema = new ObservableCollection<UDTBase>();
 
-        public static List<UDTBase> _schemaList = null; 
+        public static List<UDTBase> _schemaList = new List<UDTBase>();
         public List<UDTBase> SchemaList {
             get { return _schemaList; }
             set

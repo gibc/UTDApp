@@ -10,7 +10,13 @@
              xmlns:vm="clr-namespace:UDTApp.ViewModels"
              xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" 
              d:DesignHeight="300" d:DesignWidth="300">
-    
+
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Loaded">
+            <i:InvokeCommandAction Command="{Binding WindowLoadedCommand}" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
+
     <UserControl.Resources>
 
         <BooleanToVisibilityConverter x:Key="BoolToVis" />

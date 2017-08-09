@@ -13,6 +13,7 @@ namespace UDTApp.Models
     {
         private UDTXml()
         {
+            SchemaData = new List<UDTBase>();
         }
 
         private static UDTXml _UDTXmlData = null;

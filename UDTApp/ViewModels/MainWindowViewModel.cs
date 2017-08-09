@@ -25,6 +25,8 @@ namespace UDTApp.ViewModels
 
         public DelegateCommand<string> NavigateCommand { get; set; }
         public DelegateCommand WindowLoadedCommand { get; set; }
+        public DelegateCommand EditCommand { get; set; }
+        public DelegateCommand RunCommand { get; set; }
 
 
         public MainWindowViewModel(IRegionManager regionManager)
@@ -33,6 +35,8 @@ namespace UDTApp.ViewModels
 
             NavigateCommand = new DelegateCommand<string>(Navigate);
             WindowLoadedCommand = new DelegateCommand(windowLoaded);
+            EditCommand = new DelegateCommand(editProject);
+            RunCommand = new DelegateCommand(runProject);
 
         }
 
@@ -44,6 +48,21 @@ namespace UDTApp.ViewModels
         private void windowLoaded()
         {
             Navigate("Data");
+            //Navigate("DataEditView");
+        }
+
+        private void editProject()
+        {
+            List<UDTBase> schema = UDTXml.UDTXmlData.readFromXml();
+            //if (schema != null) SchemaList = schema;
+            Navigate("SetUp");
+        }
+
+        private void runProject()
+        {
+            List<UDTBase> schema = UDTXml.UDTXmlData.readFromXml();
+            //if (schema != null) SchemaList = schema;
+            Navigate("DataEditView");
         }
     }
 

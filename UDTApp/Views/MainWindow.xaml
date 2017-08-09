@@ -56,16 +56,26 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
+        
+        <DockPanel Grid.Row="0">
+            <ToolBar DockPanel.Dock="Top" >
+                <Button Content="New"/>
+                <Button  Command="{Binding EditCommand}"  Content="Edit"/>
+                <Button Command="{Binding RunCommand}" Content="Run"/>
+            </ToolBar>
+        </DockPanel>
 
-        <StackPanel Orientation="Horizontal">
+        <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal">
             <Button Content="Data" Margin="5" Command="{Binding NavigateCommand}" CommandParameter="Data"/>
             <Button Content="SetUp" Margin="5" Command="{Binding NavigateCommand}" CommandParameter="SetUp"/>
         </StackPanel>
 
-        <ContentControl Grid.Row="1" prism:RegionManager.RegionName="ContentRegion" Margin="0,0,-24.333,-254.333"/>
-        <!--<ContentControl Grid.Row="2" prism:RegionManager.RegionName="ContentRegion2"/>-->
+        <ContentControl Grid.Row="2" Grid.Column="0" prism:RegionManager.RegionName="ContentRegion" Margin="0,0,-24.333,-254.333"/>
+        <!--<ContentControl Grid.Row="1" Grid.Column="0" prism:RegionManager.RegionName="ContentRegion" 
+                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>-->
 
     </Grid>
 

@@ -146,8 +146,8 @@ namespace UDTApp.Models
         { 
             get
             {
-                if (PageZeroViewModel._schemaList.Count <= 0) return null;
-                return PageZeroViewModel._schemaList[0] as UDTData;
+                if (UDTXml.UDTXmlData.SchemaData.Count <= 0) return null;
+                return UDTXml.UDTXmlData.SchemaData[0] as UDTData;
             }
         }
 
