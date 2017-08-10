@@ -134,7 +134,10 @@ namespace UDTApp.ViewModels
             { 
                 SetProperty(ref _editText, value);
                 if(!HasErrors)
-                    row[colName] = value;
+                {
+                    if (row[colName] as string != value)
+                        row[colName] = value;
+                }
             }
         }
 
@@ -250,6 +253,8 @@ namespace UDTApp.ViewModels
             set 
             { 
                 _selectedItem = value;
+                if (value == null) return;
+
                 foreach (UDTDataButton btn in childTables)
                     btn.raiseCanExecuteChanged();
 
@@ -274,7 +279,9 @@ namespace UDTApp.ViewModels
         private void windowLoaded()
         {
             // load database from currently loaded schema
+            SelectedItem = null;
             UDTDataSet.udtDataSet.readDatabase(UDTXml.UDTXmlData.SchemaData[0] as UDTData);
+            UDTDataSet.udtDataSet.IsModified = false;
             DisplayTable(UDTXml.UDTXmlData.SchemaData[0] as UDTData);
 
         }

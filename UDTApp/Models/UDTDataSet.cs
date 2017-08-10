@@ -37,29 +37,23 @@ namespace UDTApp.Models
             set;
         }
 
+        private bool _isModified = false;        
+        public bool IsModified
+        {
+            get { return _isModified; }
+            set
+            {
+                SetProperty(ref _isModified, value);
+            }
+        }
+
+
         public void createDatabase(UDTData masterItem)
         {
             createSQLDatabase(masterItem.Name);
             List<Guid> tableGuids = new List<Guid>();
             createDBTable(masterItem, masterItem.Name, tableGuids);
         }
-
-
-
-        //private void addParentColumns(UDTData dataItem)
-        //{
-        //    foreach (UDTBase item in dataItem.ChildData)
-        //    {
-        //        if (item.GetType() == typeof(UDTData))
-        //        {
-        //            UDTData childItem = item as UDTData;
-        //            UDTParentColumn pc = new UDTParentColumn();
-        //            pc.ParentColumnName = dataItem.Name;
-        //            childItem.ParentColumnNames.Add(pc);
-        //            addParentColumns(childItem);
-        //        }
-        //    }
-        //}
 
         private void createSQLDatabase(string DBName)
         {
@@ -186,6 +180,22 @@ namespace UDTApp.Models
             DataSet.EnforceConstraints = true;
             readTable(DataSet, masterItem, masterItem.Name);
             RaisePropertyChanged("udtDataSet");
+            IsModified = false;
+        }
+
+        public delegate void dataChangeDel();
+        public event dataChangeDel dataChangeEvent;
+
+        private void rowChanged(object sender, DataRowChangeEventArgs e)
+        {
+            IsModified = true;
+            if (dataChangeEvent != null) dataChangeEvent();
+        }
+
+        private void columnChanged(object sender, DataColumnChangeEventArgs e)
+        {
+            IsModified = true;
+            if (dataChangeEvent != null) dataChangeEvent();
         }
 
         DataTable createDataTable(UDTData dataItem)
@@ -230,6 +240,9 @@ namespace UDTApp.Models
             idCol.ColumnName = "Id";
             idCol.DataType = typeof(Guid);
             tbl.Columns.Add(idCol);
+
+            tbl.RowChanged += new DataRowChangeEventHandler(rowChanged);
+            tbl.ColumnChanged += new DataColumnChangeEventHandler(columnChanged);
 
             return tbl;
         }
@@ -348,6 +361,7 @@ namespace UDTApp.Models
             }
 
             DataSet.AcceptChanges();
+            IsModified = false;
         }
 
         private void deleteRow(DataRow row)

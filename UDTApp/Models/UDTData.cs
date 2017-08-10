@@ -151,12 +151,6 @@ namespace UDTApp.Models
             }
         }
 
-        //private UDTBase getMasterGroup(UDTBase group)
-        //{
-        //    if (group.parentObj == null) return group;
-        //    return getMasterGroup(group.parentObj);
-        //}
-
         private bool _anyErrors = true;
         public bool AnyErrors
         {

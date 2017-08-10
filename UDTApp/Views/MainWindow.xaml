@@ -45,35 +45,41 @@
         </i:EventTrigger>
     </i:Interaction.Triggers>
 
-    <!--<Grid>
-        <TextBox Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="False" x:Name="fieldLable" HorizontalAlignment="Left" Height="23" Margin="89,58,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
-        <TextBox Text="{Binding Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="False" x:Name="fieldValue" HorizontalAlignment="Left" Height="23" Margin="244,58,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
-        <Button Command="{Binding UpdateCommand}" Content="Save" HorizontalAlignment="Left" Margin="89,165,0,0" VerticalAlignment="Top" Width="75"/>
-        <Button Command="{Binding CancelCommand}" Content="Cancel" HorizontalAlignment="Left" Margin="341,165,0,0" VerticalAlignment="Top" Width="75"/>
-        <TextBox Text="{Binding RunTimeProps.newProp, Mode=TwoWay}" IsReadOnly="False" x:Name="newProp" HorizontalAlignment="Left" Height="23" Margin="244,100,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
-    </Grid>-->
-
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         
         <DockPanel Grid.Row="0">
-            <ToolBar DockPanel.Dock="Top" >
-                <Button Content="New"/>
-                <Button  Command="{Binding EditCommand}"  Content="Edit"/>
-                <Button Command="{Binding RunCommand}" Content="Run"/>
-            </ToolBar>
+            <ToolBarTray DockPanel.Dock="Top">
+                <ToolBar DockPanel.Dock="Top"  Background="PaleTurquoise">
+                    <ToolBar.Header>
+                        <TextBlock Text="DATA:" FontWeight="SemiBold">
+                        </TextBlock>
+                    </ToolBar.Header>
+                    <Button Command="{Binding OpenCommand}"  Content="Open"/>
+                    <Button Command="{Binding RunCommand}" Content="Run"/>
+                    <Button Command="{Binding SaveDataCommand}" Content="SaveData"/>
+                </ToolBar>
+                <ToolBar DockPanel.Dock="Top"  Background="LightYellow">
+                    <ToolBar.Header>
+                        <TextBlock Text="PROJECT:" FontWeight="SemiBold">
+                        </TextBlock>
+                    </ToolBar.Header>
+                    <Button  Command="{Binding EditCommand}"  Content="Edit"/>
+                    <Button Command="{Binding NewCommand}"  Content="New"/>
+                    <Button Command="{Binding SaveCommand}"  Content="SavePoject"/>
+                </ToolBar>
+            </ToolBarTray>
         </DockPanel>
 
-        <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal">
+        <!--<StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal">
             <Button Content="Data" Margin="5" Command="{Binding NavigateCommand}" CommandParameter="Data"/>
             <Button Content="SetUp" Margin="5" Command="{Binding NavigateCommand}" CommandParameter="SetUp"/>
-        </StackPanel>
+        </StackPanel>-->
 
-        <ContentControl Grid.Row="2" Grid.Column="0" prism:RegionManager.RegionName="ContentRegion" Margin="0,0,-24.333,-254.333"/>
+        <ContentControl Grid.Row="1" Grid.Column="0" prism:RegionManager.RegionName="ContentRegion" Margin="0,0,-24.333,-254.333"/>
         <!--<ContentControl Grid.Row="1" Grid.Column="0" prism:RegionManager.RegionName="ContentRegion" 
                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>-->
 
