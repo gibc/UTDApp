@@ -35,7 +35,7 @@ namespace UDTApp.Models
             set;
         }
 
-        public void saveToXml(List<UDTBase> SchemaList)
+        public bool saveToXml(List<UDTBase> SchemaList)
         {
             string xml = SerializeToString(SchemaList);
 
@@ -48,7 +48,9 @@ namespace UDTApp.Models
                 xmlFile.Write(info, 0, info.Length);
                 xmlFile.Close();
                 SchemaData = SchemaList;
+                return true;
             }
+            return false;
         }
 
         public List<UDTBase> newProject(string ProjectName)

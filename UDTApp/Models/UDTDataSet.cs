@@ -47,12 +47,18 @@ namespace UDTApp.Models
             }
         }
 
+        
+        private string getDbName(UDTData udtData)
+        {
+            return udtData.Name + "_db";
+        }
+
 
         public void createDatabase(UDTData masterItem)
         {
-            createSQLDatabase(masterItem.Name);
+            createSQLDatabase(getDbName(masterItem));
             List<Guid> tableGuids = new List<Guid>();
-            createDBTable(masterItem, masterItem.Name, tableGuids);
+            createDBTable(masterItem, getDbName(masterItem), tableGuids);
         }
 
         private void createSQLDatabase(string DBName)
@@ -86,12 +92,12 @@ namespace UDTApp.Models
             }
         }
 
-        private bool TableExists(string tableName)
+        private bool TableExists(string tableName, string dbName)
         {
 
             string sqlTxt = string.Format(@"select count(*) from 
-                (SELECT * FROM UDTUser.dbo.sysobjects WHERE xtype = 'U' AND name = '{0}') rows",
-                tableName);
+                (SELECT * FROM {0}.dbo.sysobjects WHERE xtype = 'U' AND name = '{1}') rows",
+                dbName, tableName);
 
             bool retVal = true;
             using (SqlConnection conn = new SqlConnection())
@@ -127,7 +133,7 @@ namespace UDTApp.Models
 
             if (tableGuids.Contains(dataItem.objId)) return;
 
-            if (!TableExists(dataItem.Name))
+            if (!TableExists(dataItem.Name, dbName))
             {
                 using (SqlConnection conn = new SqlConnection())
                 {
@@ -164,6 +170,19 @@ namespace UDTApp.Models
                     }
                 }
             }
+            // if table exits check for and add any new columns
+            else
+            {
+                List<string> colList = GetColumns(dataItem.Name, dbName);
+
+                foreach (UDTBase item in dataItem.ChildData)
+                {
+                    if (item.GetType() != typeof(UDTData) && !colList.Contains(item.Name))
+                    {
+                        AddColumn(dataItem.Name, item, dbName);
+                    }
+                }
+            }
 
             foreach (UDTBase item in dataItem.ChildData)
             {
@@ -174,11 +193,85 @@ namespace UDTApp.Models
             }
         }
 
+        private List<string> GetColumns(string table, string dbName)
+        {
+
+            string sqlTxt = string.Format(@"USE [{0}] SELECT * FROM INFORMATION_SCHEMA.COLUMNS
+                    WHERE TABLE_NAME = '{1}'
+                    ORDER BY ORDINAL_POSITION", dbName, table);
+
+            List<string> colList = new List<string>();
+            using (SqlConnection conn = new SqlConnection())
+            {
+
+                conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
+
+                SqlCommand cmd = new SqlCommand(sqlTxt);
+
+                SqlDataReader reader;
+
+                cmd.Connection = conn;
+                conn.Open();
+                reader = cmd.ExecuteReader();
+
+                try
+                {
+                    while (reader.Read())
+                    {
+                        colList.Add((string)reader["COLUMN_NAME"]);
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+                finally
+                {
+                    reader.Close();
+                }
+            }
+            return colList;
+        }
+
+        private void AddColumn(string table, UDTBase udtItem, string dbName)
+        {
+            //ALTER TABLE table_name ADD column_name datatype;
+
+            string sqlTxt = string.Format(@"USE [{0}] ALTER TABLE {1} ", dbName, table);
+            sqlTxt += string.Format("ADD {0} ", udtItem.Name);
+            sqlTxt += string.Format("{0} ", udtItem.Type);
+
+            using (SqlConnection conn = new SqlConnection())
+            {
+
+                conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
+
+                SqlCommand cmd = new SqlCommand(sqlTxt);
+
+                cmd.Connection = conn;
+                conn.Open();
+                try
+                {
+                    cmd.ExecuteNonQuery();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+                finally
+                {
+
+                }
+            }
+        }
+
+
         public void readDatabase(UDTData masterItem)
         {
-            DataSet = new System.Data.DataSet(masterItem.Name);
+            DataSet = new System.Data.DataSet(getDbName(masterItem));
             DataSet.EnforceConstraints = true;
-            readTable(DataSet, masterItem, masterItem.Name);
+            readTable(DataSet, masterItem, getDbName(masterItem));
             RaisePropertyChanged("udtDataSet");
             IsModified = false;
         }

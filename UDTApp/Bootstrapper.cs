@@ -21,14 +21,10 @@ namespace UDTApp
         {
             base.ConfigureContainer();
 
-            //Container.RegisterType(typeof(object), typeof(ViewA), "ViewA");
-            //Container.RegisterType(typeof(object), typeof(ViewB), "ViewB");
-
             Container.RegisterTypeForNavigation<Data>("Data");
             Container.RegisterTypeForNavigation<SetUp>("SetUp");
             Container.RegisterTypeForNavigation<DataEditView>("DataEditView");
-            //Container.RegisterTypeForNavigation<DataEditView>("PageZero");
-            Container.RegisterTypeForNavigation<NewProject>("NewProject");
+            Container.RegisterTypeForNavigation<PageZero>("PageZero");
         }
     }
 

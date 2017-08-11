@@ -311,7 +311,6 @@ namespace UDTApp.ViewModels
         private void deleteRow()
         {
             SelectedItem.Delete();
-            //gridData.Table.Rows.Remove(SelectedItem.Delete());
         }
 
         private bool canDelete()

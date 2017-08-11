@@ -32,6 +32,22 @@ namespace UDTApp.Models
             ParentColumnNames = new List<string>();
         }
 
+        public delegate void validationChangedDel();
+        public event validationChangedDel validationChangedEvent;
+        public void validationChanged()
+        {
+            if (validationChangedEvent != null) validationChangedEvent();
+        }
+
+        public delegate void dataChangeDel();
+        public event dataChangeDel dataChangeEvent;
+        public void dataChanged()
+        {
+            if (dataChangeEvent != null) dataChangeEvent();
+        }
+
+
+
         override public bool AllowDrop
         {
             get { return !ToolBoxItem; }
@@ -287,7 +303,8 @@ namespace UDTApp.Models
         {
             get { return _name; }
             set 
-            { 
+            {
+                if (_name != value && MasterGroup != null) MasterGroup.dataChanged();
                 SetProperty(ref _name, value);
                 if (HasErrors)
                     PopUpOpen = true;
@@ -295,6 +312,8 @@ namespace UDTApp.Models
                     PopUpOpen = false;
                 ErrorTextVisable = HasErrors;
                 if (MasterGroup != null) SetAnyErrorAll(MasterGroup, HasErrors);
+                if (MasterGroup != null) MasterGroup.validationChanged();
+
                 newDrop = HasErrors;
                 //RaisePropertyChanged("EditBoxEnabled");
                 SaveNameCommand.RaiseCanExecuteChanged();
@@ -327,6 +346,7 @@ namespace UDTApp.Models
         {
             PopUpOpen = false;
             removeItem(MasterGroup, this);
+            MasterGroup.dataChanged();
         }
 
         private void removeItem(UDTData data, UDTBase item)
@@ -397,7 +417,7 @@ namespace UDTApp.Models
                         
                     udtItem.newDrop = true;
                     col.Add(udtItem);
-                    //udtItem.PopUpOpen = true;
+                    MasterGroup.dataChanged();
                 }
                 dragArgs.Handled = true;
                 _currentItem = null;

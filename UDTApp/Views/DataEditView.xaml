@@ -80,7 +80,7 @@
         <StackPanel Grid.Column="1" Grid.Row="0">
             <ContentControl HorizontalAlignment="Left" Width="auto" Content="{Binding returnBtn}"/>
             <GroupBox Header="{Binding DataViewName}" BorderThickness="1" BorderBrush="DarkBlue" Margin="{Binding parentMargin}">
-                <DataGrid ItemsSource="{Binding gridData}" CanUserAddRows="False"
+                <DataGrid ItemsSource="{Binding gridData}" CanUserAddRows="False" IsReadOnly="True"
                           SelectedItem="{Binding SelectedItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                           SelectedIndex="{Binding SelectedIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                           cltLib:AutoGeneratingColumnEventToCommandBehaviour.Command="{Binding CreateColumnsCommand}"/>

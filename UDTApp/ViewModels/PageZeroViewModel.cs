@@ -46,15 +46,15 @@ namespace UDTApp.ViewModels
             WindowLoadedCommand = new DelegateCommand(windowLoaded);
 
 
-            SchemaList = new List<UDTBase>();
-            UDTData baseObj = new UDTData();
-            baseObj.ChildData = DbSchema;
-            baseObj.ToolBoxItem = false;
-            baseObj.Name = "UDTMaster";
-            baseObj.parentObj = new UDTData();
-            baseObj.AnyErrors = false;
-            baseObj.EditBoxEnabled = true;
-            SchemaList.Add(baseObj);
+            //SchemaList = new List<UDTBase>();
+            //UDTData baseObj = new UDTData();
+            //baseObj.ChildData = DbSchema;
+            //baseObj.ToolBoxItem = false;
+            //baseObj.Name = "UDTMaster";
+            //baseObj.parentObj = new UDTData();
+            //baseObj.AnyErrors = false;
+            //baseObj.EditBoxEnabled = true;
+            //SchemaList.Add(baseObj);
 
         }
 

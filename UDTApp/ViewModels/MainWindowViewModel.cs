@@ -42,7 +42,7 @@ namespace UDTApp.ViewModels
             EditCommand = new DelegateCommand(editProject);
             RunCommand = new DelegateCommand(runProject, canRun);
             OpenCommand = new DelegateCommand(openProject);
-            SaveCommand = new DelegateCommand(saveProject, canSave); 
+            SaveCommand = new DelegateCommand(saveProject, canSavePorjext); 
             NewCommand = new DelegateCommand(newProject);
             SaveDataCommand = new DelegateCommand(saveData, canSaveData);
         }
@@ -68,7 +68,24 @@ namespace UDTApp.ViewModels
         {
             List<UDTBase> schema = UDTXml.UDTXmlData.readFromXml();
             if(schema != null)
-                Navigate("SetUp");
+            { 
+                UDTData master = schema[0] as UDTData;
+                master.validationChangedEvent += projectValidationChanged;
+                master.dataChangeEvent += projectDataChanged;
+                projectDataModified = false;
+                Navigate("PageZero");
+            }
+        }
+
+        private void projectValidationChanged()
+        {
+            SaveCommand.RaiseCanExecuteChanged();
+        }
+
+        private void projectDataChanged()
+        {
+            projectDataModified = true;
+            SaveCommand.RaiseCanExecuteChanged();
         }
 
         // run current project else select poject and run
@@ -103,13 +120,19 @@ namespace UDTApp.ViewModels
         private void saveProject()
         {
             // save to xml file AND create/update database
+            if(UDTXml.UDTXmlData.saveToXml(UDTXml.UDTXmlData.SchemaData))
+            {
+                UDTDataSet.udtDataSet.createDatabase(UDTXml.UDTXmlData.SchemaData[0] as UDTData);
+                Navigate("DataEditView");
+            }
         }
 
-        private bool canSave()
+        private bool canSavePorjext()
         {
             if (UDTXml.UDTXmlData.SchemaData.Count == 0) return false;
-            else if (currentView != "SetUp") return false;
-            else return !UDTXml.UDTXmlData.SchemaData[0].HasErrors;
+            else if (currentView != "PageZero") return false;
+            else if (UDTXml.UDTXmlData.SchemaData[0].AnyErrors) return false;
+            else return projectDataModified;
         }
 
         private void saveData()
@@ -138,11 +161,16 @@ namespace UDTApp.ViewModels
             { 
                 string projName = win.prjName.Text;
                 List<UDTBase> newSchmea = UDTXml.UDTXmlData.newProject(projName);
-                Navigate("SetUp");
-
+                UDTData master = newSchmea[0] as UDTData;
+                master.validationChangedEvent += projectValidationChanged;
+                master.dataChangeEvent += projectDataChanged;
+                projectDataModified = false;
+                Navigate("PageZero");
             }
            
         }
+
+        private bool projectDataModified { get; set; }
 
 
     }
