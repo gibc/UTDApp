@@ -51,6 +51,19 @@ namespace UDTApp.Models
             }
         }
 
+        public List<UDTBase> newProject(string ProjectName)
+        {
+            SchemaData = new List<UDTBase>();
+            UDTData baseObj = new UDTData();
+            baseObj.ToolBoxItem = false;
+            baseObj.Name = ProjectName;
+            baseObj.parentObj = new UDTData();
+            baseObj.AnyErrors = false;
+            baseObj.EditBoxEnabled = true;
+            SchemaData.Add(baseObj);
+            return SchemaData;
+        }
+
         public List<UDTBase> readFromXml()
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();

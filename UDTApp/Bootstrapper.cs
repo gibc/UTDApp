@@ -27,7 +27,8 @@ namespace UDTApp
             Container.RegisterTypeForNavigation<Data>("Data");
             Container.RegisterTypeForNavigation<SetUp>("SetUp");
             Container.RegisterTypeForNavigation<DataEditView>("DataEditView");
-            Container.RegisterTypeForNavigation<DataEditView>("PageZero");
+            //Container.RegisterTypeForNavigation<DataEditView>("PageZero");
+            Container.RegisterTypeForNavigation<NewProject>("NewProject");
         }
     }
 

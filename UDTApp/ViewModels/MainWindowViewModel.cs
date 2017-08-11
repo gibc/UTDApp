@@ -132,6 +132,16 @@ namespace UDTApp.ViewModels
 
         private void newProject()
         {
+            NewProject win = new NewProject();
+            win.ShowDialog();
+            if((bool)win.DialogResult)
+            { 
+                string projName = win.prjName.Text;
+                List<UDTBase> newSchmea = UDTXml.UDTXmlData.newProject(projName);
+                Navigate("SetUp");
+
+            }
+           
         }
 
 
