@@ -118,10 +118,11 @@ namespace UDTApp.ViewModels
 
     public class UDTDataTextBox : ValidatableBindableBase
     {
-        public UDTDataTextBox(string _colName, UDTBase item)
+        public UDTDataTextBox(string _colName, UDTBase item, Action<bool> _validationChanged)
         {
             colName = _colName;
             udtItem = item;
+            validationChanged = _validationChanged;
         }
 
         private string _editText = null;
@@ -133,6 +134,7 @@ namespace UDTApp.ViewModels
             set 
             { 
                 SetProperty(ref _editText, value);
+                validationChanged(HasErrors);
                 if(!HasErrors)
                 {
                     if (row[colName] as string != value)
@@ -163,6 +165,7 @@ namespace UDTApp.ViewModels
 
         public string colName { get; set; }
         public UDTBase udtItem = null;
+        public Action<bool> validationChanged { get; set; }
 
         public static System.ComponentModel.DataAnnotations.ValidationResult CheckTextEntry(string name, ValidationContext context)
         {
@@ -306,11 +309,14 @@ namespace UDTApp.ViewModels
                     row[colName] = DBNull.Value;
             }
             row.EndEdit();
+            //UDTDataSet.udtDataSet.validationChange(HasErrors);
+
         }
 
         private void deleteRow()
         {
             SelectedItem.Delete();
+            //UDTDataSet.udtDataSet.validationChange(HasErrors);
         }
 
         private bool canDelete()
@@ -591,10 +597,23 @@ namespace UDTApp.ViewModels
             foreach(UDTBase item in dataItem.ChildData)
             {
                 if (item.GetType() != typeof(UDTData))
-                    editBoxes.Add(new UDTDataTextBox(item.Name, item));
+                    editBoxes.Add(new UDTDataTextBox(item.Name, item, editBoxValidationChanged));
             }
 
             return editBoxes;
+        }
+
+        private void editBoxValidationChanged(bool hasErrors)
+        {
+            foreach(UDTDataTextBox editBox in editBoxes)
+            {
+                if(editBox.HasErrors)
+                { 
+                    UDTDataSet.udtDataSet.validationChange(true);
+                    return;
+                }
+            }
+            UDTDataSet.udtDataSet.validationChange(false);
         }
 
         private void updateEditBoxes(DataRowView selectedRow)

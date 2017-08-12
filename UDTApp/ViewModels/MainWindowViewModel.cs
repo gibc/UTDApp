@@ -97,6 +97,7 @@ namespace UDTApp.ViewModels
                 if (schema == null) return;
             }
             UDTDataSet.udtDataSet.dataChangeEvent += dataChanged;
+            UDTDataSet.udtDataSet.validationChangedEvent += dataValidationChanged;
             Navigate("DataEditView");
         }
 
@@ -113,6 +114,7 @@ namespace UDTApp.ViewModels
             if(schema != null)
             { 
                 UDTDataSet.udtDataSet.dataChangeEvent += dataChanged;
+                UDTDataSet.udtDataSet.validationChangedEvent += dataValidationChanged;
                 Navigate("DataEditView");
             }
         }
@@ -146,10 +148,16 @@ namespace UDTApp.ViewModels
             SaveDataCommand.RaiseCanExecuteChanged();
         }
 
+        public void dataValidationChanged()
+        {
+            SaveDataCommand.RaiseCanExecuteChanged();
+        }
+
         private bool canSaveData()
         {
             if (currentView != "DataEditView") return false;
             else if (UDTDataSet.udtDataSet.DataSet == null) return false;
+            else if (UDTDataSet.udtDataSet.HasEditErrors) return false;
             else return UDTDataSet.udtDataSet.IsModified;
         }
 

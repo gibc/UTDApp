@@ -291,6 +291,20 @@ namespace UDTApp.Models
             if (dataChangeEvent != null) dataChangeEvent();
         }
 
+        // links data edit class to file menu class
+        // edit class sets the error state by calling validationChange
+        // file menu class subscribes to validationChangedEvent
+        // on validation changed event, menu class set file can save state
+        public bool HasEditErrors { get; set; }
+        public delegate void validationChangedDel();
+        public event validationChangedDel validationChangedEvent;
+        public void validationChange(bool hasErrors)
+        {
+            HasEditErrors = hasErrors;
+            if (validationChangedEvent != null) validationChangedEvent();
+        }
+
+
         DataTable createDataTable(UDTData dataItem)
         {
             DataTable tbl = new DataTable(dataItem.Name);
