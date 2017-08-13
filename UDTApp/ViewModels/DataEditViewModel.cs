@@ -126,7 +126,7 @@ namespace UDTApp.ViewModels
         }
 
         private string _editText = null;
-        [Required]
+        [Required(ErrorMessage = "Entry is required.")]
         [CustomValidation(typeof(UDTDataTextBox), "CheckTextEntry")]
         public string editText 
         {
@@ -191,7 +191,7 @@ namespace UDTApp.ViewModels
                 decimal val;
                 if (!Decimal.TryParse(name, out val))
                 {
-                    return new System.ComponentModel.DataAnnotations.ValidationResult("Entry is not a valid decimal number.");
+                    return new System.ComponentModel.DataAnnotations.ValidationResult("Entry is not a valid decimal.");
                 }
             }
 
@@ -243,9 +243,11 @@ namespace UDTApp.ViewModels
         {
             WindowLoadedCommand = new DelegateCommand(windowLoaded);
             UpdateDatasetCommand = new DelegateCommand(updateDataset);
-            AddRowCommand = new DelegateCommand(addRow);
+            AddRowCommand = new DelegateCommand(addRow, canAddRow);
             DeleteRowCommand = new DelegateCommand(deleteRow, canDelete);
             CreateColumnsCommand = new DelegateCommand<System.Windows.Controls.DataGridAutoGeneratingColumnEventArgs>(createColumns);
+
+            editBoxes = new List<UDTDataTextBox>();
 
         }
 
@@ -256,7 +258,11 @@ namespace UDTApp.ViewModels
             set 
             { 
                 _selectedItem = value;
-                if (value == null) return;
+
+                editBoxes = createEditBoxes(currentDataItem);
+
+                if (value == null)  return;
+              
 
                 foreach (UDTDataButton btn in childTables)
                     btn.raiseCanExecuteChanged();
@@ -296,8 +302,6 @@ namespace UDTApp.ViewModels
 
         private void addRow()
         {
-            //DataRow trow = gridData.Table.NewRow();
-            //gridData.AllowNew
             DataRowView row = gridData.AddNew();
             row["Id"] = Guid.NewGuid();
             foreach (string colName in currentDataItem.ParentColumnNames)
@@ -309,8 +313,14 @@ namespace UDTApp.ViewModels
                     row[colName] = DBNull.Value;
             }
             row.EndEdit();
-            //UDTDataSet.udtDataSet.validationChange(HasErrors);
 
+            SelectedIndex = gridData.Table.Rows.Count - 1;
+
+        }
+
+        private bool canAddRow()
+        {
+            return !UDTDataSet.udtDataSet.HasEditErrors;
         }
 
         private void deleteRow()
@@ -592,15 +602,18 @@ namespace UDTApp.ViewModels
 
         List<UDTDataTextBox> createEditBoxes(UDTData dataItem)
         {
-            List<UDTDataTextBox> editBoxes = new List<UDTDataTextBox>();
+            List<UDTDataTextBox> boxes = new List<UDTDataTextBox>();
+
+            if (SelectedItem == null) return boxes;
+            if (editBoxes.Count > 0) return editBoxes;
             
             foreach(UDTBase item in dataItem.ChildData)
             {
                 if (item.GetType() != typeof(UDTData))
-                    editBoxes.Add(new UDTDataTextBox(item.Name, item, editBoxValidationChanged));
+                    boxes.Add(new UDTDataTextBox(item.Name, item, editBoxValidationChanged));
             }
 
-            return editBoxes;
+            return boxes;
         }
 
         private void editBoxValidationChanged(bool hasErrors)
@@ -610,14 +623,18 @@ namespace UDTApp.ViewModels
                 if(editBox.HasErrors)
                 { 
                     UDTDataSet.udtDataSet.validationChange(true);
+                    AddRowCommand.RaiseCanExecuteChanged();
                     return;
                 }
             }
             UDTDataSet.udtDataSet.validationChange(false);
+            AddRowCommand.RaiseCanExecuteChanged();
+
         }
 
         private void updateEditBoxes(DataRowView selectedRow)
         {
+            
             foreach (UDTDataTextBox editBox in editBoxes)
                 editBox.row = selectedRow;
         }

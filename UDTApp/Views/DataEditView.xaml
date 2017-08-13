@@ -37,10 +37,12 @@
         </DataTemplate>
 
         <DataTemplate DataType="{x:Type vm:UDTDataTextBox}">
-            <WrapPanel>
-                <Label Content="{Binding colName}" Width="auto" Height="25" HorizontalContentAlignment="Right"></Label>
+            <WrapPanel Margin="0,0,0,13">
+                <Label Content="{Binding colName}" Width="60" Height="25" 
+                       HorizontalContentAlignment="Right"/>
                 <TextBox Text="{Binding editText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                         Width="100" Height="25"></TextBox>
+                         Width="100" Height="25" />
+
             </WrapPanel>
         </DataTemplate>
         
@@ -86,10 +88,10 @@
                           cltLib:AutoGeneratingColumnEventToCommandBehaviour.Command="{Binding CreateColumnsCommand}"/>
              </GroupBox>
             <GroupBox Header ="Seleted Item:" BorderThickness="1" BorderBrush="DarkBlue" Margin="{Binding parentMargin}">
-                <ListBox ItemsSource="{Binding editBoxes}" HorizontalContentAlignment="Left">
+                    <ListBox ItemsSource="{Binding editBoxes}" HorizontalContentAlignment="Left" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                     <ListBox.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <StackPanel Orientation="Horizontal" VerticalAlignment="Top"/>
+                            <WrapPanel Orientation="Horizontal" VerticalAlignment="Top"/>
                         </ItemsPanelTemplate>
                     </ListBox.ItemsPanel>
                 </ListBox>

@@ -15,13 +15,13 @@
                 <Setter.Value>
                     <ControlTemplate>
                         <StackPanel>
-                            <Border BorderThickness="2" BorderBrush="DarkRed">
+                            <Border BorderThickness="0" BorderBrush="DarkRed">
                                 <StackPanel>
                                     <AdornedElementPlaceholder
                                 x:Name="errorControl" />
                                 </StackPanel>
                             </Border>
-                            <TextBlock Text="{Binding AdornedElement.ToolTip
+                            <TextBlock Height="15" Text="{Binding AdornedElement.ToolTip
                         , ElementName=errorControl}" Foreground="Red" />
                         </StackPanel>
                     </ControlTemplate>
