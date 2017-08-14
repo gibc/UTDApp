@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -124,6 +125,12 @@ namespace UDTApp.Models
                 child.parentObj = dataItem;
 
             }
+
+            List<UDTBase> childList = dataItem.ChildData.ToList();
+            childList.Sort((x, y) => x.sortOrder.CompareTo(y.sortOrder));
+            dataItem.ChildData = new ObservableCollection<UDTBase>(childList);
+
+            
         }
     }
 

@@ -27,9 +27,12 @@ namespace UDTApp.Models
         {
             ChildData = new ObservableCollection<UDTBase>();
             TypeName = "Group";
-            backgroundBrush = Brushes.MistyRose;
-            //ParentColumnNames = new ObservableCollection<UDTParentColumn>();
+            //backgroundBrush = Brushes.MistyRose;
+            backgroundBrush = Brushes.White;
             ParentColumnNames = new List<string>();
+            buttonWidth = 60;
+            buttonHeight = 30;
+            sortOrder = "zzz";
         }
 
         public delegate void validationChangedDel();
@@ -64,7 +67,22 @@ namespace UDTApp.Models
         // To create CRUD UI
         //   find UDTData collectons with ChildData.count = 0;
         //     create display and edit page for each UDTData item
-        public ObservableCollection<UDTBase> ChildData { get; set; }
+        private ObservableCollection<UDTBase> _childData;
+        public ObservableCollection<UDTBase> ChildData 
+        { 
+            get
+            {
+                //List<UDTBase> childList = _childData.ToList();
+                //childList.Sort((x, y) => x.TypeName.CompareTo(y.TypeName));
+                //return new ObservableCollection<UDTBase>(childList);
+                return _childData;
+            }
+            set 
+            {
+                SetProperty(ref _childData, value);
+                //_childData = value; 
+            }
+        }
         // add this if we want group children to have more than one parent
         //public ObservableCollection<UDTParentColumn> ParentColumnNames { get; set; }
         public List<string> ParentColumnNames { get; set; }
@@ -94,6 +112,9 @@ namespace UDTApp.Models
 
             objId = Guid.NewGuid();
             backgroundBrush = Brushes.Black;
+            buttonWidth = 50;
+            buttonHeight = 20;
+            sortOrder = "zzz";
         }
 
         private bool disable(EventArgs eventArgs) 
@@ -153,6 +174,10 @@ namespace UDTApp.Models
             get { return backgroundBrush.Color.ToString(); }
             set { _brushColor = value; }
         }
+
+        public int buttonWidth { get; set; }
+        public int buttonHeight { get; set; }
+        public string sortOrder { get; set; }
 
         [XmlIgnoreAttribute]
         public UDTData parentObj = null;
@@ -395,8 +420,8 @@ namespace UDTApp.Models
             Button btn = dragArgs.Source as Button;
             if (!dragArgs.Handled && btn != null)
             {
-
                 ObservableCollection<UDTBase> col = Ex.GetSecurityId(btn);
+
                 UDTBase udtItem = getItemFromDragArgs(dragArgs);
                 UDTBase udtBase = udtItem as UDTBase;
 
@@ -417,6 +442,13 @@ namespace UDTApp.Models
                         
                     udtItem.newDrop = true;
                     col.Add(udtItem);
+
+                    UDTData utdData = this as UDTData;
+                    List<UDTBase> childList = utdData.ChildData.ToList();
+                    childList.Sort((x, y) => x.sortOrder.CompareTo(y.sortOrder));
+                    utdData.ChildData = new ObservableCollection<UDTBase>(childList);
+
+
                     MasterGroup.dataChanged();
                 }
                 dragArgs.Handled = true;
@@ -441,12 +473,12 @@ namespace UDTApp.Models
         private static bool inDrag = false;
         private void mouseMove(MouseEventArgs data)
         {
-
             Button btn = data.Source as Button;
-            ObservableCollection<UDTBase> col = Ex.GetSecurityId(btn);
+            //ObservableCollection<UDTBase> col = Ex.GetSecurityId(btn);
 
             if (btn != null && data.LeftButton == MouseButtonState.Pressed && !inMove)
             {
+
                 inMove = true;
                 inDrag = true;
                 //Debug.Write(string.Format(">>>Enter mouseMove\r", _currentItem));
@@ -550,6 +582,7 @@ namespace UDTApp.Models
             TypeName = "Text";
             //Name = "";
             backgroundBrush = Brushes.LightBlue;
+            sortOrder = "bbb";
         }
 
     }
@@ -562,6 +595,7 @@ namespace UDTApp.Models
             TypeName = "Number";
             //Name = "";
             backgroundBrush = Brushes.LightGreen;
+            sortOrder = "ccc";
         }    
 
 
@@ -574,6 +608,7 @@ namespace UDTApp.Models
             TypeName = "Real";
             //Name = "";
             backgroundBrush = Brushes.LightSalmon;
+            sortOrder = "ddd";
         }                
  
 
@@ -586,6 +621,7 @@ namespace UDTApp.Models
             TypeName = "Date";
             //Name = "";
             backgroundBrush = Brushes.LightYellow;
+            sortOrder = "eee";
         }                
  
     }
