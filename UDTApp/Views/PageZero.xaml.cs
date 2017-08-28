@@ -29,5 +29,10 @@ namespace UDTApp.Views
         {
 
         }
+
+        private void sizeEvent(object sender, SizeChangedEventArgs e)
+        {
+
+        }
     }
 }

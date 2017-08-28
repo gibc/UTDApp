@@ -31,6 +31,7 @@ namespace UDTApp.ViewModels
         public DelegateCommand CreateDataBaseCommand { get; set; }
         public DelegateCommand ReadDataBaseCommand { get; set; }
         public DelegateCommand WindowLoadedCommand { get; set; }
+        //public DelegateCommand<EventArgs> SizeChangedCommand { get; set; }
 
 
         public PageZeroViewModel()
@@ -44,6 +45,7 @@ namespace UDTApp.ViewModels
             CreateDataBaseCommand = new DelegateCommand(createDatabase);
             ReadDataBaseCommand = new DelegateCommand(readDatabase);
             WindowLoadedCommand = new DelegateCommand(windowLoaded);
+            //SizeChangedCommand = new DelegateCommand<EventArgs>(sizeChange);
 
 
             //SchemaList = new List<UDTBase>();
@@ -476,6 +478,11 @@ namespace UDTApp.ViewModels
             Button btn = dragArgs.Source as Button;
             dragArgs.Effects = DragDropEffects.Copy;
         }
+
+        //private void sizeChange(EventArgs sizeArgs)
+        //{
+
+        //}
 
         private void dragDrop(DragEventArgs dragArgs)
         {

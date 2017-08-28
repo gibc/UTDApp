@@ -3,10 +3,12 @@ using Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,19 +23,66 @@ using UDTApp.ViewModels;
 
 namespace UDTApp.Models
 {
+    //public class UDTTableView : ValidatableBindableBase
+    //{
+    //    //public UDTTableView(ObservableCollection<UDTBase> itemCol)
+    //    //{
+    //    //    columnData = new ObservableCollection<UDTBase>();
+    //    //    tableData = new ObservableCollection<UDTData>();
+    //    //    foreach(UDTBase item in itemCol)
+    //    //    {
+    //    //        if (item.GetType() == typeof(UDTData))
+    //    //            tableData.Add(item as UDTData);
+    //    //        else
+    //    //            columnData.Add(item);
+    //    //    }
+    //    //}
+
+    //    private ObservableCollection<UDTBase> _columnData;
+    //    public ObservableCollection<UDTBase> columnData 
+    //    {
+    //        get { return _columnData; } 
+    //        set
+    //        {
+    //            SetProperty(ref _columnData, value);
+    //        }
+    //    }
+
+    //    private ObservableCollection<UDTData> _tableData;         
+    //    public ObservableCollection<UDTData> tableData 
+    //    {
+    //        get { return _tableData; }
+    //        set
+    //        {
+    //            SetProperty(ref _tableData, value);
+    //        }
+    //    } 
+    //}
+
     public class UDTData : UDTBase //, UDTItem
     {
+        //[XmlIgnoreAttribute]
+        //public DelegateCommand<EventArgs> SizeChangedCommand { get; set; }
+
         public UDTData()
         {
             ChildData = new ObservableCollection<UDTBase>();
+            tableData = new ObservableCollection<UDTData>();
+            columnData = new ObservableCollection<UDTBase>();
             TypeName = "Group";
+            Name = TypeName;
             //backgroundBrush = Brushes.MistyRose;
             backgroundBrush = Brushes.White;
             ParentColumnNames = new List<string>();
             buttonWidth = 60;
             buttonHeight = 30;
             sortOrder = "zzz";
+
         }
+        //private void sizeChange(EventArgs eventArgs)
+        //{
+
+        //}
 
         public delegate void validationChangedDel();
         public event validationChangedDel validationChangedEvent;
@@ -72,15 +121,39 @@ namespace UDTApp.Models
         { 
             get
             {
-                //List<UDTBase> childList = _childData.ToList();
-                //childList.Sort((x, y) => x.TypeName.CompareTo(y.TypeName));
-                //return new ObservableCollection<UDTBase>(childList);
                 return _childData;
             }
             set 
             {
                 SetProperty(ref _childData, value);
-                //_childData = value; 
+            }
+        }
+
+        private ObservableCollection<UDTData> _tableData;
+        [XmlIgnoreAttribute]
+        public ObservableCollection<UDTData> tableData
+        {
+            get
+            {
+                return _tableData;
+            }
+            set
+            {
+                SetProperty(ref _tableData, value);
+            }
+        }
+
+        private ObservableCollection<UDTBase> _columnData;
+        [XmlIgnoreAttribute]
+        public ObservableCollection<UDTBase> columnData
+        {
+            get
+            {
+                return _columnData;
+            }
+            set
+            {
+                SetProperty(ref _columnData, value);
             }
         }
         // add this if we want group children to have more than one parent
@@ -102,18 +175,22 @@ namespace UDTApp.Models
             DragEnterCommand = new DelegateCommand<DragEventArgs>(dragEnter, disable);
             DragDropCommand = new DelegateCommand<DragEventArgs>(dragDrop, disable);
             DragOverCommand = new DelegateCommand<DragEventArgs>(dragOver, disable);
+            PreviewDragEnterCommand = new DelegateCommand<DragEventArgs>(previewDragEnter);
 
             SaveNameCommand = new DelegateCommand<EventArgs>(saveName, canSaveName);
             DeleteItemCommand = new DelegateCommand<EventArgs>(deleteItem);
             PopupOpenCommand = new DelegateCommand<EventArgs>(popupOpen, disable);
             PopupLoadCommand = new DelegateCommand<EventArgs>(popupLoad);
             //MouseLeftButtonUpCommand = new DelegateCommand<EventArgs>(buttonRelease);
-
+            //SizeChangedCommand = new DelegateCommand<SizeChangedEventArgs>(sizeChange);
+            SizeChangedCommand = new DelegateCommand<RoutedEventArgs>(sizeChange);
 
             objId = Guid.NewGuid();
             backgroundBrush = Brushes.Black;
-            buttonWidth = 50;
-            buttonHeight = 20;
+            //buttonWidth = 50;
+            buttonWidth = 35;
+            //buttonHeight = 40;
+            buttonHeight = 12;
             sortOrder = "zzz";
         }
 
@@ -146,6 +223,13 @@ namespace UDTApp.Models
         public DelegateCommand<EventArgs> PopupOpenCommand { get; set; }
         [XmlIgnoreAttribute]
         public DelegateCommand<EventArgs> PopupLoadCommand { get; set; }
+        [XmlIgnoreAttribute]
+        public DelegateCommand<DragEventArgs> PreviewDragEnterCommand { get; set; }
+        [XmlIgnoreAttribute]
+        //public DelegateCommand<SizeChangedEventArgs> SizeChangedCommand { get; set; }
+        public DelegateCommand<RoutedEventArgs> SizeChangedCommand { get; set; }
+
+        
 
 
         public Guid objId;
@@ -175,8 +259,37 @@ namespace UDTApp.Models
             set { _brushColor = value; }
         }
 
-        public int buttonWidth { get; set; }
-        public int buttonHeight { get; set; }
+        private int _buttonWidth = 0;
+        public int buttonWidth 
+        {
+            get 
+            {
+                if (_toolBoxItem) return 54;
+                return _buttonWidth; 
+            }
+            set { SetProperty(ref _buttonWidth, value); }
+        }
+
+        private int _buttonHeight = 0;
+        public int buttonHeight 
+        { 
+            get
+            {
+                if (_toolBoxItem) return 22;
+                return _buttonHeight;
+            }
+            set { SetProperty(ref _buttonHeight, value); }
+        }
+
+        public int dragButtonFontSize
+        {
+            get
+            {
+                if (_toolBoxItem) return 13;
+                return 9;
+            }
+        }
+
         public string sortOrder { get; set; }
 
         [XmlIgnoreAttribute]
@@ -282,9 +395,9 @@ namespace UDTApp.Models
         {
             get
             {
-                if (ToolBoxItem)
-                    return 0;
-                return 50;
+                //if (ToolBoxItem)
+                //    return 0;
+                return 40;
             }
         }
 
@@ -317,11 +430,24 @@ namespace UDTApp.Models
 
         }
 
+        //private Thickness _buttonWrapPanel = new Thickness(0, 0, 0, 0);
+        public Thickness ButtonWrapPanelMargin 
+        { 
+            get
+            {
+                if(ToolBoxItem)
+                    return new Thickness(0, 0, 0, 0);
+                else
+                    return new Thickness(0, 0, -10, 0);
+            }
+ 
+        }
+
         public string Type { get; set; }
 
         private string _name = "";
         [Required]
-        [StringLength(15, MinimumLength = 5, ErrorMessage = "Name must be between 5 and 15 characters.")]
+        [StringLength(15, MinimumLength = 4, ErrorMessage = "Name must be between 4 and 15 characters.")]
         [RegularExpression(@"^[a-zA-Z]+$", ErrorMessage = "Name can include only letter characters")]
         [CustomValidation(typeof(UDTBase), "CheckDuplicateColumnName")]
         public string Name
@@ -358,8 +484,16 @@ namespace UDTApp.Models
         private bool _allowDrop = false;
         virtual public bool AllowDrop
         {
-            get { return _allowDrop; }
+            //get { return _allowDrop; }
+            get { return true; }
             set { _allowDrop = value; }
+        }
+
+        //private bool _isReadOnly = false;
+        virtual public bool IsReadOnly
+        {
+            get { return ToolBoxItem; }
+            //set { _isReadOnly = value; }
         }
 
         private void saveName(EventArgs eventArgs)
@@ -400,6 +534,31 @@ namespace UDTApp.Models
             var fe = Keyboard.Focus(tb);
         }
 
+        //private void sizeChange(SizeChangedEventArgs eventArgs)       
+        private void sizeChange(RoutedEventArgs e)
+        {
+
+            ItemsControl itmCnt = e.Source as ItemsControl;
+            var w = itmCnt.ActualWidth;
+            ////itmCnt.SizeChanged += new SizeChangedEventHandler(sizeEvent);
+            ((INotifyCollectionChanged)itmCnt.Items).CollectionChanged += new NotifyCollectionChangedEventHandler(addEvent);
+
+            double width = 100 + itmCnt.Items.Count * 50;
+
+            int cntWid = 0;
+            int gap = 10;
+            foreach (UDTBase item in itmCnt.Items)
+            {
+                cntWid += item.buttonWidth + gap + 2 * item.Name.Length;
+            }
+            cntWid -= gap;
+            buttonWidth = (int)cntWid;
+        }
+
+        private void addEvent(object sender, NotifyCollectionChangedEventArgs e)
+        {
+
+        }
         //private void buttonRelease(EventArgs eventArgs)
         //{ }
 
@@ -418,9 +577,10 @@ namespace UDTApp.Models
         {
             inDrag = false;
             Button btn = dragArgs.Source as Button;
-            if (!dragArgs.Handled && btn != null)
+            TextBox box = dragArgs.Source as TextBox;
+            if (!dragArgs.Handled && btn != null || box != null)
             {
-                ObservableCollection<UDTBase> col = Ex.GetSecurityId(btn);
+                //ObservableCollection<UDTBase> col = Ex.GetSecurityId(btn);
 
                 UDTBase udtItem = getItemFromDragArgs(dragArgs);
                 UDTBase udtBase = udtItem as UDTBase;
@@ -431,17 +591,27 @@ namespace UDTApp.Models
                 if(udtItem.Name == "") udtItem.Name = "<Name>";
 
                 UDTData udtData;
-                if (udtItem != null && col != null && !col.Contains(udtItem))
+                //if (udtItem != null && col != null && !col.Contains(udtItem))
+                if (udtItem != null )
                 {
-                    udtItem.parentObj = this as UDTData;
+                    UDTData parent = this as UDTData;
+                    udtItem.parentObj = parent;
                     if (udtItem.GetType() == typeof(UDTData))
                     {
                         udtData = udtItem as UDTData;
                         udtData.ParentColumnNames.Add(this.Name);
+                        if (!parent.tableData.Contains(udtData))
+                            parent.tableData.Add(udtData);
+                    }
+                    else
+                    {
+                        if (!parent.columnData.Contains(udtItem))
+                            parent.columnData.Add(udtItem);
+
                     }
                         
                     udtItem.newDrop = true;
-                    col.Add(udtItem);
+                    //col.Add(udtItem);
 
                     UDTData utdData = this as UDTData;
                     List<UDTBase> childList = utdData.ChildData.ToList();
@@ -469,38 +639,57 @@ namespace UDTApp.Models
             }
         }
 
+        private void previewDragEnter(DragEventArgs dragArgs)
+        {
+            dragArgs.Handled = true;
+
+
+            // Check that the data being dragged is a file
+            if (getItemFromDragArgs(dragArgs) != null)
+            {
+
+                dragArgs.Effects = DragDropEffects.Copy;
+
+            }
+            else
+                dragArgs.Effects = DragDropEffects.None;
+        }
+
         private bool inMove = false;
         private static bool inDrag = false;
         private void mouseMove(MouseEventArgs data)
         {
             Button btn = data.Source as Button;
+            TextBox box = data.Source as TextBox;
             //ObservableCollection<UDTBase> col = Ex.GetSecurityId(btn);
 
-            if (btn != null && data.LeftButton == MouseButtonState.Pressed && !inMove)
+            if ((btn != null || box != null) && data.LeftButton == MouseButtonState.Pressed && !inMove)
             {
 
                 inMove = true;
                 inDrag = true;
-                //Debug.Write(string.Format(">>>Enter mouseMove\r", _currentItem));
 
                 UDTBase udtItem;
                 if (this.ToolBoxItem)
                 {
                     udtItem = (UDTBase)Activator.CreateInstance(this.GetType());
                     udtItem.ToolBoxItem = false;
-                    //udtItem.Name = "<Name>";
                 }
                 else
                     udtItem = this;
 
-                //UDTBase udtBase = udtItem as UDTBase;
                 udtItem.dragObjId = this.objId;
 
                 if (udtItem != null )
                 {
-                    DragDrop.DoDragDrop(btn,
-                      udtItem,
-                      DragDropEffects.Copy);
+                    if (btn != null)
+                        DragDrop.DoDragDrop(btn,
+                          udtItem,
+                          DragDropEffects.Copy); 
+                    else if (box != null)
+                        DragDrop.DoDragDrop(box,
+                          udtItem,
+                          DragDropEffects.Copy);
                 }
 
                 //Debug.Write(string.Format("<<<Exit mouseMove\r", _currentItem));
@@ -580,7 +769,9 @@ namespace UDTApp.Models
         { 
             Type = "[varchar](255) NULL ";
             TypeName = "Text";
+            //TypeName = "T\ne\nx\nt";
             //Name = "";
+            Name = TypeName;
             backgroundBrush = Brushes.LightBlue;
             sortOrder = "bbb";
         }

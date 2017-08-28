@@ -114,14 +114,20 @@ namespace UDTApp.Models
 
         private void setParentRefs(UDTData dataItem)
         {
+            //dataItem.tableData.Add(new UDTTableView(dataItem.ChildData));
+          
             foreach (UDTBase child in dataItem.ChildData)
             {
                 if (child.GetType() == typeof(UDTData))
                 {
                     //UDTData childData = child as UDTData;
                     //childData.ParentColumnNames.Add(dataItem.Name);
+                    dataItem.tableData.Add(child as UDTData);
                     setParentRefs(child as UDTData);
                 }
+                else
+                    dataItem.columnData.Add(child);
+
                 child.parentObj = dataItem;
 
             }

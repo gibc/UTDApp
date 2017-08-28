@@ -69,15 +69,15 @@
         </ControlTemplate>
         
         <ControlTemplate x:Key="EditButton">
-            <Grid ZIndex ="20">
-            <Button Visibility="{Binding SchemaItem, Converter={StaticResource BoolToVis}}" Content="X" Height="auto" 
-                    Width="auto" FontSize="12" IsEnabled="False"
-                    HorizontalAlignment="Center" VerticalAlignment="Center" VerticalContentAlignment="Top" 
+            <!--<Grid ZIndex ="20">-->
+            <Button Visibility="{Binding SchemaItem, Converter={StaticResource BoolToVis}}" Content="X" Height="12" 
+                    Width="10" FontSize="8" 
+                    HorizontalAlignment="Center" VerticalAlignment="Top" VerticalContentAlignment="Top" 
                     Background="Transparent" BorderBrush="Transparent" ToolTip="Delete Item" >
                 <Button.RenderTransform>
                      <TransformGroup>
-                        <TranslateTransform X="-11" Y="-4" />
-                    </TransformGroup>
+                        <TranslateTransform X="-8" Y="-4" />
+                     </TransformGroup>
                 </Button.RenderTransform>
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="Click" >
@@ -85,20 +85,42 @@
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
             </Button>
-            </Grid>
+            <!--</Grid>-->
+        </ControlTemplate>
+
+        <ControlTemplate x:Key="NameEditBox">
+            <TextBox Name="NameEdit" Height="20" MinWidth="{Binding EditBoxMinWidth}" Margin="5,0,5,0" 
+                    Visibility="{Binding SchemaItem, Converter={StaticResource BoolToVis}}"
+                    BorderThickness="1,1,1,1" 
+                    BorderBrush="Black" Background="{Binding backgroundBrush}"
+                    Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                    HorizontalAlignment="Center" VerticalContentAlignment="Bottom" HorizontalContentAlignment="Center" 
+                    vm:FocusExtension.IsFocused="{Binding PopUpOpen}" 
+                    ToolTip="Edit Item Name"  IsReadOnly="{Binding IsReadOnly}">
+
+                <TextBox.RenderTransform>
+                    <TransformGroup>
+                        <TranslateTransform X="0" Y="-4" />
+                    </TransformGroup>
+                </TextBox.RenderTransform>
+
+            </TextBox>
         </ControlTemplate>
 
         <ControlTemplate x:Key="ButtonDrag">
             <Button Height="{Binding  buttonHeight}" vm:Ex.SecurityId ="{Binding ChildData}" 
-                    FontSize="13" FontWeight="SemiBold" Foreground="DarkSlateBlue" FontStyle="Italic"
                     AllowDrop="{Binding AllowDrop}" 
-                    Background="{Binding backgroundBrush}" Content="{Binding TypeName}"
-                    Width="{Binding buttonWidth}" HorizontalAlignment="Left" VerticalContentAlignment="Center"
-                    HorizontalContentAlignment="Left"  BorderThickness="0,2,2,2" BorderBrush="Black">
+                    Background="{Binding backgroundBrush}" 
+                    Width="{Binding buttonWidth}" HorizontalAlignment="Center" VerticalContentAlignment="Center"
+                    HorizontalContentAlignment="Center"  BorderThickness="1,1,1,1" BorderBrush="Black"
+                    Padding="-0,-7,0,-5">
                 
-                <!--<Button.Content>
-                    <TextBlock Text="{Binding TypeName}"/>
-                </Button.Content>-->
+                <Button.Content>
+                    <!--<TextBlock TextAlignment="Center" FontSize="{Binding dragButtonFontSize}" Text="{Binding TypeName}" 
+                         FontWeight="SemiBold" Foreground="DarkSlateBlue" FontStyle="Italic"/>-->
+                    <TextBlock TextAlignment="Center" FontSize="{Binding dragButtonFontSize}" Text="{Binding TypeName}" 
+                         />
+                </Button.Content>
 
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="PreviewMouseMove" >
@@ -113,7 +135,6 @@
                     <i:EventTrigger EventName="DragOver" >
                         <prism:InvokeCommandAction Command="{Binding DragOverCommand}" />
                     </i:EventTrigger>
-
 
                 </i:Interaction.Triggers>
 
@@ -182,8 +203,108 @@
         </ControlTemplate>-->
 
         <DataTemplate DataType    = "{x:Type local:UDTData}">
+            
+            <StackPanel Grid.IsSharedSizeScope="True">
+                <Border BorderThickness="2" BorderBrush="Black">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition SharedSizeGroup="MySizeGroup" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel HorizontalAlignment="Stretch">
+                          <DockPanel Margin="-0,-8,-0,-8" Panel.ZIndex="120"  Width="auto" HorizontalAlignment="Stretch" >
+                            <Button HorizontalAlignment="Left" Width="12" Height="8" ToolTip="Select to Drag" >
+                                    <Button.RenderTransform>
+                                        <TransformGroup>
+                                            <TranslateTransform X="0" Y="+3" />
+                                        </TransformGroup>
+                                    </Button.RenderTransform>
+                            </Button>
 
-            <StackPanel Margin="0 5 0 0" ClipToBounds="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                            <Button HorizontalAlignment="Right"  Width="12" Height="8" ToolTip="Select to Drag" >
+                                    <Button.RenderTransform>
+                                        <TransformGroup>
+                                            <TranslateTransform X="0" Y="+3" />
+                                        </TransformGroup>
+                                    </Button.RenderTransform>
+                                </Button>
+                        </DockPanel>
+                            <TextBox Name="NameEdit" Height="30"  Margin="0,0,0,0" Padding="0,0,0,0"
+                     BorderThickness="2,2,2,2" BorderBrush="Transparent" Background="{Binding backgroundBrush}"
+                             Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                             HorizontalAlignment="Stretch" 
+                             VerticalContentAlignment="Top" 
+                             HorizontalContentAlignment="Center" 
+                                 vm:FocusExtension.IsFocused="{Binding PopUpOpen}" 
+                                 ToolTip="Edit Item Name" IsEnabled="{Binding EditBoxEnabled}"
+                             AllowDrop="{Binding AllowDrop}">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="PreviewMouseMove" >
+                                <prism:InvokeCommandAction Command="{Binding MouseMoveCommand }" />
+                            </i:EventTrigger>
+                            <i:EventTrigger EventName="DragEnter" >
+                                <prism:InvokeCommandAction Command="{Binding DragEnterCommand}" />
+                            </i:EventTrigger>
+                            <i:EventTrigger EventName="PreviewDrop" >
+                                <prism:InvokeCommandAction Command="{Binding DragDropCommand}" />
+                            </i:EventTrigger>
+                            <i:EventTrigger EventName="DragOver" >
+                                <prism:InvokeCommandAction Command="{Binding DragOverCommand}" />
+                            </i:EventTrigger>
+                            <i:EventTrigger EventName="PreviewDragOver">
+                                <prism:InvokeCommandAction Command="{Binding PreviewDragEnterCommand}" />
+                            </i:EventTrigger>
+                            <i:EventTrigger EventName="PreviewDragEnter">
+                                <prism:InvokeCommandAction Command="{Binding PreviewDragEnterCommand}" />
+                            </i:EventTrigger>
+
+                        </i:Interaction.Triggers>
+                    </TextBox>
+                    </StackPanel>
+                </Grid>
+                </Border>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition SharedSizeGroup="MySizeGroup" />
+                    </Grid.ColumnDefinitions>
+                    <ItemsControl Name="columnData" Margin="0,0,-10,0" 
+                    BorderBrush="Black" BorderThickness="0" ItemsSource = "{Binding Path=columnData}"
+                              >
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <!--<UniformGrid Rows="1"/>-->
+                            
+                            <WrapPanel></WrapPanel>
+                            
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.RenderTransform>
+                        <TransformGroup>
+                            <TranslateTransform X="0" Y="-15" />
+                        </TransformGroup>
+                    </ItemsControl.RenderTransform>
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="Loaded" >
+                            <prism:InvokeCommandAction Command="{Binding SizeChangedCommand}" />
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </ItemsControl>
+                </Grid>
+                <WrapPanel >
+                <ItemsControl HorizontalAlignment="Left" Margin="30,0,0,0" Background="Transparent" BorderBrush="Black" BorderThickness="0,0,0,0" 
+                         ItemsSource = "{Binding Path=tableData}" 
+                             >
+
+                </ItemsControl>
+                </WrapPanel>
+            </StackPanel>
+
+                        
+        </DataTemplate>
+
+         <!--<DataTemplate DataType    = "{x:Type local:UDTData}">
+
+            <StackPanel Margin="0 5 0 0" ClipToBounds="False" HorizontalAlignment="Stretch" 
+                        VerticalAlignment="Stretch" >
                 
                 <ContentControl Template="{StaticResource MyPop}"/>
 
@@ -197,26 +318,6 @@
                                  ToolTip="Edit Item Name" IsEnabled="{Binding EditBoxEnabled}"/>
 
 
-                        <!--<Button Height="20" vm:Ex.SecurityId ="{Binding ChildData}" AllowDrop="True" Background="MistyRose" 
-                            Width="40" Content="{Binding TypeName}" HorizontalAlignment="Left" VerticalContentAlignment="Center"
-                            HorizontalContentAlignment="Left"  BorderThickness="0,2,2,2" BorderBrush="Black"> 
-                            
-                            <i:Interaction.Triggers>
-                                <i:EventTrigger EventName="PreviewMouseMove" >
-                                    <prism:InvokeCommandAction Command="{Binding MouseMoveCommand }" />
-                                </i:EventTrigger>
-                                <i:EventTrigger EventName="DragEnter" >
-                                    <prism:InvokeCommandAction Command="{Binding DragEnterCommand}" />
-                                </i:EventTrigger>
-                                <i:EventTrigger EventName="PreviewDrop" >
-                                    <prism:InvokeCommandAction Command="{Binding DragDropCommand}" />
-                                </i:EventTrigger>
-                                <i:EventTrigger EventName="DragOver" >
-                                    <prism:InvokeCommandAction Command="{Binding DragOverCommand}" />
-                                </i:EventTrigger>
-                            </i:Interaction.Triggers>
-                            
-                        </Button>-->
 
                         <ContentControl Template="{StaticResource ButtonDrag}"/>
 
@@ -225,10 +326,49 @@
                     </WrapPanel>
                 </Border>
                 
-                <ItemsControl HorizontalAlignment="Left" Margin="30,0,0,0" Background="Transparent" BorderThickness="0,0,0,0" 
-                         ItemsSource = "{Binding Path=ChildData}"/>
+                
+
+                <ItemsControl Name="columnData" Margin="0,0,0,0" 
+                    BorderBrush="Black" BorderThickness="0" ItemsSource = "{Binding Path=columnData}"
+                              >
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Rows="1"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.RenderTransform>
+                        <TransformGroup>
+                            <TranslateTransform X="0" Y="-15" />
+                        </TransformGroup>
+                    </ItemsControl.RenderTransform>
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="Loaded" >
+                            <prism:InvokeCommandAction Command="{Binding SizeChangedCommand}" />
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </ItemsControl>
+
+                <ItemsControl HorizontalAlignment="Left" Margin="30,0,0,0" Background="Transparent" BorderBrush="Black" BorderThickness="0,0,0,0" 
+                         ItemsSource = "{Binding Path=tableData}" 
+                             >
+
+                    --><!--<ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>--><!--
+                </ItemsControl>
+                
+                --><!--<ItemsControl Margin="30,0,0,0" ItemsSource = "{Binding Path=columnData}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>--><!--
+
             </StackPanel>
-        </DataTemplate>
+        </DataTemplate>-->
         
         <DataTemplate DataType    = "{x:Type local:UDTTxtItem}">
 
@@ -237,21 +377,16 @@
                 <ContentControl Template="{StaticResource MyPop}"/>
 
                 <Border  BorderThickness="0,0,0,0" BorderBrush="Black">
-                    <WrapPanel>
+                    <StackPanel>
 
-                        <TextBox Name="NameEdit" Height="20" MinWidth="{Binding EditBoxMinWidth}" Margin="0,0,0,0" BorderThickness="2,2,0,2" BorderBrush="Black" Background="{Binding backgroundBrush}"
-                             Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                             HorizontalAlignment="Center" VerticalContentAlignment="Center" 
-                                 vm:FocusExtension.IsFocused="{Binding PopUpOpen}" 
-                                 ToolTip="Edit Item Name"  IsEnabled="{Binding EditBoxEnabled}"/>
+                        <WrapPanel Panel.ZIndex="10" Margin="{Binding ButtonWrapPanelMargin}" HorizontalAlignment="Center">
+                            <ContentControl Template="{StaticResource ButtonDrag}" />
+                            <ContentControl Template="{StaticResource EditButton}" Panel.ZIndex="20"/>
+                        </WrapPanel>
 
+                        <ContentControl Template="{StaticResource NameEditBox}" />
 
-                        <ContentControl Template="{StaticResource ButtonDrag}"/>
-
-                        <ContentControl Template="{StaticResource EditButton}"/>
-
-
-                    </WrapPanel>
+                    </StackPanel>
                 </Border>
 
             </StackPanel>
@@ -261,19 +396,24 @@
             <StackPanel  Margin="0 5 0 0" ClipToBounds="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                 <ContentControl Template="{StaticResource MyPop}"/>
                 <Border  BorderThickness="0,0,0,0" BorderBrush="Black">
-                    <WrapPanel>
+                    <StackPanel>
 
-                        <TextBox Name="NameEdit" Height="20" MinWidth="{Binding EditBoxMinWidth}" Margin="0,0,0,0" BorderThickness="2,2,0,2" BorderBrush="Black" Background="{Binding backgroundBrush}"
+                        <WrapPanel Panel.ZIndex="10" Margin="{Binding ButtonWrapPanelMargin}" HorizontalAlignment="Center">
+                            <ContentControl Template="{StaticResource ButtonDrag}" />
+                            <ContentControl Template="{StaticResource EditButton}" Panel.ZIndex="20"/>
+                        </WrapPanel>
+
+                        <ContentControl Template="{StaticResource NameEditBox}" />
+                        
+                        <!--<TextBox Name="NameEdit" Height="20" MinWidth="{Binding EditBoxMinWidth}" Margin="0,0,0,0" 
+                                 Visibility="{Binding SchemaItem, Converter={StaticResource BoolToVis}}"
+                                 BorderThickness="2,2,0,2" BorderBrush="Black" Background="{Binding backgroundBrush}"
                              Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                              HorizontalAlignment="Center" VerticalContentAlignment="Center" 
                                  vm:FocusExtension.IsFocused="{Binding PopUpOpen}" 
-                                 ToolTip="Edit Item Name" IsEnabled="{Binding EditBoxEnabled}"/>
+                                 ToolTip="Edit Item Name" IsEnabled="{Binding EditBoxEnabled}"/>-->
 
-                        <ContentControl Template="{StaticResource ButtonDrag}"/>
-                        
-                        <ContentControl Template="{StaticResource EditButton}"/>
-
-                    </WrapPanel>
+                    </StackPanel>
                 </Border>
             </StackPanel>
         </DataTemplate>
@@ -282,19 +422,24 @@
             <StackPanel  Margin="0 5 0 0" ClipToBounds="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                 <ContentControl Template="{StaticResource MyPop}"/>
                 <Border  BorderThickness="0,0,0,0" BorderBrush="Black">
-                    <WrapPanel>
-
-                        <TextBox Name="NameEdit" Height="20" MinWidth="{Binding EditBoxMinWidth}" Margin="0,0,0,0" BorderThickness="2,2,0,2" BorderBrush="Black" Background="{Binding backgroundBrush}"
+                    <StackPanel>
+                        
+                        <WrapPanel Panel.ZIndex="10" Margin="{Binding ButtonWrapPanelMargin}" HorizontalAlignment="Center">
+                            <ContentControl Template="{StaticResource ButtonDrag}" />
+                            <ContentControl Template="{StaticResource EditButton}" Panel.ZIndex="20"/>
+                        </WrapPanel>
+                        
+                        <ContentControl Template="{StaticResource NameEditBox}" />
+                        
+                        <!--<TextBox Name="NameEdit" Height="20" MinWidth="{Binding EditBoxMinWidth}" 
+                                 Visibility="{Binding SchemaItem, Converter={StaticResource BoolToVis}}"
+                                 Margin="0,0,0,0" BorderThickness="2,2,0,2" BorderBrush="Black" Background="{Binding backgroundBrush}"
                              Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                              HorizontalAlignment="Center" VerticalContentAlignment="Center" 
                                  vm:FocusExtension.IsFocused="{Binding PopUpOpen}" 
-                                 ToolTip="Edit Item Name" IsEnabled="{Binding EditBoxEnabled}"/>
+                                 ToolTip="Edit Item Name" IsEnabled="{Binding EditBoxEnabled}"/>-->
 
-                        <ContentControl Template="{StaticResource ButtonDrag}"/>
-                        
-                        <ContentControl Template="{StaticResource EditButton}"/>
-
-                    </WrapPanel>
+                    </StackPanel>
                 </Border>
             </StackPanel>
         </DataTemplate>
@@ -303,19 +448,24 @@
             <StackPanel  Margin="0 5 0 0" ClipToBounds="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                 <ContentControl Template="{StaticResource MyPop}"/>
                 <Border  BorderThickness="0,0,0,0" BorderBrush="Black">
-                    <WrapPanel>
-
-                        <TextBox Name="NameEdit" Height="20" MinWidth="{Binding EditBoxMinWidth}" Margin="0,0,0,0" BorderThickness="2,2,0,2" BorderBrush="Black" Background="{Binding backgroundBrush}"
+                    <StackPanel>
+                        
+                        <WrapPanel Panel.ZIndex="10" Margin="{Binding ButtonWrapPanelMargin}" HorizontalAlignment="Center">
+                            <ContentControl Template="{StaticResource ButtonDrag}" />
+                            <ContentControl Template="{StaticResource EditButton}" Panel.ZIndex="20"/>
+                        </WrapPanel>
+                        
+                        <ContentControl Template="{StaticResource NameEditBox}" />
+                        
+                        <!--<TextBox Name="NameEdit" Height="20" MinWidth="{Binding EditBoxMinWidth}" 
+                                 Visibility="{Binding SchemaItem, Converter={StaticResource BoolToVis}}"
+                                 Margin="0,0,0,0" BorderThickness="2,2,0,2" BorderBrush="Black" Background="{Binding backgroundBrush}"
                              Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                              HorizontalAlignment="Center" VerticalContentAlignment="Center" 
                                  vm:FocusExtension.IsFocused="{Binding PopUpOpen}" 
-                                 ToolTip="Edit Item Name"  IsEnabled="{Binding EditBoxEnabled}"/>
+                                 ToolTip="Edit Item Name"  IsEnabled="{Binding EditBoxEnabled}"/>-->
 
-                        <ContentControl Template="{StaticResource ButtonDrag}"/>
-
-                        <ContentControl Template="{StaticResource EditButton}"/>
-
-                    </WrapPanel>
+                    </StackPanel>
                 </Border>
             </StackPanel>
         </DataTemplate>
