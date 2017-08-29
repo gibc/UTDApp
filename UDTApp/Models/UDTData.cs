@@ -74,8 +74,8 @@ namespace UDTApp.Models
             //backgroundBrush = Brushes.MistyRose;
             backgroundBrush = Brushes.White;
             ParentColumnNames = new List<string>();
-            buttonWidth = 60;
-            buttonHeight = 30;
+            //buttonWidth = 60;
+            //buttonHeight = 30;
             sortOrder = "zzz";
 
         }
@@ -174,12 +174,14 @@ namespace UDTApp.Models
             MouseMoveCommand = new DelegateCommand<MouseEventArgs>(mouseMove, disable);
             DragEnterCommand = new DelegateCommand<DragEventArgs>(dragEnter, disable);
             DragDropCommand = new DelegateCommand<DragEventArgs>(dragDrop, disable);
-            DragOverCommand = new DelegateCommand<DragEventArgs>(dragOver, disable);
+            //DragOverCommand = new DelegateCommand<DragEventArgs>(dragOver, disable);
+            DragOverCommand = new DelegateCommand<DragEventArgs>(dragOver);
             PreviewDragEnterCommand = new DelegateCommand<DragEventArgs>(previewDragEnter);
 
             SaveNameCommand = new DelegateCommand<EventArgs>(saveName, canSaveName);
             DeleteItemCommand = new DelegateCommand<EventArgs>(deleteItem);
-            PopupOpenCommand = new DelegateCommand<EventArgs>(popupOpen, disable);
+            //PopupOpenCommand = new DelegateCommand<EventArgs>(popupOpen, disable);
+            PopupOpenCommand = new DelegateCommand<EventArgs>(popupOpen);
             PopupLoadCommand = new DelegateCommand<EventArgs>(popupLoad);
             //MouseLeftButtonUpCommand = new DelegateCommand<EventArgs>(buttonRelease);
             //SizeChangedCommand = new DelegateCommand<SizeChangedEventArgs>(sizeChange);
@@ -205,6 +207,7 @@ namespace UDTApp.Models
             //    return !MasterGroup.AnyErrors;
             //}
             return !AnyErrors;
+            //return true;
         }
         
         [XmlIgnoreAttribute]
@@ -249,7 +252,7 @@ namespace UDTApp.Models
                 return _backgroundBrush;
             }
 
-            set { _backgroundBrush = value; }
+            set { SetProperty(ref _backgroundBrush, value); }
         }
 
         private string _brushColor = null;
@@ -339,7 +342,12 @@ namespace UDTApp.Models
                     obj.AnyErrors = value;
                     obj.EditBoxEnabled = !value;
                 }
-            }            
+            }
+            //foreach (UDTBase obj in dataItem.columnData)
+            //{
+            //    //obj.AnyErrors = value;
+            //    //obj.EditBoxEnabled = !value;
+            //}            
         }
 
         [XmlIgnoreAttribute]
@@ -537,6 +545,7 @@ namespace UDTApp.Models
         //private void sizeChange(SizeChangedEventArgs eventArgs)       
         private void sizeChange(RoutedEventArgs e)
         {
+            return;
 
             ItemsControl itmCnt = e.Source as ItemsControl;
             var w = itmCnt.ActualWidth;
@@ -605,8 +614,10 @@ namespace UDTApp.Models
                     }
                     else
                     {
+                        //udtItem.AnyErrors = false;
                         if (!parent.columnData.Contains(udtItem))
                             parent.columnData.Add(udtItem);
+                        //parent.ChildData.Add(udtItem);
 
                     }
                         
