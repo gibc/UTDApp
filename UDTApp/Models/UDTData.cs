@@ -143,6 +143,16 @@ namespace UDTApp.Models
             }
         }
 
+        //private Thickness _tableDataMargin = new Thickness(30, 0, 0, 0);        
+        //public Thickness tableDataMargin
+        //{
+        //    get 
+        //    {
+        //        return _tableDataMargin;
+        //    }
+        //    set { SetProperty(ref _tableDataMargin, value); }
+        //}
+
         private ObservableCollection<UDTBase> _columnData;
         [XmlIgnoreAttribute]
         public ObservableCollection<UDTBase> columnData
@@ -296,7 +306,12 @@ namespace UDTApp.Models
         public string sortOrder { get; set; }
 
         [XmlIgnoreAttribute]
-        public UDTData parentObj = null;
+        private UDTData _parentObj = null;       
+        public UDTData parentObj 
+        {
+            get { return _parentObj; }
+            set { SetProperty(ref _parentObj, value); }
+        }
         private bool newDrop = false;
 
         public UDTData MasterGroup 
@@ -478,7 +493,16 @@ namespace UDTApp.Models
                 SaveNameCommand.RaiseCanExecuteChanged();
             }
         }
-        public string TypeName { get; set; }
+
+        private string _typeName = "";         
+        public string TypeName 
+        { 
+            get
+            {
+                return _typeName;
+            }
+            set { SetProperty(ref _typeName, value); }
+        }
 
         private bool _toolBoxItem = true;
         public bool ToolBoxItem 
@@ -542,34 +566,35 @@ namespace UDTApp.Models
             var fe = Keyboard.Focus(tb);
         }
 
-        //private void sizeChange(SizeChangedEventArgs eventArgs)       
+        // change table data items control margin when item added to collection
+        static private int tableDataIndent = 25;
+        static private int tableDataTopMargin = -15;
         private void sizeChange(RoutedEventArgs e)
         {
-            return;
+            //return;
 
             ItemsControl itmCnt = e.Source as ItemsControl;
-            var w = itmCnt.ActualWidth;
-            ////itmCnt.SizeChanged += new SizeChangedEventHandler(sizeEvent);
+            if (itmCnt.Items.Count > 0)
+                tableDataMargin = new Thickness(tableDataIndent, tableDataTopMargin, 0, 0);
+
             ((INotifyCollectionChanged)itmCnt.Items).CollectionChanged += new NotifyCollectionChangedEventHandler(addEvent);
 
-            double width = 100 + itmCnt.Items.Count * 50;
-
-            int cntWid = 0;
-            int gap = 10;
-            foreach (UDTBase item in itmCnt.Items)
-            {
-                cntWid += item.buttonWidth + gap + 2 * item.Name.Length;
-            }
-            cntWid -= gap;
-            buttonWidth = (int)cntWid;
         }
 
         private void addEvent(object sender, NotifyCollectionChangedEventArgs e)
         {
-
+            tableDataMargin = new Thickness(tableDataIndent, tableDataTopMargin, 0, 0);
         }
-        //private void buttonRelease(EventArgs eventArgs)
-        //{ }
+
+        private Thickness _tableDataMargin = new Thickness(tableDataIndent, 4, 0, 0);
+        public Thickness tableDataMargin
+        {
+            get
+            {
+                return _tableDataMargin;
+            }
+            set { SetProperty(ref _tableDataMargin, value); }
+        }
 
         private bool canSaveName(EventArgs eventArgs)
         {
@@ -605,6 +630,7 @@ namespace UDTApp.Models
                 {
                     UDTData parent = this as UDTData;
                     udtItem.parentObj = parent;
+                    //udtItem.Name = parent.Name + ":" + udtItem.Name;
                     if (udtItem.GetType() == typeof(UDTData))
                     {
                         udtData = udtItem as UDTData;

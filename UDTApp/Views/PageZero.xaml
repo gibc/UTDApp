@@ -213,7 +213,10 @@
                         <ColumnDefinition SharedSizeGroup="MySizeGroup" />
                     </Grid.ColumnDefinitions>
                     <StackPanel HorizontalAlignment="Stretch">
-                        
+
+                            <Label Content="{Binding parentObj.Name}" Margin="0,-10,0,-10" FontSize="9"  
+                                   HorizontalAlignment="Center"/>
+
                             <WrapPanel Panel.ZIndex="10" Margin="{Binding ButtonWrapPanelMargin}" HorizontalAlignment="Center">
                                 <WrapPanel.RenderTransform>
                                     <TransformGroup>
@@ -223,7 +226,9 @@
                                 <ContentControl Template="{StaticResource ButtonDrag}" />
                                 <ContentControl Template="{StaticResource EditButton}" Panel.ZIndex="20"/>
                             </WrapPanel>
-                        
+
+                            <!--<StackPanel Width="auto" HorizontalAlignment="Stretch">-->
+                                <!--<Label Content="{Binding ParentName}"  HorizontalAlignment="Stretch"></Label>-->
                             <TextBox Name="NameEdit" Height="30"  Margin="0,0,0,0" Padding="0,2,0,0"
                                 Visibility="{Binding SchemaItem, Converter={StaticResource BoolToVis}}"
                                 BorderThickness="1" BorderBrush="Black" Background="{Binding backgroundBrush}"
@@ -264,7 +269,8 @@
                         </TextBox.RenderTransform>
                                 
                         </TextBox>
-                    </StackPanel>
+                        </StackPanel>
+                        <!--</StackPanel>-->
                 </Grid>
                 </Border>
                 <Grid>
@@ -295,7 +301,8 @@
                 </ItemsControl>
                 </Grid>
                 <WrapPanel >
-                <ItemsControl HorizontalAlignment="Left" Margin="30,0,0,0" Background="Transparent" BorderBrush="Black" BorderThickness="0,0,0,0" 
+                    <ItemsControl HorizontalAlignment="Left" Margin="{Binding tableDataMargin}" Background="Transparent" BorderBrush="Black" 
+                              BorderThickness="0,0,0,0"  
                          ItemsSource = "{Binding Path=tableData}" 
                              >
 
