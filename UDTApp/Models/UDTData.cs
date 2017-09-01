@@ -181,6 +181,8 @@ namespace UDTApp.Models
     {
         public UDTBase()
         {
+            MouseEnterCommand = new DelegateCommand<MouseEventArgs>(mouseEnter);
+            MouseLeaveCommand = new DelegateCommand<MouseEventArgs>(mouseLeave);
             MouseMoveCommand = new DelegateCommand<MouseEventArgs>(mouseMove, disable);
             DragEnterCommand = new DelegateCommand<DragEventArgs>(dragEnter, disable);
             DragDropCommand = new DelegateCommand<DragEventArgs>(dragDrop, disable);
@@ -219,7 +221,11 @@ namespace UDTApp.Models
             return !AnyErrors;
             //return true;
         }
-        
+
+        [XmlIgnoreAttribute]
+        public DelegateCommand<MouseEventArgs> MouseEnterCommand { get; set; }
+        [XmlIgnoreAttribute]
+        public DelegateCommand<MouseEventArgs> MouseLeaveCommand { get; set; }
         [XmlIgnoreAttribute]
         public DelegateCommand<MouseEventArgs> MouseMoveCommand { get; set; }
         [XmlIgnoreAttribute]
@@ -690,6 +696,29 @@ namespace UDTApp.Models
             }
             else
                 dragArgs.Effects = DragDropEffects.None;
+        }
+ 
+        private void mouseEnter(MouseEventArgs data)
+        {
+            TextBox txtBox = data.Source as TextBox; 
+            if (txtBox.IsMouseOver && HasErrors)
+            {
+                PopUpOpen = true;
+            }
+            else
+            {
+                PopUpOpen = false;
+            }
+
+        }
+
+        private void mouseLeave(MouseEventArgs data)
+        {
+            TextBox txtBox = data.Source as TextBox;
+            if(!txtBox.IsMouseOver)
+            { 
+                PopUpOpen = false;
+            }
         }
 
         private bool inMove = false;
