@@ -127,7 +127,8 @@
                     BorderBrush="Black" 
                     Background="{Binding backgroundBrush}"
                     Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                    HorizontalAlignment="Center" VerticalContentAlignment="Bottom" HorizontalContentAlignment="Center" 
+                    HorizontalAlignment="Stretch" VerticalContentAlignment="Bottom" 
+                    HorizontalContentAlignment="Center" 
                     vm:FocusExtension.IsFocused="{Binding PopUpOpen}" 
                     IsReadOnly="{Binding IsReadOnly}">
 
@@ -138,6 +139,20 @@
                         <i:EventTrigger EventName="MouseLeave" >
                             <prism:InvokeCommandAction Command="{Binding MouseLeaveCommand}" />
                         </i:EventTrigger>
+                        
+                   <!--<i:EventTrigger EventName="PreviewMouseMove" >
+                        <prism:InvokeCommandAction Command="{Binding MouseMoveCommand }" />
+                    </i:EventTrigger>
+                    <i:EventTrigger EventName="DragEnter" >
+                        <prism:InvokeCommandAction Command="{Binding DragEnterCommand}" />
+                    </i:EventTrigger>
+                    <i:EventTrigger EventName="PreviewDrop" >
+                        <prism:InvokeCommandAction Command="{Binding DragDropCommand}" />
+                    </i:EventTrigger>
+                    <i:EventTrigger EventName="DragOver" >
+                        <prism:InvokeCommandAction Command="{Binding DragOverCommand}" />
+                    </i:EventTrigger>-->
+
                     </i:Interaction.Triggers>
 
                     <TextBox.RenderTransform>
@@ -284,8 +299,6 @@
                                 <ContentControl Template="{StaticResource EditButton}" Panel.ZIndex="20"/>
                             </WrapPanel>
 
-                            <!--<StackPanel Width="auto" HorizontalAlignment="Stretch">-->
-                                <!--<Label Content="{Binding ParentName}"  HorizontalAlignment="Stretch"></Label>-->
                             <ContentControl Template="{StaticResource MyPop}"/>
 
                             <TextBox Name="NameEdit" Height="30"  Margin="0,0,0,0" Padding="0,2,0,0"
@@ -319,7 +332,14 @@
                                 <prism:InvokeCommandAction Command="{Binding PreviewDragEnterCommand}" />
                             </i:EventTrigger>
 
-                        </i:Interaction.Triggers>
+                            <i:EventTrigger EventName="MouseEnter" >
+                                <prism:InvokeCommandAction Command="{Binding MouseEnterCommand }" />
+                            </i:EventTrigger>
+                            <i:EventTrigger EventName="MouseLeave" >
+                                <prism:InvokeCommandAction Command="{Binding MouseLeaveCommand}" />
+                            </i:EventTrigger>
+
+                            </i:Interaction.Triggers>
 
                         <TextBox.RenderTransform>
                             <TransformGroup>
@@ -328,6 +348,31 @@
                         </TextBox.RenderTransform>
                                 
                         </TextBox>
+                        
+                            <!--<ContentControl Template="{StaticResource NameEditBox}">-->
+                                <!--<i:Interaction.Triggers>
+                                    <i:EventTrigger EventName="PreviewMouseMove" >
+                                        <prism:InvokeCommandAction Command="{Binding MouseMoveCommand }" />
+                                    </i:EventTrigger>
+                                    <i:EventTrigger EventName="DragEnter" >
+                                        <prism:InvokeCommandAction Command="{Binding DragEnterCommand}" />
+                                    </i:EventTrigger>
+                                    <i:EventTrigger EventName="PreviewDrop" >
+                                        <prism:InvokeCommandAction Command="{Binding DragDropCommand}" />
+                                    </i:EventTrigger>
+                                    <i:EventTrigger EventName="DragOver" >
+                                        <prism:InvokeCommandAction Command="{Binding DragOverCommand}" />
+                                    </i:EventTrigger>
+                                    <i:EventTrigger EventName="PreviewDragOver">
+                                        <prism:InvokeCommandAction Command="{Binding PreviewDragEnterCommand}" />
+                                    </i:EventTrigger>
+                                    <i:EventTrigger EventName="PreviewDragEnter">
+                                        <prism:InvokeCommandAction Command="{Binding PreviewDragEnterCommand}" />
+                                    </i:EventTrigger>
+
+                                </i:Interaction.Triggers>-->
+                            <!--</ContentControl>-->
+
                         </StackPanel>
                         <!--</StackPanel>-->
                 </Grid>

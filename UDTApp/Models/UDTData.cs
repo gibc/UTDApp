@@ -629,7 +629,7 @@ namespace UDTApp.Models
                 if (udtBase.dragObjId == this.objId) return;
 
                 if(udtItem.Name == "") udtItem.Name = "<Name>";
-
+            
                 UDTData udtData;
                 //if (udtItem != null && col != null && !col.Contains(udtItem))
                 if (udtItem != null )
@@ -642,13 +642,19 @@ namespace UDTApp.Models
                         udtData = udtItem as UDTData;
                         udtData.ParentColumnNames.Add(this.Name);
                         if (!parent.tableData.Contains(udtData))
+                        {
+                            udtData.Name = getUniqueGroupName(parent.tableData);
                             parent.tableData.Add(udtData);
+                        }
                     }
                     else
                     {
                         //udtItem.AnyErrors = false;
                         if (!parent.columnData.Contains(udtItem))
+                        {
+                            udtItem.Name = getUniqueColumnName(parent.columnData);
                             parent.columnData.Add(udtItem);
+                        }
                         //parent.ChildData.Add(udtItem);
 
                     }
@@ -667,6 +673,34 @@ namespace UDTApp.Models
                 dragArgs.Handled = true;
                 _currentItem = null;
             }
+        }
+
+        private string getUniqueColumnName(ObservableCollection<UDTBase> columnData)
+        {
+            string colName = "DataItem";
+            for (char c = 'A'; c <= 'Z'; c++)
+            {
+                UDTBase item = columnData.FirstOrDefault(x => x.Name == colName);
+                if (item == null)
+                    return colName;
+                else
+                    colName = "DataItem" + c; 
+            }
+            return "";
+        }
+
+        private string getUniqueGroupName(ObservableCollection<UDTData> tableData)
+        {
+            string tableName = "GroupItem";
+            for (char c = 'A'; c <= 'Z'; c++)
+            {
+                UDTBase item = tableData.FirstOrDefault(x => x.Name == tableName);
+                if (item == null)
+                    return tableName;
+                else
+                    tableName = "GroupItem" + c;
+            }
+            return "";
         }
 
         private UDTBase _currentItem = null;
@@ -784,7 +818,8 @@ namespace UDTApp.Models
             UDTBase dataObj = context.ObjectInstance as UDTBase;
             if(dataObj != null && dataObj.parentObj != null && dataObj.GetType() != typeof(UDTData))
             {
-                foreach(UDTBase obj in dataObj.parentObj.ChildData)
+                //foreach (UDTBase obj in dataObj.parentObj.ChildData)
+                foreach(UDTBase obj in dataObj.parentObj.columnData)
                 {
                     if (obj.Name == name && obj.objId != dataObj.objId)
                         return new System.ComponentModel.DataAnnotations.ValidationResult("Duplicate item name. Item names must be unique within an item group.");
@@ -802,7 +837,8 @@ namespace UDTApp.Models
 
         private bool findGroupName(UDTData dataItem, Guid currentObjId, string name)
         {
-            foreach (UDTBase item in dataItem.ChildData)
+            //foreach (UDTBase item in dataItem.ChildData)
+            foreach (UDTBase item in dataItem.tableData)
             {
                 if(item.GetType() == typeof(UDTData))
                 {
