@@ -403,12 +403,13 @@ namespace UDTApp.ViewModels
         private void updateChildButtons(UDTData dataItem)
         {
             List<UDTDataButton> childList = new List<UDTDataButton>();
-            foreach (UDTBase item in dataItem.ChildData)
+            //foreach (UDTBase item in dataItem.ChildData)
+            foreach (UDTBase item in dataItem.tableData)
             {
-                if (item.GetType() == typeof(UDTData))
-                {
+                //if (item.GetType() == typeof(UDTData))
+                //{
                     childList.Add(new UDTDataButton(item as UDTData, childBtnClick, canClick));
-                }
+                //}
             }
             childTables = childList;
 
@@ -580,9 +581,10 @@ namespace UDTApp.ViewModels
         {
             List<UDTDataGrid> childGrids = new List<UDTDataGrid>();
 
-            foreach (UDTBase item in dataItem.ChildData)
+            //foreach (UDTBase item in dataItem.ChildData)
+            foreach (UDTData item in dataItem.tableData)
             {
-                if (item.GetType() == typeof(UDTData))
+                //if (item.GetType() == typeof(UDTData))
                     childGrids.Add(new UDTDataGrid(dataItem.Name, item as UDTData, childBtnClick));
             }
 
@@ -606,10 +608,11 @@ namespace UDTApp.ViewModels
 
             if (SelectedItem == null) return boxes;
             if (editBoxes.Count > 0) return editBoxes;
-            
-            foreach(UDTBase item in dataItem.ChildData)
+
+            //foreach (UDTBase item in dataItem.ChildData)
+            foreach(UDTBase item in dataItem.columnData)
             {
-                if (item.GetType() != typeof(UDTData))
+                //if (item.GetType() != typeof(UDTData))
                     boxes.Add(new UDTDataTextBox(item.Name, item, editBoxValidationChanged));
             }
 

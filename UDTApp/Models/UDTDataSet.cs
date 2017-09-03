@@ -139,12 +139,13 @@ namespace UDTApp.Models
                 {
                     ddl = string.Format("USE [{0}] CREATE TABLE {1} (", dbName, dataItem.Name);
                     ddl += string.Format("[Id] [uniqueidentifier] NOT NULL, ");
-                    foreach (UDTBase item in dataItem.ChildData)
+                    //foreach (UDTBase item in dataItem.ChildData)
+                    foreach (UDTBase item in dataItem.columnData)
                     {
-                        if (item.GetType() != typeof(UDTData))
-                        {
+                        //if (item.GetType() != typeof(UDTData))
+                        //{
                             ddl += string.Format("{0} {1}, ", item.Name, item.Type);
-                        }
+                        //}
                     }
                     foreach (string colName in dataItem.ParentColumnNames)
                     {
@@ -175,21 +176,24 @@ namespace UDTApp.Models
             {
                 List<string> colList = GetColumns(dataItem.Name, dbName);
 
-                foreach (UDTBase item in dataItem.ChildData)
+                //foreach (UDTBase item in dataItem.ChildData)
+                foreach (UDTBase item in dataItem.columnData)
                 {
-                    if (item.GetType() != typeof(UDTData) && !colList.Contains(item.Name))
+                    //if (item.GetType() != typeof(UDTData) && !colList.Contains(item.Name))
+                    if (!colList.Contains(item.Name))
                     {
                         AddColumn(dataItem.Name, item, dbName);
                     }
                 }
             }
 
-            foreach (UDTBase item in dataItem.ChildData)
+            //foreach (UDTBase item in dataItem.ChildData)
+            foreach (UDTData item in dataItem.tableData)
             {
-                if (item.GetType() == typeof(UDTData))
-                {
+                //if (item.GetType() == typeof(UDTData))
+                //{
                     createDBTable(item as UDTData, dbName, tableGuids);
-                }
+                //}
             }
         }
 
@@ -308,10 +312,11 @@ namespace UDTApp.Models
         DataTable createDataTable(UDTData dataItem)
         {
             DataTable tbl = new DataTable(dataItem.Name);
-            foreach (UDTBase item in dataItem.ChildData)
+            //foreach (UDTBase item in dataItem.ChildData)
+            foreach (UDTBase item in dataItem.columnData)
             {
-                if (item.GetType() != typeof(UDTData))
-                {
+                //if (item.GetType() != typeof(UDTData))
+                //{
                     DataColumn col = new DataColumn();
                     col.ColumnName = item.Name;
                     col.DataType = typeof(int);
@@ -332,7 +337,7 @@ namespace UDTApp.Models
                         col.DataType = typeof(int);
                     }
                     tbl.Columns.Add(col);
-                }
+                //}
             }
             foreach (string colName in dataItem.ParentColumnNames)
             {
@@ -400,15 +405,16 @@ namespace UDTApp.Models
                 try
                 {
                     dataTable.Load(reader);
-                    foreach (UDTBase childItem in dataItem.ChildData)
+                    //foreach (UDTBase childItem in dataItem.ChildData)
+                    foreach (UDTBase childItem in dataItem.tableData)
                     {
-                        if (childItem.GetType() == typeof(UDTData))
-                        {
+                        //if (childItem.GetType() == typeof(UDTData))
+                        //{
                             foreach (DataRow row in dataTable.Rows)
                             {
                                 readTable(dataSet, childItem as UDTData, dbName, dataItem.Name);
                             }
-                        }
+                        //}
                     }
 
                     //while (reader.Read())

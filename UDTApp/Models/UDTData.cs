@@ -66,7 +66,7 @@ namespace UDTApp.Models
 
         public UDTData()
         {
-            ChildData = new ObservableCollection<UDTBase>();
+            //ChildData = new ObservableCollection<UDTBase>();
             tableData = new ObservableCollection<UDTData>();
             columnData = new ObservableCollection<UDTBase>();
             TypeName = "Group";
@@ -116,21 +116,21 @@ namespace UDTApp.Models
         // To create CRUD UI
         //   find UDTData collectons with ChildData.count = 0;
         //     create display and edit page for each UDTData item
-        private ObservableCollection<UDTBase> _childData;
-        public ObservableCollection<UDTBase> ChildData 
-        { 
-            get
-            {
-                return _childData;
-            }
-            set 
-            {
-                SetProperty(ref _childData, value);
-            }
-        }
+        //private ObservableCollection<UDTBase> _childData;
+        //public ObservableCollection<UDTBase> ChildData 
+        //{ 
+        //    get
+        //    {
+        //        return _childData;
+        //    }
+        //    set 
+        //    {
+        //        SetProperty(ref _childData, value);
+        //    }
+        //}
 
         private ObservableCollection<UDTData> _tableData;
-        [XmlIgnoreAttribute]
+        //[XmlIgnoreAttribute]
         public ObservableCollection<UDTData> tableData
         {
             get
@@ -143,18 +143,9 @@ namespace UDTApp.Models
             }
         }
 
-        //private Thickness _tableDataMargin = new Thickness(30, 0, 0, 0);        
-        //public Thickness tableDataMargin
-        //{
-        //    get 
-        //    {
-        //        return _tableDataMargin;
-        //    }
-        //    set { SetProperty(ref _tableDataMargin, value); }
-        //}
 
         private ObservableCollection<UDTBase> _columnData;
-        [XmlIgnoreAttribute]
+        //[XmlIgnoreAttribute]
         public ObservableCollection<UDTBase> columnData
         {
             get
@@ -311,8 +302,8 @@ namespace UDTApp.Models
 
         public string sortOrder { get; set; }
 
+        private UDTData _parentObj = null;
         [XmlIgnoreAttribute]
-        private UDTData _parentObj = null;       
         public UDTData parentObj 
         {
             get { return _parentObj; }
@@ -354,21 +345,24 @@ namespace UDTApp.Models
             Debug.Write(string.Format(">>>> Enter SetAnyErrorAll value {0} Name: {1}\r", value, dataItem.Name));
             dataItem.AnyErrors = value;
             dataItem.EditBoxEnabled = !value;
-            foreach(UDTBase obj in dataItem.ChildData)
+            //foreach (UDTBase obj in dataItem.ChildData)
+            foreach (UDTData obj in dataItem.tableData)
             {
-                if (obj.GetType() == typeof(UDTData))
+                //if (obj.GetType() == typeof(UDTData))
                     SetAnyErrorAll(obj as UDTData, value);
-                else
-                { 
+                //else
+                //{ 
                     obj.AnyErrors = value;
                     obj.EditBoxEnabled = !value;
-                }
+                //}
             }
-            //foreach (UDTBase obj in dataItem.columnData)
-            //{
-            //    //obj.AnyErrors = value;
-            //    //obj.EditBoxEnabled = !value;
-            //}            
+            foreach(UDTBase obj in dataItem.columnData)
+            {
+                obj.AnyErrors = value;
+                obj.EditBoxEnabled = !value;
+
+            }
+     
         }
 
         [XmlIgnoreAttribute]
@@ -546,12 +540,15 @@ namespace UDTApp.Models
             MasterGroup.dataChanged();
         }
 
+        // NOTE!! only removes itmes NOT groups
         private void removeItem(UDTData data, UDTBase item)
         {
-            data.ChildData.Remove(item);
-            foreach(UDTBase obj in data.ChildData)
+            //data.ChildData.Remove(item);
+            //foreach(UDTBase obj in data.ChildData)
+            data.columnData.Remove(item);
+            foreach (UDTData obj in data.tableData)
             {
-                if(obj.GetType() == typeof(UDTData))
+                //if(obj.GetType() == typeof(UDTData))
                     removeItem(obj as UDTData, item);
             }
         }
@@ -643,7 +640,7 @@ namespace UDTApp.Models
                         udtData.ParentColumnNames.Add(this.Name);
                         if (!parent.tableData.Contains(udtData))
                         {
-                            udtData.Name = getUniqueGroupName(parent.tableData);
+                            udtData.Name = getUniqueGroupName(MasterGroup);
                             parent.tableData.Add(udtData);
                         }
                     }
@@ -662,10 +659,10 @@ namespace UDTApp.Models
                     udtItem.newDrop = true;
                     //col.Add(udtItem);
 
-                    UDTData utdData = this as UDTData;
-                    List<UDTBase> childList = utdData.ChildData.ToList();
-                    childList.Sort((x, y) => x.sortOrder.CompareTo(y.sortOrder));
-                    utdData.ChildData = new ObservableCollection<UDTBase>(childList);
+                    //UDTData utdData = this as UDTData;
+                    //List<UDTBase> childList = utdData.ChildData.ToList();
+                    //childList.Sort((x, y) => x.sortOrder.CompareTo(y.sortOrder));
+                    //utdData.ChildData = new ObservableCollection<UDTBase>(childList);
 
 
                     MasterGroup.dataChanged();
@@ -689,18 +686,32 @@ namespace UDTApp.Models
             return "";
         }
 
-        private string getUniqueGroupName(ObservableCollection<UDTData> tableData)
+        private string getUniqueGroupName(UDTData tableData)
         {
             string tableName = "GroupItem";
             for (char c = 'A'; c <= 'Z'; c++)
             {
-                UDTBase item = tableData.FirstOrDefault(x => x.Name == tableName);
-                if (item == null)
+                bool retVal = false;
+                findGroupName(tableData, tableName, ref retVal);
+                if(retVal == false)
                     return tableName;
                 else
                     tableName = "GroupItem" + c;
             }
             return "";
+        }
+
+        private void findGroupName(UDTData udtData, string name, ref bool retVal)
+        {
+            if (udtData.Name == name)
+            {
+                retVal = true;
+                return;
+            }
+            foreach(UDTData child in udtData.tableData)
+            {
+                findGroupName(child, name, ref retVal);
+            }
         }
 
         private UDTBase _currentItem = null;

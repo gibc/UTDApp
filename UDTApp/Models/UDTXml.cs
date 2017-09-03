@@ -112,31 +112,51 @@ namespace UDTApp.Models
             return result;
         }
 
+        //private void setParentRefs(UDTData dataItem)
+        //{
+        //    //dataItem.tableData.Add(new UDTTableView(dataItem.ChildData));
+          
+        //    foreach (UDTBase child in dataItem.ChildData)
+        //    {
+        //        if (child.GetType() == typeof(UDTData))
+        //        {
+        //            //UDTData childData = child as UDTData;
+        //            //childData.ParentColumnNames.Add(dataItem.Name);
+        //            dataItem.tableData.Add(child as UDTData);
+        //            setParentRefs(child as UDTData);
+        //        }
+        //        else
+        //            dataItem.columnData.Add(child);
+
+        //        child.parentObj = dataItem;
+
+        //    }
+
+        //    List<UDTBase> childList = dataItem.ChildData.ToList();
+        //    childList.Sort((x, y) => x.sortOrder.CompareTo(y.sortOrder));
+        //    dataItem.ChildData = new ObservableCollection<UDTBase>(childList);
+
+            
+        //}
+
         private void setParentRefs(UDTData dataItem)
         {
-            //dataItem.tableData.Add(new UDTTableView(dataItem.ChildData));
-          
-            foreach (UDTBase child in dataItem.ChildData)
+            foreach(UDTBase child in dataItem.columnData)
             {
-                if (child.GetType() == typeof(UDTData))
-                {
-                    //UDTData childData = child as UDTData;
-                    //childData.ParentColumnNames.Add(dataItem.Name);
-                    dataItem.tableData.Add(child as UDTData);
-                    setParentRefs(child as UDTData);
-                }
-                else
-                    dataItem.columnData.Add(child);
+                child.parentObj = dataItem;
+            }
 
+            foreach (UDTData child in dataItem.tableData)
+            {
+
+                setParentRefs(child as UDTData);
+               
                 child.parentObj = dataItem;
 
             }
 
-            List<UDTBase> childList = dataItem.ChildData.ToList();
-            childList.Sort((x, y) => x.sortOrder.CompareTo(y.sortOrder));
-            dataItem.ChildData = new ObservableCollection<UDTBase>(childList);
 
-            
+
         }
     }
 
