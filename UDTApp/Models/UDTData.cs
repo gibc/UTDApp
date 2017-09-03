@@ -210,8 +210,8 @@ namespace UDTApp.Models
             //    Debug.Write(string.Format("In disable !AnyError {0}\r", !MasterGroup.AnyErrors));
             //    return !MasterGroup.AnyErrors;
             //}
-            return !AnyErrors;
-            //return true;
+            //return !AnyErrors;
+            return true;
         }
 
         [XmlIgnoreAttribute]
@@ -469,6 +469,14 @@ namespace UDTApp.Models
 
         public string Type { get; set; }
 
+        // used to show parent of group name without error adorner
+        private string _displayName = "";
+        public string DisplayName 
+        {
+            get { return _displayName; }
+            set { SetProperty(ref _displayName, value); }
+        }
+
         private string _name = "";
         [Required]
         [StringLength(15, MinimumLength = 4, ErrorMessage = "Name must be between 4 and 15 characters.")]
@@ -479,6 +487,7 @@ namespace UDTApp.Models
             get { return _name; }
             set 
             {
+                DisplayName = value;
                 if (_name != value && MasterGroup != null) MasterGroup.dataChanged();
                 SetProperty(ref _name, value);
                 if (HasErrors)
@@ -775,9 +784,9 @@ namespace UDTApp.Models
         {
             Button btn = data.Source as Button;
             TextBox box = data.Source as TextBox;
-            //ObservableCollection<UDTBase> col = Ex.GetSecurityId(btn);
 
-            if ((btn != null || box != null) && data.LeftButton == MouseButtonState.Pressed && !inMove)
+            if ((btn != null || box != null) && data.LeftButton == MouseButtonState.Pressed && !inMove
+                && (this.GetType() == typeof(UDTData) && this.parentObj != null || this.ToolBoxItem)) 
             {
 
                 inMove = true;

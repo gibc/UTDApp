@@ -131,8 +131,7 @@
                     Background="{Binding backgroundBrush}"
                     Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                     HorizontalAlignment="Stretch" VerticalContentAlignment="Bottom" 
-                    HorizontalContentAlignment="Center" ToolTip="Edit Item Name"
-                    vm:FocusExtension.IsFocused="{Binding PopUpOpen}" 
+                    HorizontalContentAlignment="Center" 
                     IsReadOnly="{Binding IsReadOnly}">
 
                     <i:Interaction.Triggers>
@@ -289,7 +288,7 @@
                     </Grid.ColumnDefinitions>
                     <StackPanel HorizontalAlignment="Stretch">
 
-                            <Label Content="{Binding parentObj.Name}" Margin="0,-10,0,-10" FontSize="9"  
+                            <Label Content="{Binding parentObj.DisplayName}" Margin="0,-10,0,-10" FontSize="9"  
                                    HorizontalAlignment="Center"/>
 
                             <WrapPanel Panel.ZIndex="10" Margin="{Binding ButtonWrapPanelMargin}" HorizontalAlignment="Center">
@@ -311,7 +310,6 @@
                                 HorizontalAlignment="Stretch" 
                                 VerticalContentAlignment="Top" 
                                 HorizontalContentAlignment="Center" 
-                                vm:FocusExtension.IsFocused="{Binding PopUpOpen}" 
                                 ToolTip="Edit Item Name" IsEnabled="{Binding EditBoxEnabled}"
                                 AllowDrop="True">
                                 
