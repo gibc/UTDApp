@@ -28,7 +28,7 @@
             <Popup IsOpen="{Binding PopUpOpen, Mode=OneWay}" Opacity="0.0" AllowsTransparency="True"
                 DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Mode=Self}}"
                         PlacementTarget="{Binding ElementName=NameEdit}"
-                        Placement="Right" HorizontalOffset="60" VerticalOffset="-10">
+                        Placement="Right" HorizontalOffset="0" VerticalOffset="-10">
                 
 
                 <i:Interaction.Triggers>
@@ -75,7 +75,7 @@
         <ControlTemplate x:Key="EditButton">
             <!--<Grid ZIndex ="20">-->
             <Button Visibility="{Binding SchemaItem, Converter={StaticResource BoolToVis}}" Content="X" Height="12" 
-                    Width="10" FontSize="8"
+                    Width="10" FontSize="8" AllowDrop="False"
                     HorizontalAlignment="Center" VerticalAlignment="Top" VerticalContentAlignment="Top" 
                     Background="Transparent" BorderBrush="Transparent" ToolTip="Delete Item" >
                 <Button.RenderTransform>
@@ -85,7 +85,7 @@
                 </Button.RenderTransform>
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="Click" >
-                        <prism:InvokeCommandAction Command="{Binding PopupOpenCommand}" />
+                        <prism:InvokeCommandAction Command="{Binding DeleteItemCommand}" />
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
             </Button>
@@ -95,7 +95,7 @@
         <ControlTemplate x:Key="NameEditBox">
             
             <StackPanel>
-            <Popup IsOpen="{Binding PopUpOpen, Mode=OneWay}" Opacity="0.0" AllowsTransparency="True" PopupAnimation="Fade"
+            <!--<Popup IsOpen="{Binding PopUpOpen, Mode=OneWay}" Opacity="0.0" AllowsTransparency="True" PopupAnimation="Fade"
                    StaysOpen="False"
                 DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Mode=Self}}"
                         PlacementTarget="{Binding ElementName=NameEdit}"
@@ -119,16 +119,19 @@
                         
                     </StackPanel>
                 </Border>
-            </Popup>
-            
-            <TextBox Name="NameEdit" Height="20" MinWidth="{Binding EditBoxMinWidth}" Margin="5,0,5,0" 
+            </Popup>-->
+
+                <ContentControl Template="{StaticResource MyPop}"/>
+
+
+                <TextBox Name="NameEdit" Height="20" MinWidth="{Binding EditBoxMinWidth}" Margin="5,0,5,0" 
                     Visibility="{Binding SchemaItem, Converter={StaticResource BoolToVis}}"
                     BorderThickness="1,1,1,1" 
                     BorderBrush="Black" 
                     Background="{Binding backgroundBrush}"
                     Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                     HorizontalAlignment="Stretch" VerticalContentAlignment="Bottom" 
-                    HorizontalContentAlignment="Center" 
+                    HorizontalContentAlignment="Center" ToolTip="Edit Item Name"
                     vm:FocusExtension.IsFocused="{Binding PopUpOpen}" 
                     IsReadOnly="{Binding IsReadOnly}">
 
@@ -183,7 +186,7 @@
 
         <ControlTemplate x:Key="ButtonDrag">
             <Button Height="{Binding  buttonHeight}" vm:Ex.SecurityId ="{Binding ChildData}" 
-                    AllowDrop="{Binding AllowDrop}" 
+                    AllowDrop="False" 
                     Background="{Binding backgroundBrush}" 
                     Width="{Binding buttonWidth}" HorizontalAlignment="Center" 
                     VerticalContentAlignment="Center"
@@ -310,27 +313,29 @@
                                 HorizontalContentAlignment="Center" 
                                 vm:FocusExtension.IsFocused="{Binding PopUpOpen}" 
                                 ToolTip="Edit Item Name" IsEnabled="{Binding EditBoxEnabled}"
-                                AllowDrop="{Binding AllowDrop}">
+                                AllowDrop="True">
                                 
                         <i:Interaction.Triggers>
-                            <i:EventTrigger EventName="PreviewMouseMove" >
+                            <!--<i:EventTrigger EventName="PreviewMouseMove" >
                                 <prism:InvokeCommandAction Command="{Binding MouseMoveCommand }" />
-                            </i:EventTrigger>
-                            <i:EventTrigger EventName="DragEnter" >
+                            </i:EventTrigger>-->                            
+                            <!--<i:EventTrigger EventName="DragEnter" >
                                 <prism:InvokeCommandAction Command="{Binding DragEnterCommand}" />
-                            </i:EventTrigger>
+                            </i:EventTrigger>-->
+                            
                             <i:EventTrigger EventName="PreviewDrop" >
                                 <prism:InvokeCommandAction Command="{Binding DragDropCommand}" />
                             </i:EventTrigger>
-                            <i:EventTrigger EventName="DragOver" >
+                            <!--<i:EventTrigger EventName="DragOver" >
                                 <prism:InvokeCommandAction Command="{Binding DragOverCommand}" />
-                            </i:EventTrigger>
+                            </i:EventTrigger>-->
                             <i:EventTrigger EventName="PreviewDragOver">
                                 <prism:InvokeCommandAction Command="{Binding PreviewDragEnterCommand}" />
                             </i:EventTrigger>
-                            <i:EventTrigger EventName="PreviewDragEnter">
+                            
+                            <!--<i:EventTrigger EventName="PreviewDragEnter">
                                 <prism:InvokeCommandAction Command="{Binding PreviewDragEnterCommand}" />
-                            </i:EventTrigger>
+                            </i:EventTrigger>-->
 
                             <i:EventTrigger EventName="MouseEnter" >
                                 <prism:InvokeCommandAction Command="{Binding MouseEnterCommand }" />

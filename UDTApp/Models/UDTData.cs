@@ -100,10 +100,11 @@ namespace UDTApp.Models
 
 
 
-        override public bool AllowDrop
-        {
-            get { return !ToolBoxItem; }
-        }
+        //override public bool AllowDrop
+        //{
+        //    get { return !ToolBoxItem; }
+        //}
+
         // on write child data insert or update UDTRelation record
         //   where 
         //     parent and child names are parent and child colleciton name
@@ -184,7 +185,7 @@ namespace UDTApp.Models
             SaveNameCommand = new DelegateCommand<EventArgs>(saveName, canSaveName);
             DeleteItemCommand = new DelegateCommand<EventArgs>(deleteItem);
             //PopupOpenCommand = new DelegateCommand<EventArgs>(popupOpen, disable);
-            PopupOpenCommand = new DelegateCommand<EventArgs>(popupOpen);
+            //PopupOpenCommand = new DelegateCommand<EventArgs>(popupOpen);
             PopupLoadCommand = new DelegateCommand<EventArgs>(popupLoad);
             //MouseLeftButtonUpCommand = new DelegateCommand<EventArgs>(buttonRelease);
             //SizeChangedCommand = new DelegateCommand<SizeChangedEventArgs>(sizeChange);
@@ -229,8 +230,8 @@ namespace UDTApp.Models
         public DelegateCommand<EventArgs> SaveNameCommand { get; set; }
         [XmlIgnoreAttribute]
         public DelegateCommand<EventArgs> DeleteItemCommand { get; set; }
-        [XmlIgnoreAttribute]
-        public DelegateCommand<EventArgs> PopupOpenCommand { get; set; }
+        //[XmlIgnoreAttribute]
+        //public DelegateCommand<EventArgs> PopupOpenCommand { get; set; }
         [XmlIgnoreAttribute]
         public DelegateCommand<EventArgs> PopupLoadCommand { get; set; }
         [XmlIgnoreAttribute]
@@ -333,7 +334,7 @@ namespace UDTApp.Models
                 DragEnterCommand.RaiseCanExecuteChanged();
                 DragDropCommand.RaiseCanExecuteChanged();
                 DragOverCommand.RaiseCanExecuteChanged();
-                PopupOpenCommand.RaiseCanExecuteChanged();
+                DeleteItemCommand.RaiseCanExecuteChanged();
 
                 //Debug.Write(string.Format("AnyErrors after CanExChanged {0}\r", value));
 
@@ -513,13 +514,12 @@ namespace UDTApp.Models
 
         public bool SchemaItem { get; set; }
 
-        private bool _allowDrop = false;
-        virtual public bool AllowDrop
-        {
-            //get { return _allowDrop; }
-            get { return true; }
-            set { _allowDrop = value; }
-        }
+        //private bool _allowDrop = false;
+        //virtual public bool AllowDrop
+        //{
+        //    get { return true; }
+        //    set { _allowDrop = value; }
+        //}
 
         //private bool _isReadOnly = false;
         virtual public bool IsReadOnly
@@ -533,19 +533,21 @@ namespace UDTApp.Models
             PopUpOpen = false;
         }
 
-        private void deleteItem(EventArgs eventArgs)
-        {
-            PopUpOpen = false;
-            removeItem(MasterGroup, this);
-            MasterGroup.dataChanged();
-        }
+        //private void deleteItem(EventArgs eventArgs)
+        //{
+        //    PopUpOpen = false;
+        //    removeItem(MasterGroup, this);
+        //    MasterGroup.dataChanged();
+        //}
 
-        // NOTE!! only removes itmes NOT groups
         private void removeItem(UDTData data, UDTBase item)
         {
             //data.ChildData.Remove(item);
             //foreach(UDTBase obj in data.ChildData)
-            data.columnData.Remove(item);
+            if(item.GetType() == typeof(UDTData))
+                data.tableData.Remove(item as UDTData);
+            else
+                data.columnData.Remove(item);
             foreach (UDTData obj in data.tableData)
             {
                 //if(obj.GetType() == typeof(UDTData))
@@ -553,10 +555,11 @@ namespace UDTApp.Models
             }
         }
 
-        private void popupOpen(EventArgs eventArgs)
+        private void deleteItem(EventArgs eventArgs)
         {
             //PopUpOpen = true;
             removeItem(MasterGroup, this);
+            MasterGroup.dataChanged();
         }
 
         private void popupLoad(EventArgs eventArgs)
