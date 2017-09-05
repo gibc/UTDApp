@@ -44,6 +44,7 @@
                             HorizontalAlignment="Center" Foreground="Red" Margin="3 3 3 3" 
                             Text="{Binding ElementName=NameEdit, 
                             Path=(Validation.Errors).CurrentItem.ErrorContent, FallbackValue='Valid Item Name'}"/>
+                        
                         <!--<WrapPanel HorizontalAlignment="Center">
                             <Label Height="25"  Content="Item Name: " />
                             <TextBox Name="NameBox" Height="25" VerticalContentAlignment="Center" 
@@ -342,7 +343,12 @@
                                 <prism:InvokeCommandAction Command="{Binding MouseLeaveCommand}" />
                             </i:EventTrigger>
 
-                            </i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Loaded">
+                                <prism:InvokeCommandAction Command="{Binding GroupBoxLoadedCommand}" />
+                            </i:EventTrigger>
+
+
+                                </i:Interaction.Triggers>
 
                         <TextBox.RenderTransform>
                             <TransformGroup>

@@ -1,6 +1,7 @@
 ﻿using Prism.Commands;
 using Prism.Mvvm;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -15,6 +16,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
@@ -190,6 +192,7 @@ namespace UDTApp.Models
             //MouseLeftButtonUpCommand = new DelegateCommand<EventArgs>(buttonRelease);
             //SizeChangedCommand = new DelegateCommand<SizeChangedEventArgs>(sizeChange);
             SizeChangedCommand = new DelegateCommand<RoutedEventArgs>(sizeChange);
+            GroupBoxLoadedCommand = new DelegateCommand<RoutedEventArgs>(groupBoxLoaded);
 
             objId = Guid.NewGuid();
             backgroundBrush = Brushes.Black;
@@ -199,6 +202,15 @@ namespace UDTApp.Models
             buttonHeight = 12;
             sortOrder = "zzz";
         }
+
+        //public string currentError
+        //{
+        //    get 
+        //    {
+        //        Dictionary<string, List<string>> errDic = GetAllErrors();
+        //        return errDic["Name"][0];
+        //    }
+        //}
 
         private bool disable(EventArgs eventArgs) 
         {
@@ -239,7 +251,8 @@ namespace UDTApp.Models
         [XmlIgnoreAttribute]
         //public DelegateCommand<SizeChangedEventArgs> SizeChangedCommand { get; set; }
         public DelegateCommand<RoutedEventArgs> SizeChangedCommand { get; set; }
-
+        [XmlIgnoreAttribute]
+        public DelegateCommand<RoutedEventArgs> GroupBoxLoadedCommand { get; set; }
         
 
 
@@ -482,6 +495,7 @@ namespace UDTApp.Models
         [StringLength(15, MinimumLength = 4, ErrorMessage = "Name must be between 4 and 15 characters.")]
         [RegularExpression(@"^[a-zA-Z]+$", ErrorMessage = "Name can include only letter characters")]
         [CustomValidation(typeof(UDTBase), "CheckDuplicateColumnName")]
+        [CustomValidation(typeof(UDTBase), "CheckEmptyTable")]
         public string Name
         {
             get { return _name; }
@@ -568,6 +582,14 @@ namespace UDTApp.Models
         {
             //PopUpOpen = true;
             removeItem(MasterGroup, this);
+            this.parentObj.ValidateProperty("Name");
+            if(parentObj.groupBox != null)
+            {
+                // this is nessecary to pull error messages from viewModel into the control's Validation property
+                BindingExpression binding = parentObj.groupBox.GetBindingExpression(TextBox.TextProperty);
+                binding.UpdateSource();
+            }
+
             MasterGroup.dataChanged();
         }
 
@@ -579,6 +601,13 @@ namespace UDTApp.Models
             Popup pu = args.Source as Popup;
             TextBox tb = pu.FindName("NameBox") as TextBox;
             var fe = Keyboard.Focus(tb);
+        }
+
+        private TextBox groupBox = null;
+        private void groupBoxLoaded(RoutedEventArgs e)
+        {
+            TextBox gpBox = e.Source as TextBox;
+            groupBox = gpBox;
         }
 
         // change table data items control margin when item added to collection
@@ -667,7 +696,9 @@ namespace UDTApp.Models
                         //parent.ChildData.Add(udtItem);
 
                     }
-                        
+
+                    parent.ValidateProperty("Name");
+    
                     udtItem.newDrop = true;
                     //col.Add(udtItem);
 
@@ -834,6 +865,21 @@ namespace UDTApp.Models
             if (udtItem != null) return udtItem;
             udtItem = (UDTDateItem)dragArgs.Data.GetData(typeof(UDTDateItem));
             return udtItem;
+        }
+
+        public static System.ComponentModel.DataAnnotations.ValidationResult CheckEmptyTable(string name, ValidationContext context)
+        {
+            UDTData dataObj = context.ObjectInstance as UDTData;
+            if (dataObj != null && !dataObj.ToolBoxItem)
+            //if (dataObj != null)
+            {
+
+                if (dataObj.columnData.Count <= 0 && dataObj.tableData.Count <= 0)
+                    return new System.ComponentModel.DataAnnotations.ValidationResult("Group item must include at least one data item.");
+            }
+
+            return System.ComponentModel.DataAnnotations.ValidationResult.Success;
+
         }
 
         public static System.ComponentModel.DataAnnotations.ValidationResult CheckDuplicateColumnName(string name, ValidationContext context)
