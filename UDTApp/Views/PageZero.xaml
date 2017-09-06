@@ -348,7 +348,7 @@
                             </i:EventTrigger>
 
 
-                                </i:Interaction.Triggers>
+                            </i:Interaction.Triggers>
 
                         <TextBox.RenderTransform>
                             <TransformGroup>
@@ -390,7 +390,7 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition SharedSizeGroup="MySizeGroup" />
                     </Grid.ColumnDefinitions>
-                    <ItemsControl Name="columnData" Margin="0,0,-10,0" 
+                    <ItemsControl x:Name="columnData" Margin="0,0,-10,0" 
                     BorderBrush="Black" BorderThickness="0" ItemsSource = "{Binding Path=columnData}"
                               >
                     <ItemsControl.ItemsPanel>
@@ -414,7 +414,7 @@
                 </ItemsControl>
                 </Grid>
                 <WrapPanel >
-                    <ItemsControl HorizontalAlignment="Left" Margin="{Binding tableDataMargin}" Background="Transparent" BorderBrush="Black" 
+                    <ItemsControl HorizontalAlignment="Left" Margin="{Binding tableDataMargin}" BorderBrush="Black" 
                               BorderThickness="0,0,0,0"  
                          ItemsSource = "{Binding Path=tableData}" 
                              >
@@ -598,24 +598,29 @@
         </DataTemplate>
 
     </UserControl.Resources>
-    <Grid >
+    <Grid  Margin="0, 0, 30, 255">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="auto" MinWidth="500"/>
-            <ColumnDefinition Width="150"/>
+            <ColumnDefinition Width="*" MinWidth="500"/>
+            <ColumnDefinition Width="90"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="30"/>
-            <RowDefinition Height="400"/>
+            <!--<RowDefinition Height="30"/>-->
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <!--<ListBox Grid.Column="0" Grid.Row="1" ItemsSource="{Binding SchemaList}" 
-                 vm:AttachedAdorner.Adorner="{x:Type vm:NoteAdorner}" AllowDrop="{Binding AnyErrors}"  >-->
-        <ListBox Grid.Column="0" Grid.Row="1" ItemsSource="{Binding SchemaList}" 
-                 vm:AttachedAdorner.Adorner="{Binding Path=AdornerType, Mode=TwoWay}" >   
-        </ListBox>
-        <Label Grid.Column="0" Grid.Row="0" Content="{Binding DbSchema.Count}"/>
-        <StackPanel Grid.Column="1" Grid.Row="1">
-            <ListBox  ItemsSource="{Binding UDTItems}"></ListBox>
-            <Button Content="SaveToXml">
+
+        <GroupBox FontWeight="Bold" Header="Data Design" BorderBrush="Black" BorderThickness="2">
+            <ScrollViewer HorizontalScrollBarVisibility="Visible" >
+            <ListBox FontWeight="Normal" Grid.Column="0" Grid.Row="0" Width="2000"
+                     ItemsSource="{Binding SchemaList}" BorderThickness="0">
+            </ListBox>
+            </ScrollViewer>
+        </GroupBox>
+        <StackPanel Grid.Column="1" Grid.Row="0">
+            <GroupBox FontWeight="Bold" Header="Data Tools" BorderThickness="2" BorderBrush="Black" Padding="0,-3,0,0" >
+                <ListBox FontWeight="Normal" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                         BorderBrush="Transparent" ItemsSource="{Binding UDTItems}"></ListBox>
+            </GroupBox>
+            <!--<Button Content="SaveToXml">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="Click" >
                         <prism:InvokeCommandAction Command="{Binding SaveToXmlCommand}" />
@@ -642,7 +647,7 @@
                         <prism:InvokeCommandAction Command="{Binding ReadDataBaseCommand}" />
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
-            </Button>
+            </Button>-->
         </StackPanel>
 
     </Grid>
