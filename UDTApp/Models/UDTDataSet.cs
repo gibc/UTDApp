@@ -410,10 +410,11 @@ namespace UDTApp.Models
                     {
                         //if (childItem.GetType() == typeof(UDTData))
                         //{
-                            foreach (DataRow row in dataTable.Rows)
-                            {
+                            // why per row read?? 
+                            //foreach (DataRow row in dataTable.Rows)
+                            //{
                                 readTable(dataSet, childItem as UDTData, dbName, dataItem.Name);
-                            }
+                            //}
                         //}
                     }
 

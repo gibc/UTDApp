@@ -14,7 +14,7 @@
 
     <UserControl.Resources>
 
-        <DataTemplate DataType="{x:Type vm:UDTDataButton}">
+        <DataTemplate DataType="{x:Type vm:UDTDataButton}" >
             <Button Command="{Binding ButtonClickCommand}" Content="{Binding buttonName}" Width="Auto" Height="20"></Button>
         </DataTemplate>
 
@@ -98,7 +98,7 @@
             </GroupBox>
             <WrapPanel HorizontalAlignment="Center" Margin="20,20,20,20">
                 <Button Content="Add Row" Command="{Binding AddRowCommand}" Margin="0,0,10,0"/>
-                    <Button Content="Delete Row" Command="{Binding DeleteRowCommand}" Margin="10,0,0,0"/>
+                <Button Content="Delete Row" Command="{Binding DeleteRowCommand}" Margin="10,0,0,0"/>
             </WrapPanel>
         </StackPanel>
         

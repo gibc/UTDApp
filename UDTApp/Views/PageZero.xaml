@@ -280,7 +280,7 @@
         </ControlTemplate>-->
 
         <DataTemplate DataType    = "{x:Type local:UDTData}">
-            
+            <Border BorderBrush="Red" BorderThickness="0">
             <StackPanel Grid.IsSharedSizeScope="True">
                 <Border BorderThickness="0" BorderBrush="Black">
                 <Grid>
@@ -386,6 +386,7 @@
                         <!--</StackPanel>-->
                 </Grid>
                 </Border>
+                
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition SharedSizeGroup="MySizeGroup" />
@@ -422,8 +423,8 @@
                 </ItemsControl>
                 </WrapPanel>
             </StackPanel>
+            </Border>
 
-                        
         </DataTemplate>
 
          <!--<DataTemplate DataType    = "{x:Type local:UDTData}">
