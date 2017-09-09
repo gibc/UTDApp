@@ -369,8 +369,8 @@ namespace UDTApp.Models
 
             foreach (string colName in dataItem.ParentColumnNames)
             {
-                string fkName = string.Format("{0}{1}", dataItem.parentObj.Name, dataItem.Name);
-                DataColumn pCol = DataSet.Tables[dataItem.parentObj.Name].Columns["Id"];
+                string fkName = string.Format("{0}{1}", colName, dataItem.Name);
+                DataColumn pCol = DataSet.Tables[colName].Columns["Id"];
                 ForeignKeyConstraint fKConstrint = new ForeignKeyConstraint(
                       fkName,
                       pCol,  // parent col

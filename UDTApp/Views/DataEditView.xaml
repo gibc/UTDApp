@@ -69,26 +69,26 @@
 
         <!--Parent grid-->
         <GroupBox Header="Parent Data:" Grid.Column="0" Grid.Row="0" BorderBrush="DarkBlue" 
-                  Margin="0,0,0,0" Visibility="{Binding parentGridVisable}">
+                  Margin="0,0,0,0" Visibility="{Binding currentEditGrid.parentGridVisable}">
             <Expander ExpandDirection="Left" 
                       BorderBrush="Black" BorderThickness="0" Margin="0,0,0,0">
                 <StackPanel Height="auto">
-                    <ContentControl HorizontalAlignment="Left" Width="auto" Content="{Binding parentGrid}"/>
+                        <ContentControl HorizontalAlignment="Left" Width="auto" Content="{Binding currentEditGrid.parentGrid}"/>
                 </StackPanel>
             </Expander>
         </GroupBox>
 
         <!--Main / center grid-->
         <StackPanel Grid.Column="1" Grid.Row="0">
-            <ContentControl HorizontalAlignment="Left" Width="auto" Content="{Binding returnBtn}"/>
-            <GroupBox Header="{Binding DataViewName}" BorderThickness="1" BorderBrush="DarkBlue" Margin="{Binding parentMargin}">
-                <DataGrid ItemsSource="{Binding gridData}" CanUserAddRows="False" IsReadOnly="True"
-                          SelectedItem="{Binding SelectedItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                          SelectedIndex="{Binding SelectedIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                          cltLib:AutoGeneratingColumnEventToCommandBehaviour.Command="{Binding CreateColumnsCommand}"/>
+                <ContentControl HorizontalAlignment="Left" Width="auto" Content="{Binding currentEditGrid.returnBtn}"/>
+                <GroupBox Header="{Binding currentEditGrid.DataViewName}" BorderThickness="1" BorderBrush="DarkBlue" Margin="{Binding parentMargin}">
+                    <DataGrid ItemsSource="{Binding currentEditGrid.gridData}" CanUserAddRows="False" IsReadOnly="True"
+                          SelectedItem="{Binding currentEditGrid.SelectedItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                          SelectedIndex="{Binding currentEditGrid.SelectedIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                          cltLib:AutoGeneratingColumnEventToCommandBehaviour.Command="{Binding currentEditGrid.CreateColumnsCommand}"/>
              </GroupBox>
-            <GroupBox Header ="Seleted Item:" BorderThickness="1" BorderBrush="DarkBlue" Margin="{Binding parentMargin}">
-                    <ListBox ItemsSource="{Binding editBoxes}" HorizontalContentAlignment="Left" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                <GroupBox Header ="Seleted Item:" BorderThickness="1" BorderBrush="DarkBlue" Margin="{Binding currentEditGrid.parentMargin}">
+                    <ListBox ItemsSource="{Binding currentEditGrid.editBoxes}" HorizontalContentAlignment="Left" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                     <ListBox.ItemsPanel>
                         <ItemsPanelTemplate>
                             <WrapPanel Orientation="Horizontal" VerticalAlignment="Top"/>
@@ -97,18 +97,18 @@
                 </ListBox>
             </GroupBox>
             <WrapPanel HorizontalAlignment="Center" Margin="20,20,20,20">
-                <Button Content="Add Row" Command="{Binding AddRowCommand}" Margin="0,0,10,0"/>
-                <Button Content="Delete Row" Command="{Binding DeleteRowCommand}" Margin="10,0,0,0"/>
+                    <Button Content="Add Row" Command="{Binding currentEditGrid.AddRowCommand}" Margin="0,0,10,0"/>
+                    <Button Content="Delete Row" Command="{Binding currentEditGrid.DeleteRowCommand}" Margin="10,0,0,0"/>
             </WrapPanel>
         </StackPanel>
         
         <!--Detail grids-->
         <GroupBox Header="Child Data:" Grid.Column="2" Grid.Row="0" BorderBrush="DarkBlue" 
-                  Margin="0,0,0,0" Visibility="{Binding childGridsVisable}">
+                  Margin="0,0,0,0" Visibility="{Binding currentEditGrid.childGridsVisable}">
             <Expander Grid.Column="1" Grid.Row="0" ExpandDirection="Right" 
                       BorderBrush="Black" BorderThickness="0" Margin="0,0,0,0">
                 <StackPanel Height="auto">
-                    <ListBox ItemsSource="{Binding childGrids}" HorizontalContentAlignment="Center" />
+                        <ListBox ItemsSource="{Binding currentEditGrid.childGrids}" HorizontalContentAlignment="Center" />
                 </StackPanel>
             </Expander>
         </GroupBox>

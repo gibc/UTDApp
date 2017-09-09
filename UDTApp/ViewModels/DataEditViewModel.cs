@@ -18,15 +18,16 @@ namespace UDTApp.ViewModels
         public DelegateCommand ButtonClickCommand { get; set; }
 
 
-        public UDTDataGrid(string _parentColName, UDTData _childDef, Action<UDTData> _buttonClick,
-            Func<bool> _canExecute)
+        public UDTDataGrid(DataEditGrid editGrid, string _parentColName, UDTData _childDef, Action<Guid, DataEditGrid> _buttonClick
+            /*, Func<bool> _canExecute*/)
         {
             parentColName = _parentColName;
             childDef = _childDef;
             CreateColumnsCommand = new DelegateCommand<System.Windows.Controls.DataGridAutoGeneratingColumnEventArgs>(createColumns);
             buttonClick = _buttonClick;
-            ButtonClickCommand = new DelegateCommand(btnClick, _canExecute);
-
+            //ButtonClickCommand = new DelegateCommand(btnClick, _canExecute);
+            ButtonClickCommand = new DelegateCommand(btnClick, canExecutNavBtn);
+            dataEditGrid = editGrid;
         }
 
         public void raiseCanExecuteChanged()
@@ -70,23 +71,34 @@ namespace UDTApp.ViewModels
                 }
 
                 gridData = dv;
+
+                ButtonClickCommand.RaiseCanExecuteChanged();
             }
 
         }
 
-        private Action<UDTData> buttonClick { get; set; }
+        private Action<Guid, DataEditGrid> buttonClick { get; set; }
 
         private string parentColName { get; set; }
         public UDTData childDef { get; set; }
 
         private void btnClick()
         {
-            buttonClick(childDef);
+            //buttonClick(childDef);
+            buttonClick(parentId, dataEditGrid);
         }
 
         public bool canDataGridBtnExecute()
         {
             return false;
+        }
+
+        private DataEditGrid dataEditGrid;
+
+        private bool canExecutNavBtn()
+        {
+            if( parentId == Guid.Empty) return false;
+            return !UDTDataSet.udtDataSet.HasEditErrors;
         }
 
         public void createColumns(System.Windows.Controls.DataGridAutoGeneratingColumnEventArgs e)
@@ -184,6 +196,7 @@ namespace UDTApp.ViewModels
 
     }
 
+    // used by return to parent button
     public class UDTDataButton
     {
         public DelegateCommand ButtonClickCommand { get; set; }
@@ -215,29 +228,110 @@ namespace UDTApp.ViewModels
             return canClick();
         }
         
-
-   
-
     }
 
     public class DataEditViewModel : ValidatableBindableBase
     {
         public DelegateCommand WindowLoadedCommand { get; set; }
+
+        public DataEditViewModel()
+        {
+            WindowLoadedCommand = new DelegateCommand(windowLoaded);
+
+        }
+
+        private void windowLoaded()
+        {
+            // load database from currently loaded schema
+            //SelectedItem = null;
+            UDTDataSet.udtDataSet.readDatabase(UDTXml.UDTXmlData.SchemaData[0] as UDTData);
+            UDTDataSet.udtDataSet.IsModified = false;
+            //DisplayTable(UDTXml.UDTXmlData.SchemaData[0] as UDTData);
+            topDataEditGrid = new DataEditGrid(UDTXml.UDTXmlData.SchemaData[0] as UDTData, navBtnClk);
+            createDataGrids(topDataEditGrid, UDTXml.UDTXmlData.SchemaData[0] as UDTData, navBtnClk);
+            currentEditGrid = topDataEditGrid;
+            currentEditGrid.DisplayTable(UDTXml.UDTXmlData.SchemaData[0] as UDTData);
+        }
+
+        private DataEditGrid _currentEditGrid = null;
+        public DataEditGrid currentEditGrid
+        {
+            get { return _currentEditGrid; }
+            set { SetProperty(ref _currentEditGrid, value); }
+        }
+
+        private DataEditGrid topDataEditGrid = null;
+
+        private void createDataGrids(DataEditGrid parentGrid, UDTData udtData, Action<Guid, DataEditGrid> navButtonClick)
+        {
+            foreach(UDTData item in udtData.tableData)
+            {
+                DataEditGrid childGrid = new DataEditGrid(item, navButtonClick);
+
+                parentGrid.childGrids.Add(new UDTDataGrid(childGrid, udtData.Name, item, navButtonClick
+                    /*, parentGrid.canClick*/));
+
+                childGrid.parentGrid = new UDTDataGrid(parentGrid, parentGrid.DataViewName, udtData, navButtonClick
+                    /*, parentGrid.canClick*/);
+
+                createDataGrids(childGrid, item, navButtonClick);
+            }
+        }
+
+        private void navBtnClk(Guid parentId, DataEditGrid grid)
+        {
+            currentEditGrid = grid;
+            currentEditGrid.parentId = parentId;
+            grid.DisplayTable(grid.currentDataItem);
+        }
+    }
+
+    //public class DataEditViewModel : ValidatableBindableBase    
+    public class DataEditGrid : ValidatableBindableBase
+    {
+        //public DelegateCommand WindowLoadedCommand { get; set; }
         public DelegateCommand UpdateDatasetCommand { get; set; }
         public DelegateCommand AddRowCommand { get; set; }
         public DelegateCommand DeleteRowCommand { get; set; }
         public DelegateCommand<DataGridAutoGeneratingColumnEventArgs> CreateColumnsCommand { get; set; }
 
-        public DataEditViewModel()
+        //public DataEditViewModel()       
+        public DataEditGrid(UDTData udtData, Action<Guid, DataEditGrid> navButtonClick)
         {
-            WindowLoadedCommand = new DelegateCommand(windowLoaded);
+            //WindowLoadedCommand = new DelegateCommand(windowLoaded);
             UpdateDatasetCommand = new DelegateCommand(updateDataset);
             AddRowCommand = new DelegateCommand(addRow, canAddRow);
             DeleteRowCommand = new DelegateCommand(deleteRow, canDelete);
             CreateColumnsCommand = new DelegateCommand<System.Windows.Controls.DataGridAutoGeneratingColumnEventArgs>(createColumns);
 
-            editBoxes = new List<UDTDataTextBox>();
+            currentDataItem = udtData;
 
+            editBoxes = new List<UDTDataTextBox>();
+            foreach (UDTBase item in udtData.columnData)
+            {
+                editBoxes.Add(new UDTDataTextBox(item.Name, item, editBoxValidationChanged));
+            }
+
+            childGrids = new List<UDTDataGrid>();
+
+            //foreach (UDTData item in udtData.tableData)
+            //{
+            //    childGrids.Add(new UDTDataGrid(this, udtData.Name, item as UDTData, navButtonClick, canClick));
+            //}
+            //if (childGrids.Count > 0)
+            //{
+            //    childGridsVisable = Visibility.Visible;
+            //    parentMargin = new Thickness(0, 0, 0, 0);
+            //}
+            //else
+            //{
+            //    childGridsVisable = Visibility.Collapsed;
+            //    parentMargin = new Thickness(0, 0, 30, 0);
+            //}
+
+            returnBtn = null;
+            if (udtData.parentObj != null)
+                returnBtn = new UDTDataButton(udtData.parentObj as UDTData, returnBtnClick, returnBtnCanExe, "<< ");
         }
 
         DataRowView _selectedItem = null;
@@ -277,15 +371,15 @@ namespace UDTApp.ViewModels
             }
         }
 
-        private void windowLoaded()
-        {
-            // load database from currently loaded schema
-            SelectedItem = null;
-            UDTDataSet.udtDataSet.readDatabase(UDTXml.UDTXmlData.SchemaData[0] as UDTData);
-            UDTDataSet.udtDataSet.IsModified = false;
-            DisplayTable(UDTXml.UDTXmlData.SchemaData[0] as UDTData);
+        //private void windowLoaded()
+        //{
+        //    // load database from currently loaded schema
+        //    SelectedItem = null;
+        //    UDTDataSet.udtDataSet.readDatabase(UDTXml.UDTXmlData.SchemaData[0] as UDTData);
+        //    UDTDataSet.udtDataSet.IsModified = false;
+        //    DisplayTable(UDTXml.UDTXmlData.SchemaData[0] as UDTData);
 
-        }
+        //}
 
         private void updateDataset()
         {
@@ -300,13 +394,15 @@ namespace UDTApp.ViewModels
             {
                 //row[colName] = parentId;
                 if (colName == currentDataItem.parentObj.Name)
-                    row[colName] = parentIds.Peek();
+                //    row[colName] = parentIds.Peek();
+                    row[colName] = parentId;
                 else
                     row[colName] = DBNull.Value;
             }
             row.EndEdit();
 
             SelectedIndex = gridData.Table.Rows.Count - 1;
+            SelectedItem = row;
 
         }
 
@@ -330,7 +426,7 @@ namespace UDTApp.ViewModels
             return SelectedItem != null;
         }
 
-        private UDTData currentDataItem = null;
+        public UDTData currentDataItem = null;
 
         private DataView getGridData(UDTData dataItem, Guid parentId)
         {
@@ -356,10 +452,10 @@ namespace UDTApp.ViewModels
             return dv;
         }
 
-        private void DisplayTable(UDTData dataItem)
+        public void DisplayTable(UDTData dataItem)
         {
-            if (SelectedItem != null) parentIds.Push( (Guid)SelectedItem["Id"]);
-            else parentIds.Push(Guid.Empty);
+            //if (SelectedItem != null) parentIds.Push( (Guid)SelectedItem["Id"]);
+            //else parentIds.Push(Guid.Empty);
 
             //if (dataItem.parentObj != null)
             //{
@@ -395,7 +491,8 @@ namespace UDTApp.ViewModels
 
         }
 
-        private Stack<Guid> parentIds = new Stack<Guid>();
+        //private Stack<Guid> parentIds = new Stack<Guid>();
+        public Guid parentId = Guid.Empty;
 
         private void updateChildButtons(UDTData dataItem)
         {
@@ -421,22 +518,22 @@ namespace UDTApp.ViewModels
             //}
             //childTables = childList;
 
-            returnBtn = null;
-            parentGrid = null;
+            //returnBtn = null;
+            //parentGrid = null;
             if (dataItem.parentObj != null)
             {
-               // returnBtn = new UDTDataButton(dataItem.parentObj as UDTData, returnBtnClick, returnBtnCanExe, "<< ");
+                 //returnBtn = new UDTDataButton(dataItem.parentObj as UDTData, returnBtnClick, returnBtnCanExe, "<< ");
 
-                string parentCol = "";
-                Guid parentId = Guid.Empty;
-                if (dataItem.parentObj.parentObj != null)
-                { 
-                    parentCol = dataItem.parentObj.parentObj.Name;
-                    Guid temp = parentIds.Pop();
-                    parentId = parentIds.Peek();
-                    parentIds.Push(temp);
-                }
-                parentGrid = new UDTDataGrid(parentCol, dataItem.parentObj as UDTData, returnBtnClick, canClick);
+                //string parentCol = "";
+                //Guid parentId = Guid.Empty;
+                //if (dataItem.parentObj.parentObj != null)
+                //{ 
+                //    parentCol = dataItem.parentObj.parentObj.Name;
+                //    Guid temp = parentIds.Pop();
+                //    parentId = parentIds.Peek();
+                //    parentIds.Push(temp);
+                //}
+                // put back? parentGrid = new UDTDataGrid(parentCol, dataItem.parentObj as UDTData, returnBtnClick, canClick);
 
                 parentGrid.parentId = parentId;
             }
@@ -444,8 +541,18 @@ namespace UDTApp.ViewModels
             //DataViewName = string.Format("Data Group: {0}", dataItem.Name);
             DataViewName = dataItem.Name;
 
-            editBoxes = createEditBoxes(dataItem);
-            childGrids = createChildGrids(dataItem);
+            //editBoxes = createEditBoxes(dataItem);
+            //childGrids = createChildGrids(dataItem);
+            if (childGrids.Count > 0)
+            {
+                childGridsVisable = Visibility.Visible;
+                parentMargin = new Thickness(0, 0, 0, 0);
+            }
+            else
+            {
+                childGridsVisable = Visibility.Collapsed;
+                parentMargin = new Thickness(0, 0, 30, 0);
+            }
 
             if (parentGrid != null)
                 parentGridVisable = Visibility.Visible;
@@ -464,7 +571,7 @@ namespace UDTApp.ViewModels
             set { SetProperty(ref _returnBtn, value); }
         }
 
-        private bool canClick()
+        public bool canClick()
         {
             if( SelectedItem == null ) return false;
             return !UDTDataSet.udtDataSet.HasEditErrors;
@@ -477,10 +584,11 @@ namespace UDTApp.ViewModels
 
         private void returnBtnClick(UDTData dataItem)
         {
-            parentIds.Pop();
+            //parentIds.Pop();
 
             updateChildButtons(dataItem);
-            gridData = getGridData(dataItem, parentIds.Peek());
+            //gridData = getGridData(dataItem, parentIds.Peek());
+            gridData = getGridData(dataItem, parentId);
             currentDataItem = dataItem;
             SelectedIndex = 0;
             SelectedItem = null;
@@ -590,14 +698,14 @@ namespace UDTApp.ViewModels
 
         List<UDTDataGrid> createChildGrids(UDTData dataItem)
         {
-            List<UDTDataGrid> childGrids = new List<UDTDataGrid>();
+            //List<UDTDataGrid> childGrids = new List<UDTDataGrid>();
 
-            //foreach (UDTBase item in dataItem.ChildData)
-            foreach (UDTData item in dataItem.tableData)
-            {
-                //if (item.GetType() == typeof(UDTData))
-                    childGrids.Add(new UDTDataGrid(dataItem.Name, item as UDTData, childBtnClick, canClick));
-            }
+            ////foreach (UDTBase item in dataItem.ChildData)
+            //foreach (UDTData item in dataItem.tableData)
+            //{
+            //    //if (item.GetType() == typeof(UDTData))
+            //        // put back? childGrids.Add(new UDTDataGrid(dataItem.Name, item as UDTData, childBtnClick, canClick));
+            //}
 
             if (childGrids.Count > 0)
             {
@@ -632,6 +740,10 @@ namespace UDTApp.ViewModels
 
         private void editBoxValidationChanged(bool hasErrors)
         {
+            foreach (UDTDataGrid childGrid in childGrids)
+            {
+                childGrid.raiseCanExecuteChanged();
+            }
             foreach(UDTDataTextBox editBox in editBoxes)
             {
                 if(editBox.HasErrors)
@@ -660,7 +772,10 @@ namespace UDTApp.ViewModels
                 if (selectedRow != null) 
                 { 
                     if (selectedRow["Id"] != DBNull.Value)
+                    {
+                        Guid id = (Guid)selectedRow["Id"];
                         childGrid.parentId = (Guid)selectedRow["Id"];
+                    }
                     else
                         childGrid.parentId = Guid.Empty;
                 }
