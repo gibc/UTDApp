@@ -45,6 +45,41 @@
 
             </WrapPanel>
         </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:DataEditGrid}">
+            <StackPanel >
+                <GroupBox Header="{Binding DataViewName}" BorderThickness="1" BorderBrush="DarkBlue" Margin="{Binding parentMargin}">
+                    <DataGrid Name="EditGrid" ItemsSource="{Binding gridData}" CanUserAddRows="False" IsReadOnly="True"
+                          SelectedItem="{Binding SelectedItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                          SelectedIndex="{Binding SelectedIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                          >
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Loaded">
+                                <i:InvokeCommandAction Command="{Binding GridLoadedCommand}" CommandParameter="{Binding ElementName=EditGrid}" />
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </DataGrid>
+                </GroupBox>
+                <GroupBox Visibility="{Binding editBoxVisibility}" Header ="Seleted Item:" BorderThickness="1" BorderBrush="DarkBlue" Margin="{Binding parentMargin}">
+                    <ListBox ItemsSource="{Binding editBoxes}" HorizontalContentAlignment="Left" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal" VerticalAlignment="Top"/>
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+                    </ListBox>
+                </GroupBox>
+                <WrapPanel Visibility="{Binding addDeleteBtnVisibility}" HorizontalAlignment="Center" Margin="20,20,20,20">
+                    <Button Content="Add Row" Command="{Binding AddRowCommand}" Margin="0,0,10,0"/>
+                    <Button Content="Delete Row" Command="{Binding DeleteRowCommand}" Margin="10,0,0,0"/>
+                </WrapPanel>
+                <Button Visibility="{Binding navBtnVisibility}" Content="ViewEdit" Width="80" 
+                        HorizontalAlignment="Center" Command="{Binding NavBtnCommand}"/>
+                <Button Visibility="{Binding editBoxVisibility}" Content="Save Dataset" Width="80" 
+                        HorizontalAlignment="Center" Command="{Binding UpdateDatasetCommand}"/>
+            </StackPanel>
+
+        </DataTemplate>
         
     </UserControl.Resources>
 
@@ -60,7 +95,7 @@
     <Grid Margin="0, 10, 0, 0">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="auto"/>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*" MinWidth="200"/>
             <ColumnDefinition Width="auto"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
@@ -79,14 +114,13 @@
         </GroupBox>
 
         <!--Main / center grid-->
-        <StackPanel Grid.Column="1" Grid.Row="0">
+            <StackPanel Grid.Column="1" Grid.Row="0">
+                <ContentControl Content="{Binding currentEditGrid}" />
+             </StackPanel>
+            <!--<StackPanel Grid.Column="1" Grid.Row="0">
                 <ContentControl HorizontalAlignment="Left" Width="auto" Content="{Binding currentEditGrid.returnBtn}"/>
                 <GroupBox Header="{Binding currentEditGrid.DataViewName}" BorderThickness="1" BorderBrush="DarkBlue" Margin="{Binding parentMargin}">
-                    <!--<DataGrid ItemsSource="{Binding currentEditGrid.gridData}" CanUserAddRows="False" IsReadOnly="True"
-                          SelectedItem="{Binding currentEditGrid.SelectedItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                          SelectedIndex="{Binding currentEditGrid.SelectedIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                          cltLib:AutoGeneratingColumnEventToCommandBehaviour.Command="{Binding currentEditGrid.CreateColumnsCommand}"/>-->
-                    <DataGrid Name="EditGrid" ItemsSource="{Binding currentEditGrid.gridData}" CanUserAddRows="False" IsReadOnly="True"
+                   <DataGrid Name="EditGrid" ItemsSource="{Binding currentEditGrid.gridData}" CanUserAddRows="False" IsReadOnly="True"
                           SelectedItem="{Binding currentEditGrid.SelectedItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                           SelectedIndex="{Binding currentEditGrid.SelectedIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                           >
@@ -110,7 +144,7 @@
                     <Button Content="Add Row" Command="{Binding currentEditGrid.AddRowCommand}" Margin="0,0,10,0"/>
                     <Button Content="Delete Row" Command="{Binding currentEditGrid.DeleteRowCommand}" Margin="10,0,0,0"/>
             </WrapPanel>
-        </StackPanel>
+        </StackPanel>-->
         
         <!--Detail grids-->
         <GroupBox Header="Child Data:" Grid.Column="2" Grid.Row="0" BorderBrush="DarkBlue" 
