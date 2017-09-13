@@ -56,6 +56,9 @@ namespace UDTApp.ViewModels
             {
                 SetProperty(ref _parentId, value);
 
+                // also set epanded grid views parent id
+                dataEditGrid.parentId = value;
+
                 DataTable childTbl = UDTDataSet.udtDataSet.DataSet.Tables[childDef.Name];
                 DataView dv;
                 if (childTbl.Rows.Count > 0 && _parentId != Guid.Empty  && parentColName.Length > 0)
@@ -97,7 +100,7 @@ namespace UDTApp.ViewModels
 
         private bool canExecutNavBtn()
         {
-            if( parentId == Guid.Empty) return false;
+            if( childDef.parentObj != null && parentId == Guid.Empty) return false;
             return !UDTDataSet.udtDataSet.HasEditErrors;
         }
 
@@ -293,17 +296,14 @@ namespace UDTApp.ViewModels
         public DelegateCommand UpdateDatasetCommand { get; set; }
         public DelegateCommand AddRowCommand { get; set; }
         public DelegateCommand DeleteRowCommand { get; set; }
-        public DelegateCommand<DataGridAutoGeneratingColumnEventArgs> CreateColumnsCommand { get; set; }
+        public DelegateCommand<DataGrid> GridLoadedCommand { get; set; }
 
-        //public DataEditViewModel()       
         public DataEditGrid(UDTData udtData, Action<Guid, DataEditGrid> navButtonClick)
         {
-            //WindowLoadedCommand = new DelegateCommand(windowLoaded);
             UpdateDatasetCommand = new DelegateCommand(updateDataset);
             AddRowCommand = new DelegateCommand(addRow, canAddRow);
             DeleteRowCommand = new DelegateCommand(deleteRow, canDelete);
-            CreateColumnsCommand = new DelegateCommand<System.Windows.Controls.DataGridAutoGeneratingColumnEventArgs>(createColumns);
-
+            GridLoadedCommand = new DelegateCommand<DataGrid>(gridLoaded);
             currentDataItem = udtData;
 
             editBoxes = new List<UDTDataTextBox>();
@@ -339,10 +339,10 @@ namespace UDTApp.ViewModels
         {
             get { return _selectedItem;  }
             set 
-            { 
-                _selectedItem = value;
+            {
+                SetProperty(ref _selectedItem, value);
 
-                editBoxes = createEditBoxes(currentDataItem);
+                //editBoxes = createEditBoxes(currentDataItem);
 
                 //if (value == null)  return;
               
@@ -366,7 +366,6 @@ namespace UDTApp.ViewModels
             get { return _selectedIndex; }
             set 
             { 
-                //_selectedIndex = value;
                 SetProperty(ref _selectedIndex, value);
             }
         }
@@ -421,6 +420,30 @@ namespace UDTApp.ViewModels
             //UDTDataSet.udtDataSet.validationChange(HasErrors);
         }
 
+        private void gridLoaded(DataGrid e)
+        {
+            e.AutoGeneratingColumn += new EventHandler<DataGridAutoGeneratingColumnEventArgs>(OnAutoGeneratingColumn);
+            e.AutoGenerateColumns = false;
+            e.AutoGenerateColumns = true;
+        }
+
+        protected void OnAutoGeneratingColumn(object sender, DataGridAutoGeneratingColumnEventArgs e)
+        {
+            if (e.PropertyType == typeof(Guid))
+            {
+                e.Column.Visibility = Visibility.Hidden;
+            }
+            //string displayName = GetPropertyDisplayName(e.PropertyDescriptor);
+            //if (!string.IsNullOrEmpty(displayName))
+            //{
+            //    e.Column.Header = displayName;
+            //}
+            //else
+            //{
+            //    e.Cancel = true;
+            //}
+        }
+
         private bool canDelete()
         {
             return SelectedItem != null;
@@ -454,6 +477,19 @@ namespace UDTApp.ViewModels
 
         public void DisplayTable(UDTData dataItem)
         {
+            parentId = parentId;
+            //currentDataItem = dataItem;
+            //updateChildButtons(dataItem);
+            //SelectedIndex = 0;
+            //SelectedItem = null;
+            //return;
+
+            if (parentGrid != null)
+            { 
+                parentGrid.parentId = parentGrid.parentId;
+                parentGrid.raiseCanExecuteChanged();
+            }
+
             //if (SelectedItem != null) parentIds.Push( (Guid)SelectedItem["Id"]);
             //else parentIds.Push(Guid.Empty);
 
@@ -477,10 +513,12 @@ namespace UDTApp.ViewModels
             //else
             //    gridData = new DataView(UDTDataSet.udtDataSet.DataSet.Tables[dataItem.Name]);
 
-            if (SelectedItem != null)
-                gridData = getGridData(dataItem, (Guid)SelectedItem["Id"]);
-            else
-                gridData = getGridData(dataItem, Guid.Empty);
+            //if (SelectedItem != null)
+            //    gridData = getGridData(dataItem, (Guid)SelectedItem["Id"]);
+            //else
+            //    gridData = getGridData(dataItem, Guid.Empty);
+
+            //gridData = getGridData(dataItem, parentId);
 
             currentDataItem = dataItem;
 
@@ -492,7 +530,17 @@ namespace UDTApp.ViewModels
         }
 
         //private Stack<Guid> parentIds = new Stack<Guid>();
-        public Guid parentId = Guid.Empty;
+        private Guid _parentId = Guid.Empty;
+        public Guid parentId
+        {
+            get { return _parentId; }
+            set
+            {
+                SetProperty(ref _parentId, value);
+                gridData = getGridData(currentDataItem, parentId);
+
+            }
+        }
 
         private void updateChildButtons(UDTData dataItem)
         {
@@ -535,7 +583,7 @@ namespace UDTApp.ViewModels
                 //}
                 // put back? parentGrid = new UDTDataGrid(parentCol, dataItem.parentObj as UDTData, returnBtnClick, canClick);
 
-                parentGrid.parentId = parentId;
+                //parentGrid.parentId = parentId;
             }
 
             //DataViewName = string.Format("Data Group: {0}", dataItem.Name);
@@ -784,12 +832,12 @@ namespace UDTApp.ViewModels
             }
         }
 
-        public void createColumns(System.Windows.Controls.DataGridAutoGeneratingColumnEventArgs e)
-        {
-            if (e.PropertyType == typeof(Guid))
-            {
-                e.Column.Visibility = Visibility.Hidden;
-            }
-        }
+        //public void createColumns(System.Windows.Controls.DataGridAutoGeneratingColumnEventArgs e)
+        //{
+        //    //if (e.PropertyType == typeof(Guid))
+        //    //{
+        //    //    e.Column.Visibility = Visibility.Hidden;
+        //    //}
+        //}
     }
 }

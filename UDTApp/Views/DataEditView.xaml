@@ -82,10 +82,20 @@
         <StackPanel Grid.Column="1" Grid.Row="0">
                 <ContentControl HorizontalAlignment="Left" Width="auto" Content="{Binding currentEditGrid.returnBtn}"/>
                 <GroupBox Header="{Binding currentEditGrid.DataViewName}" BorderThickness="1" BorderBrush="DarkBlue" Margin="{Binding parentMargin}">
-                    <DataGrid ItemsSource="{Binding currentEditGrid.gridData}" CanUserAddRows="False" IsReadOnly="True"
+                    <!--<DataGrid ItemsSource="{Binding currentEditGrid.gridData}" CanUserAddRows="False" IsReadOnly="True"
                           SelectedItem="{Binding currentEditGrid.SelectedItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                           SelectedIndex="{Binding currentEditGrid.SelectedIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                          cltLib:AutoGeneratingColumnEventToCommandBehaviour.Command="{Binding currentEditGrid.CreateColumnsCommand}"/>
+                          cltLib:AutoGeneratingColumnEventToCommandBehaviour.Command="{Binding currentEditGrid.CreateColumnsCommand}"/>-->
+                    <DataGrid Name="EditGrid" ItemsSource="{Binding currentEditGrid.gridData}" CanUserAddRows="False" IsReadOnly="True"
+                          SelectedItem="{Binding currentEditGrid.SelectedItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                          SelectedIndex="{Binding currentEditGrid.SelectedIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                          >
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Loaded">
+                                <i:InvokeCommandAction Command="{Binding currentEditGrid.GridLoadedCommand}" CommandParameter="{Binding ElementName=EditGrid}" />
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </DataGrid>
              </GroupBox>
                 <GroupBox Header ="Seleted Item:" BorderThickness="1" BorderBrush="DarkBlue" Margin="{Binding currentEditGrid.parentMargin}">
                     <ListBox ItemsSource="{Binding currentEditGrid.editBoxes}" HorizontalContentAlignment="Left" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
