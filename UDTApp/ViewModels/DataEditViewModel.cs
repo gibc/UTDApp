@@ -308,7 +308,7 @@ namespace UDTApp.ViewModels
             AddRowCommand = new DelegateCommand(addRow, canAddRow);
             DeleteRowCommand = new DelegateCommand(deleteRow, canDelete);
             GridLoadedCommand = new DelegateCommand<DataGrid>(gridLoaded);
-            NavBtnCommand = new DelegateCommand(localNavButtonClick);
+            NavBtnCommand = new DelegateCommand(localNavButtonClick, canNav);
             globalButtonClick = navButtonClick;
             currentDataItem = udtData;
             DataViewName = udtData.Name;
@@ -419,6 +419,14 @@ namespace UDTApp.ViewModels
             //UDTDataSet.udtDataSet.validationChange(HasErrors);
         }
 
+        private bool canNav()
+        {
+            if (displayPos == EditGridDisplayPos.Parent) return true;
+            if (displayPos == EditGridDisplayPos.Child && 
+                parentId != null && parentId != Guid.Empty) return true;
+            return false;
+        }
+
         private Action<Guid, DataEditGrid> globalButtonClick;
         public void localNavButtonClick()
         {
@@ -430,12 +438,16 @@ namespace UDTApp.ViewModels
             this.addDeleteBtnVisibility = Visibility.Visible;
             this.navBtnVisibility = Visibility.Collapsed;
 
+            this.IsExpanderOpen = true;
+            this.IsChildExpanderOpen = false;
+
             if (parentGrid != null)
-            { 
+            {
                 parentGrid.displayPos = EditGridDisplayPos.Parent;
                 parentGrid.editBoxVisibility = Visibility.Collapsed;
                 parentGrid.navBtnVisibility = Visibility.Visible;
                 parentGrid.addDeleteBtnVisibility = Visibility.Collapsed;
+                parentGrid.IsExpanderOpen = false;
             }
 
             foreach (DataEditGrid child in childGrids)
@@ -445,6 +457,9 @@ namespace UDTApp.ViewModels
                 child.navBtnVisibility = Visibility.Visible;
                 child.addDeleteBtnVisibility = Visibility.Collapsed;
             }
+
+
+            NavBtnCommand.RaiseCanExecuteChanged();
 
             SelectedItem = SelectedItem;
 
@@ -566,6 +581,7 @@ namespace UDTApp.ViewModels
             set
             {
                 SetProperty(ref _parentId, value);
+                NavBtnCommand.RaiseCanExecuteChanged();
                 gridData = getGridData(currentDataItem, parentId);
 
             }
@@ -747,6 +763,13 @@ namespace UDTApp.ViewModels
             }           
         }
 
+        public bool _IsChildExpanderOpen = false;
+        public bool IsChildExpanderOpen
+        {
+            get { return _IsChildExpanderOpen; }
+            set { SetProperty(ref _IsChildExpanderOpen, value); }
+        }
+
         private Visibility _childGridsVisable = Visibility.Hidden;
         public Visibility childGridsVisable
         {
@@ -755,6 +778,20 @@ namespace UDTApp.ViewModels
             {
                 SetProperty(ref _childGridsVisable, value);
             }        
+        }
+
+        //public bool _IsParentExpanderOpen = false;
+        //public bool IsParentExpanderOpen
+        //{
+        //    get { return _IsParentExpanderOpen; }
+        //    set { SetProperty(ref _IsParentExpanderOpen, value); }
+        //}
+
+        private bool _IsExpanderOpen = false;
+        public bool IsExpanderOpen
+        {
+            get { return _IsExpanderOpen; }
+            set { SetProperty(ref _IsExpanderOpen, value); }
         }
 
         private Visibility _parentGridVisable = Visibility.Collapsed;
