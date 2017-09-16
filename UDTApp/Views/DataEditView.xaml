@@ -47,20 +47,33 @@
         </DataTemplate>
 
         <DataTemplate DataType="{x:Type vm:DataEditGrid}">
-            <StackPanel >
-                <GroupBox Header="{Binding DataViewName}" BorderThickness="1" BorderBrush="DarkBlue" Margin="{Binding parentMargin}">
-                    <DataGrid Name="EditGrid" ItemsSource="{Binding gridData}" CanUserAddRows="False" IsReadOnly="True"
+            <StackPanel Margin="0,0,0,0" >
+                <!--<GroupBox Header="{Binding DataViewName}" BorderThickness="0" BorderBrush="DarkBlue" 
+                          Margin="{Binding parentMargin}" Height="auto">-->
+                    <WrapPanel>
+                        <!--<WrapPanel HorizontalAlignment="Center" Margin="0,0,0,0">-->
+                        <Label Margin="-5,0,0,-5" FontStyle="Italic" Foreground="Green" Content="{Binding DataViewParentName}" />
+                        <Label Margin="-8,0,0,-5" FontWeight="Bold" Content="{Binding DataViewName}" />
+                        <Button Height="20" Width="auto" Content="+row" Command="{Binding AddRowCommand}" Margin="30,0,10,-5"/>
+                        <Button Height="20" Width="auto" Content="-row" Command="{Binding DeleteRowCommand}" Margin="10,0,0,-5"/>
+                        <!--</WrapPanel>-->
+                        <DataGrid Name="EditGrid" ItemsSource="{Binding gridData}" CanUserAddRows="False" IsReadOnly="True"
                           SelectedItem="{Binding SelectedItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                           SelectedIndex="{Binding SelectedIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                          >
+                          Width="{Binding Path=ActualWidth, 
+                            RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UIElement}}"
+                            MaxHeight="200"
+                         >
                         <i:Interaction.Triggers>
                             <i:EventTrigger EventName="Loaded">
                                 <i:InvokeCommandAction Command="{Binding GridLoadedCommand}" CommandParameter="{Binding ElementName=EditGrid}" />
                             </i:EventTrigger>
                         </i:Interaction.Triggers>
-                    </DataGrid>
-                </GroupBox>
-                <GroupBox Visibility="{Binding editBoxVisibility}" Header ="Seleted Item:" BorderThickness="1" BorderBrush="DarkBlue" Margin="{Binding parentMargin}">
+                        </DataGrid>
+                    </WrapPanel>
+                <!--</GroupBox>-->
+                <GroupBox Visibility="{Binding editBoxVisibility}" Header ="Seleted Item:" BorderThickness="0" BorderBrush="DarkBlue" Margin="{Binding parentMargin}">
+                    <StackPanel>
                     <ListBox ItemsSource="{Binding editBoxes}" HorizontalContentAlignment="Left" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                         <ListBox.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -68,17 +81,30 @@
                             </ItemsPanelTemplate>
                         </ListBox.ItemsPanel>
                     </ListBox>
+                    <ContentControl Margin="20,0,0,0" Content="{Binding detailTab}"/>
+                    </StackPanel>
                 </GroupBox>
-                <WrapPanel Visibility="{Binding addDeleteBtnVisibility}" HorizontalAlignment="Center" Margin="20,20,20,20">
+                <!--<WrapPanel Visibility="{Binding addDeleteBtnVisibility}" HorizontalAlignment="Center" Margin="20,20,20,20">
                     <Button Content="Add Row" Command="{Binding AddRowCommand}" Margin="0,0,10,0"/>
                     <Button Content="Delete Row" Command="{Binding DeleteRowCommand}" Margin="10,0,0,0"/>
-                </WrapPanel>
+                </WrapPanel>-->
                 <Button Visibility="{Binding navBtnVisibility}" Content="ViewEdit" Width="80" 
                         HorizontalAlignment="Center" Command="{Binding NavBtnCommand}"/>
                 <Button Visibility="{Binding editBoxVisibility}" Content="Save Dataset" Width="80" 
                         HorizontalAlignment="Center" Command="{Binding UpdateDatasetCommand}"/>
             </StackPanel>
 
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:UDTDataTab}">
+            <TabControl ItemsSource="{Binding tabPages}">
+                <TabControl.ItemContainerStyle>
+                    <Style TargetType="TabItem">
+                        <Setter Property="Header" Value="{Binding pageTitle}"/>
+                        <Setter Property="Content" Value="{Binding pageContent}"/>
+                    </Style>
+                </TabControl.ItemContainerStyle>
+            </TabControl>
         </DataTemplate>
         
     </UserControl.Resources>
@@ -92,7 +118,7 @@
         <GroupBox.Header>
             <TextBlock FontWeight="Bold">Project Data:</TextBlock>
         </GroupBox.Header>
-        <Grid Margin="0, 10, 0, 0">
+        <Grid Margin="0, 0, 0, 0">
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto" MinHeight="10"/>
@@ -103,39 +129,54 @@
         </Grid.ColumnDefinitions>
 
         <!--Parent grid-->
-        <GroupBox Header="Parent Data:" Grid.Column="0" Grid.Row="0" BorderBrush="DarkBlue" 
-                  Margin="0,0,0,0" >
-                <Expander ExpandDirection="Down" IsExpanded="{Binding currentEditGrid.parentGrid.IsExpanderOpen}" 
-                      BorderBrush="Black" BorderThickness="0" Margin="0,0,0,0">
-                <StackPanel Height="auto">
-                        <ContentControl HorizontalAlignment="Left" Width="auto" 
-                                        Content="{Binding currentEditGrid.parentGrid}"/>
-                </StackPanel>
+            <Expander ExpandDirection="Down" Header="Parent Data:" Grid.Column="0" Grid.Row="0"
+                      IsExpanded="{Binding currentEditGrid.parentGrid.IsExpanderOpen}" 
+                      BorderBrush="DarkBlue" BorderThickness="1" Margin="0,0,0,0">
+                <!--<StackPanel Height="auto">-->
+                        <ContentControl Content="{Binding currentEditGrid.parentGrid}"/>
+                <!--</StackPanel>-->
             </Expander>
-        </GroupBox>
 
         <!--Main / center grid-->
-            <GroupBox Width="auto" Height="auto" Header="Main Data:" Grid.Column="0" Grid.Row="1"
-                      BorderBrush="DarkBlue" >
-                <Expander Height="auto" ExpandDirection="Down" 
-                          IsExpanded="{Binding currentEditGrid.IsExpanderOpen, Mode=TwoWay}"
-                      BorderBrush="Black">
+            <Expander Height="auto" ExpandDirection="Down" Grid.Column="0" Grid.Row="1"
+                     IsExpanded="{Binding currentEditGrid.IsExpanderOpen, Mode=TwoWay}"
+                     BorderBrush="DarkBlue" BorderThickness="1" Header="Master Data:">
                     <ContentControl Content="{Binding currentEditGrid}" />
-                </Expander>
-            </GroupBox>
+           </Expander>
         
         <!--Detail grids-->
-            <GroupBox Width="auto" Height="auto" Header="Child Data:" Grid.Column="0" Grid.Row="2" 
-                      BorderBrush="DarkBlue" 
-                  Margin="0,0,0,0" >
-                <Expander Height="auto" Grid.Column="0" Grid.Row="2" ExpandDirection="Down" 
-                      IsExpanded="{Binding currentEditGrid.IsChildExpanderOpen}"
-                      BorderBrush="Black" BorderThickness="0" Margin="0,0,0,0">
-                <StackPanel Height="auto">
-                        <ListBox ItemsSource="{Binding currentEditGrid.childGrids}" HorizontalContentAlignment="Left" />
-                </StackPanel>
-            </Expander>
-        </GroupBox>
+            <!--<Expander Header="Detail Data:" Height="auto" Grid.Column="0" Grid.Row="2"
+                    ExpandDirection="Down" 
+                    IsExpanded="{Binding currentEditGrid.IsChildExpanderOpen}"
+                    BorderBrush="DarkBlue" BorderThickness="1" Margin="0,0,0,0" Width="{Binding Path=ActualWidth, 
+                    RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UIElement}}">
+                <ContentControl Content="{Binding currentEditGrid.detailTab}"/>
+            </Expander>-->
+            <!--<Expander Header="Detail Data:" Height="auto" Grid.Column="0" Grid.Row="2" 
+                    ExpandDirection="Down" 
+                    IsExpanded="{Binding currentEditGrid.IsChildExpanderOpen}"
+                    BorderBrush="DarkBlue" BorderThickness="1" Margin="0,0,0,0" Width="{Binding Path=ActualWidth, 
+                            RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UIElement}}">
+                --><!--<StackPanel Height="auto">--><!--
+                    <ListBox ItemsSource="{Binding currentEditGrid.childGrids}" 
+                             HorizontalContentAlignment="Stretch" Width="{Binding Path=ActualWidth, 
+                            RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UIElement}}">
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="SizeChanged">
+                            <prism:InvokeCommandAction Command="{Binding currentEditGrid.ListBoxResizeCommand}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate >
+                            <StackPanel Width="{Binding currentEditGrid.ListBoxPanelWidth}"
+                            HorizontalAlignment="Left">
+ 
+                            </StackPanel>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                </ListBox>
+                --><!--</StackPanel>--><!--
+            </Expander>-->
 
     </Grid>
     </GroupBox>

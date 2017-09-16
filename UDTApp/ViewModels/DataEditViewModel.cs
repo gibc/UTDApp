@@ -1,6 +1,7 @@
 ﻿using Prism.Commands;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Linq;
@@ -12,6 +13,44 @@ using UDTApp.Models;
 
 namespace UDTApp.ViewModels
 {
+    public class UDTDataTab  : ValidatableBindableBase
+    {
+        public UDTDataTab(List<DataEditGrid> _childGrids)
+        {
+            tabPages = new ObservableCollection<UDTDataTabPage>();
+            foreach(DataEditGrid grid in _childGrids)
+            {
+                tabPages.Add(new UDTDataTabPage(grid.currentDataItem.Name, grid));
+            };
+        }
+
+        private ObservableCollection<UDTDataTabPage> _tabPages = null;
+        public ObservableCollection<UDTDataTabPage> tabPages 
+        {
+            get { return _tabPages; }
+            set { SetProperty(ref _tabPages, value); }
+        }
+    }
+    public class UDTDataTabPage : ValidatableBindableBase
+    {
+        public UDTDataTabPage(string title, DataEditGrid grid)
+        {
+            pageTitle = title;
+            pageContent = grid;
+        }
+        private string _pageTitle = null;
+        public string pageTitle
+        {
+            get { return _pageTitle; }
+            set { SetProperty(ref _pageTitle, value); }
+        }
+        private DataEditGrid _pageContent = null;
+        public DataEditGrid pageContent
+        {
+            get { return _pageContent; }
+            set { SetProperty(ref _pageContent, value); }
+        }
+    }
     public class UDTDataGrid : ValidatableBindableBase
     {
         public DelegateCommand<DataGridAutoGeneratingColumnEventArgs> CreateColumnsCommand { get; set; }
@@ -282,6 +321,7 @@ namespace UDTApp.ViewModels
 
                 createDataGrids(childGrid, item, navButtonClick);
             }
+            parentGrid.detailTab = new UDTDataTab(parentGrid.childGrids);
         }
 
         private void navBtnClk(Guid parentId, DataEditGrid grid)
@@ -301,6 +341,7 @@ namespace UDTApp.ViewModels
         public DelegateCommand DeleteRowCommand { get; set; }
         public DelegateCommand<DataGrid> GridLoadedCommand { get; set; }
         public DelegateCommand NavBtnCommand { get; set; }
+        public DelegateCommand<SizeChangedEventArgs> ListBoxResizeCommand { get; set; }
 
         public DataEditGrid(UDTData udtData, Action<Guid, DataEditGrid> navButtonClick)
         {
@@ -309,9 +350,10 @@ namespace UDTApp.ViewModels
             DeleteRowCommand = new DelegateCommand(deleteRow, canDelete);
             GridLoadedCommand = new DelegateCommand<DataGrid>(gridLoaded);
             NavBtnCommand = new DelegateCommand(localNavButtonClick, canNav);
+            ListBoxResizeCommand = new DelegateCommand<SizeChangedEventArgs>(listBoxResize);
             globalButtonClick = navButtonClick;
             currentDataItem = udtData;
-            DataViewName = udtData.Name;
+            //DataViewName = udtData.Name;
             if (udtData.tableData.Count > 0) 
                 childGridsVisable = Visibility.Visible;
             if(udtData.parentObj != null)
@@ -326,6 +368,13 @@ namespace UDTApp.ViewModels
             childGrids = new List<DataEditGrid>();
 
  
+        }
+
+        private UDTDataTab _detailTab = null;
+        public UDTDataTab detailTab 
+        {
+            get { return _detailTab; }
+            set { SetProperty(ref _detailTab, value); }
         }
 
         private EditGridDisplayPos _displayPos = EditGridDisplayPos.Main;        
@@ -377,6 +426,18 @@ namespace UDTApp.ViewModels
         private void updateDataset()
         {
             UDTDataSet.udtDataSet.saveDataset();
+        }
+
+        private void listBoxResize(SizeChangedEventArgs e)
+        {
+            ListBoxPanelWidth = (int)e.NewSize.Width/2;
+        }
+
+        private int _ListBoxPanelWidth = 200;
+        public int ListBoxPanelWidth 
+        {
+            get { return _ListBoxPanelWidth; }
+            set { SetProperty(ref _ListBoxPanelWidth, value); }
         }
 
         private Visibility _addDeleteBtnVisibility = Visibility.Collapsed;
@@ -494,7 +555,16 @@ namespace UDTApp.ViewModels
             return SelectedItem != null;
         }
 
-        public UDTData currentDataItem = null;
+        private UDTData _currentDataItem = null;
+        public UDTData currentDataItem 
+        {
+            get { return _currentDataItem; }
+            set 
+            {
+                SetProperty(ref _currentDataItem, value);
+                DataViewName = value.Name;
+            }
+        }
 
         private DataView getGridData(UDTData dataItem, Guid parentId)
         {
@@ -632,7 +702,7 @@ namespace UDTApp.ViewModels
             }
 
             //DataViewName = string.Format("Data Group: {0}", dataItem.Name);
-            DataViewName = dataItem.Name;
+            //DataViewName = dataItem.Name;
 
             //editBoxes = createEditBoxes(dataItem);
             //childGrids = createChildGrids(dataItem);
@@ -696,11 +766,41 @@ namespace UDTApp.ViewModels
         private string _dataViewName = ""; 
         public string DataViewName 
         { 
-            get { return _dataViewName; }
+            get 
+            {
+                //if (parentGrid == null)
+                    return currentDataItem.Name;
+                //else
+                //    return currentDataItem.Name + "->";
+            }
+            set { SetProperty(ref _dataViewName, value); }
+        }
+
+        private string _dataViewParentName = ""; 
+        public string DataViewParentName 
+        { 
+            get 
+            {                
+                string dvName = "";
+                if(parentGrid != null)
+                    getDataViewName(parentGrid, ref dvName);
+                return dvName;
+            }
             set
             {
-                SetProperty(ref _dataViewName, value);
+                SetProperty(ref _dataViewParentName, value);
             }
+        }
+
+        private void getDataViewName(DataEditGrid grid, ref string dvName)
+        {
+
+            if(grid.parentGrid != null)
+            {
+                getDataViewName(grid.parentGrid, ref dvName);
+                //dvName += "->";
+            }
+            dvName += grid.currentDataItem.Name + "->";
         }
  
         private DataView _gridData = null;
@@ -729,7 +829,11 @@ namespace UDTApp.ViewModels
         private Visibility _editBoxVisibility = Visibility.Collapsed;
         public Visibility editBoxVisibility 
         {
-            get { return _editBoxVisibility; }
+            get 
+            {
+                return Visibility.Visible;
+                return _editBoxVisibility; 
+            }
             set { SetProperty(ref _editBoxVisibility, value); }
         }
 
@@ -857,7 +961,7 @@ namespace UDTApp.ViewModels
                 { 
                     UDTDataSet.udtDataSet.validationChange(true);
                     AddRowCommand.RaiseCanExecuteChanged();
-                    return;
+                    //return;
                 }
             }
             UDTDataSet.udtDataSet.validationChange(false);
