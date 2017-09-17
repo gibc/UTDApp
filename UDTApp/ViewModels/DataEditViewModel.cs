@@ -394,20 +394,16 @@ namespace UDTApp.ViewModels
 
                 if (value != null)
                 {
-                    if(displayPos == EditGridDisplayPos.Main)
-                        editBoxVisibility = Visibility.Visible;
-                    else
-                        editBoxVisibility = Visibility.Collapsed;
+                    editBoxVisibility = Visibility.Visible;
                 }
                 else if (value == null)
                 {
                     editBoxVisibility = Visibility.Collapsed;
-                    return;
                 }
 
 
                 if (editBoxes != null && _selectedItem != null) updateEditBoxes(_selectedItem);
-                if (childGrids != null && _selectedItem != null) updateChildGrids(_selectedItem);
+                if (childGrids != null) updateChildGrids(_selectedItem);
 
                 DeleteRowCommand.RaiseCanExecuteChanged();
             }
@@ -468,10 +464,8 @@ namespace UDTApp.ViewModels
         private bool canAddRow()
         {
             if (UDTDataSet.udtDataSet.HasEditErrors) return false;
-            //if (currentDataItem != null && currentDataItem.ParentColumnNames.Count > 0 && 
-            //    parentIds.Peek() == Guid.Empty)
-            //    return false;
-            return true;
+            if (currentDataItem.parentObj == null) return true;
+            return (parentId != null && parentId != Guid.Empty);
         }
 
         private void deleteRow()
@@ -652,6 +646,7 @@ namespace UDTApp.ViewModels
             {
                 SetProperty(ref _parentId, value);
                 NavBtnCommand.RaiseCanExecuteChanged();
+                AddRowCommand.RaiseCanExecuteChanged();
                 gridData = getGridData(currentDataItem, parentId);
 
             }
@@ -831,10 +826,24 @@ namespace UDTApp.ViewModels
         {
             get 
             {
-                return Visibility.Visible;
                 return _editBoxVisibility; 
             }
-            set { SetProperty(ref _editBoxVisibility, value); }
+            set 
+            { 
+                SetProperty(ref _editBoxVisibility, value);
+                if (value == Visibility.Collapsed) editBoxMsgVisibility = Visibility.Visible;
+                else editBoxMsgVisibility = Visibility.Collapsed;
+            }
+        }
+
+        private Visibility _editBoxMsgVisibility = Visibility.Collapsed;
+        public Visibility editBoxMsgVisibility
+        {
+            get
+            {
+                return _editBoxMsgVisibility;
+            }
+            set { SetProperty(ref _editBoxMsgVisibility, value); }
         }
 
         private List<UDTDataTextBox> _editBoxes = null;
@@ -987,9 +996,11 @@ namespace UDTApp.ViewModels
                         Guid id = (Guid)selectedRow["Id"];
                         childGrid.parentId = (Guid)selectedRow["Id"];
                     }
-                    else
-                        childGrid.parentId = Guid.Empty;
+                    //else
+                    //    childGrid.parentId = Guid.Empty;
                 }
+                else
+                    childGrid.parentId = Guid.Empty;
 
                 //childGrid.raiseCanExecuteChanged();
             }

@@ -72,26 +72,52 @@
                         </DataGrid>
                     </WrapPanel>
                 <!--</GroupBox>-->
-                <GroupBox Visibility="{Binding editBoxVisibility}" Header ="Seleted Item:" BorderThickness="0" BorderBrush="DarkBlue" Margin="{Binding parentMargin}">
+                <GroupBox BorderThickness="0" BorderBrush="DarkBlue" 
+                          Margin="{Binding parentMargin}">
+                    <GroupBox.Header>
+                        <WrapPanel>
+                            <TextBlock FontWeight="Bold" Text="{Binding DataViewName}"/>
+                            <TextBlock FontStyle="Italic"  Text=" Selected Item"/>
+                            <TextBlock Foreground="Green" Margin="50,0,0,0" Text="(Enter/Edit Item Values)"/>
+                        </WrapPanel>
+                    </GroupBox.Header>
                     <StackPanel>
-                    <ListBox ItemsSource="{Binding editBoxes}" HorizontalContentAlignment="Left" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListBox  Visibility="{Binding editBoxVisibility}" ItemsSource="{Binding editBoxes}" HorizontalContentAlignment="Left" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                         <ListBox.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <WrapPanel Orientation="Horizontal" VerticalAlignment="Top"/>
                             </ItemsPanelTemplate>
                         </ListBox.ItemsPanel>
                     </ListBox>
-                    <ContentControl Margin="20,0,0,0" Content="{Binding detailTab}"/>
+                        <Label Margin="20,0,0,0" Visibility="{Binding editBoxMsgVisibility}" >
+                            <Label.Content>
+                                <WrapPanel>
+                                    <TextBlock FontStyle="Italic" Text="No item currently selected"/>
+                                    <TextBlock Foreground="Green" Margin="50,0,0,0" Text="(Add or select a row/item)"/>
+                                </WrapPanel>
+                            </Label.Content>
+                        </Label>
+                        
+                        <Expander Visibility="{Binding childGridsVisable}">
+                            <Expander.Header>
+                                <WrapPanel>
+                                    <TextBlock FontWeight="Bold" Text="{Binding DataViewName}"/>
+                                    <TextBlock FontStyle="Italic" Text=" Child Data"/>
+                                    <TextBlock Foreground="Green" Margin="50,0,0,0" Text="(View/Add/Edit Child Data)"/>
+                                </WrapPanel>
+                            </Expander.Header>
+                            <ContentControl Margin="20,0,0,0" Content="{Binding detailTab}"/>
+                    </Expander>
                     </StackPanel>
                 </GroupBox>
                 <!--<WrapPanel Visibility="{Binding addDeleteBtnVisibility}" HorizontalAlignment="Center" Margin="20,20,20,20">
                     <Button Content="Add Row" Command="{Binding AddRowCommand}" Margin="0,0,10,0"/>
                     <Button Content="Delete Row" Command="{Binding DeleteRowCommand}" Margin="10,0,0,0"/>
                 </WrapPanel>-->
-                <Button Visibility="{Binding navBtnVisibility}" Content="ViewEdit" Width="80" 
-                        HorizontalAlignment="Center" Command="{Binding NavBtnCommand}"/>
-                <Button Visibility="{Binding editBoxVisibility}" Content="Save Dataset" Width="80" 
-                        HorizontalAlignment="Center" Command="{Binding UpdateDatasetCommand}"/>
+                <!--<Button Visibility="{Binding navBtnVisibility}" Content="ViewEdit" Width="80" 
+                        HorizontalAlignment="Center" Command="{Binding NavBtnCommand}"/>-->
+                <!--<Button Visibility="{Binding editBoxVisibility}" Content="Save Dataset" Width="80" 
+                        HorizontalAlignment="Center" Command="{Binding UpdateDatasetCommand}"/>-->
             </StackPanel>
 
         </DataTemplate>
@@ -121,7 +147,7 @@
         <Grid Margin="0, 0, 0, 0">
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
-            <RowDefinition Height="auto" MinHeight="10"/>
+            <RowDefinition Height="*" MinHeight="10"/>
             <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
@@ -129,20 +155,23 @@
         </Grid.ColumnDefinitions>
 
         <!--Parent grid-->
-            <Expander ExpandDirection="Down" Header="Parent Data:" Grid.Column="0" Grid.Row="0"
+            <!--<Expander ExpandDirection="Down" Header="Parent Data:" Grid.Column="0" Grid.Row="0"
                       IsExpanded="{Binding currentEditGrid.parentGrid.IsExpanderOpen}" 
                       BorderBrush="DarkBlue" BorderThickness="1" Margin="0,0,0,0">
-                <!--<StackPanel Height="auto">-->
+                --><!--<StackPanel Height="auto">--><!--
                         <ContentControl Content="{Binding currentEditGrid.parentGrid}"/>
-                <!--</StackPanel>-->
-            </Expander>
+                --><!--</StackPanel>--><!--
+            </Expander>-->
 
         <!--Main / center grid-->
-            <Expander Height="auto" ExpandDirection="Down" Grid.Column="0" Grid.Row="1"
+            <!--<Expander Height="auto" ExpandDirection="Down" Grid.Column="0" Grid.Row="1"
                      IsExpanded="{Binding currentEditGrid.IsExpanderOpen, Mode=TwoWay}"
                      BorderBrush="DarkBlue" BorderThickness="1" Header="Master Data:">
                     <ContentControl Content="{Binding currentEditGrid}" />
-           </Expander>
+           </Expander>-->
+            <ScrollViewer VerticalScrollBarVisibility="Visible" BorderBrush="Red" BorderThickness="3" Grid.Column="0" Grid.Row="1">
+                <ContentControl Content="{Binding currentEditGrid}" />
+            </ScrollViewer>
         
         <!--Detail grids-->
             <!--<Expander Header="Detail Data:" Height="auto" Grid.Column="0" Grid.Row="2"
