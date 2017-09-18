@@ -37,10 +37,11 @@
         </DataTemplate>
 
         <DataTemplate DataType="{x:Type vm:UDTDataTextBox}">
-            <WrapPanel Margin="0,0,0,13">
-                <Label Content="{Binding colName}" Width="60" Height="25" 
-                       HorizontalContentAlignment="Right"/>
+            <WrapPanel Margin="0,0,0,13" KeyboardNavigation.TabNavigation="Continue" >
+                <Label Content="{Binding colName}" Width="85" Height="25" Focusable="False"
+                       HorizontalContentAlignment="Right" IsTabStop="False" />
                 <TextBox Text="{Binding editText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         IsTabStop="True" Focusable="True"
                          Width="100" Height="25" />
 
             </WrapPanel>
@@ -81,14 +82,23 @@
                             <TextBlock Foreground="Green" Margin="50,0,0,0" Text="(Enter/Edit Item Values)"/>
                         </WrapPanel>
                     </GroupBox.Header>
-                    <StackPanel>
-                        <ListBox  Visibility="{Binding editBoxVisibility}" ItemsSource="{Binding editBoxes}" HorizontalContentAlignment="Left" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel KeyboardNavigation.TabNavigation="Contained" >
+                        <ListBox IsTabStop="True"  
+                                 Visibility="{Binding editBoxVisibility}" ItemsSource="{Binding editBoxes}" 
+                                 KeyboardNavigation.TabNavigation="Contained"
+                                 HorizontalContentAlignment="Left" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                         <ListBox.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <WrapPanel Orientation="Horizontal" VerticalAlignment="Top"/>
+                                    <WrapPanel KeyboardNavigation.TabNavigation="Cycle" 
+                                               Orientation="Horizontal" VerticalAlignment="Top"/>
                             </ItemsPanelTemplate>
                         </ListBox.ItemsPanel>
-                    </ListBox>
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="Control">
+                                    <Setter Property="Focusable" Value="False" />
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                        </ListBox>
                         <Label Margin="20,0,0,0" Visibility="{Binding editBoxMsgVisibility}" >
                             <Label.Content>
                                 <WrapPanel>
