@@ -289,11 +289,34 @@ namespace UDTApp.ViewModels
             UDTDataSet.udtDataSet.readDatabase(UDTXml.UDTXmlData.SchemaData[0] as UDTData);
             UDTDataSet.udtDataSet.IsModified = false;
             //DisplayTable(UDTXml.UDTXmlData.SchemaData[0] as UDTData);
-            topDataEditGrid = new DataEditGrid(UDTXml.UDTXmlData.SchemaData[0] as UDTData, navBtnClk);
-            createDataGrids(topDataEditGrid, UDTXml.UDTXmlData.SchemaData[0] as UDTData, navBtnClk);
-            currentEditGrid = topDataEditGrid;
-            //currentEditGrid.DisplayTable(UDTXml.UDTXmlData.SchemaData[0] as UDTData);
-            currentEditGrid.localNavButtonClick();
+            DataEditDataBase editDataBase = new DataEditDataBase();
+            //topDataEditGrid = new DataEditGrid(UDTXml.UDTXmlData.SchemaData[0] as UDTData, navBtnClk);
+            //createDataGrids(topDataEditGrid, UDTXml.UDTXmlData.SchemaData[0] as UDTData, navBtnClk);
+
+            UDTData dbItem = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
+            foreach (UDTData table in dbItem.tableData)
+            {
+                DataEditGrid grid = new DataEditGrid(table, navBtnClk);
+                if (currentEditGrid == null)
+                    currentEditGrid = grid;
+                editDataBase.editGrids.Add(grid);
+                createDataGrids(grid, table, navBtnClk);
+            }
+
+            //currentEditGrid = topDataEditGrid;
+            //dataEditDataBase = editDataBase;
+            //currentEditGrid.localNavButtonClick();
+            foreach (DataEditGrid grid in editDataBase.editGrids)
+                grid.localNavButtonClick();
+            dataEditDataBase = editDataBase;
+
+        }
+
+        private DataEditDataBase _dataEditDataBase = null;
+        public DataEditDataBase dataEditDataBase 
+        {
+            get { return _dataEditDataBase; }
+            set { SetProperty(ref _dataEditDataBase, value); }
         }
 
         private DataEditGrid _currentEditGrid = null;
@@ -333,6 +356,20 @@ namespace UDTApp.ViewModels
     }
 
     public enum EditGridDisplayPos { Parent, Main, Child };
+
+    public class DataEditDataBase : ValidatableBindableBase
+    {
+        public DataEditDataBase()
+        { 
+        }
+
+        private ObservableCollection<DataEditGrid> _editGrids = new ObservableCollection<DataEditGrid>();
+        public ObservableCollection<DataEditGrid> editGrids
+        {
+            get { return _editGrids; }
+            set { SetProperty(ref _editGrids, value); }
+        }
+    }
 
     public class DataEditGrid : ValidatableBindableBase
     {
@@ -465,6 +502,7 @@ namespace UDTApp.ViewModels
         {
             if (UDTDataSet.udtDataSet.HasEditErrors) return false;
             if (currentDataItem.parentObj == null) return true;
+            if (currentDataItem.parentObj.TypeName == UDTTypeName.DataBase) return true;
             return (parentId != null && parentId != Guid.Empty);
         }
 
@@ -504,6 +542,7 @@ namespace UDTApp.ViewModels
                 parentGrid.addDeleteBtnVisibility = Visibility.Collapsed;
                 parentGrid.IsExpanderOpen = false;
             }
+            else this.parentId = Guid.Empty;
 
             foreach (DataEditGrid child in childGrids)
             { 
@@ -518,7 +557,7 @@ namespace UDTApp.ViewModels
 
             SelectedItem = SelectedItem;
 
-            globalButtonClick(parentId, this);
+            // put back?? globalButtonClick(parentId, this);
         }
 
         private Visibility _navBtnVisibility = Visibility.Collapsed;

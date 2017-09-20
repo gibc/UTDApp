@@ -125,7 +125,7 @@ namespace UDTApp.ViewModels
             if(UDTXml.UDTXmlData.saveToXml(UDTXml.UDTXmlData.SchemaData))
             {
                 UDTDataSet.udtDataSet.createDatabase(UDTXml.UDTXmlData.SchemaData[0] as UDTData);
-                Navigate("DataEditView");
+                //Navigate("DataEditView");
             }
         }
 

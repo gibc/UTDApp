@@ -47,6 +47,10 @@
             </WrapPanel>
         </DataTemplate>
 
+        <DataTemplate DataType="{x:Type vm:DataEditDataBase}">
+            <ItemsControl ItemsSource ="{Binding editGrids}"/>
+        </DataTemplate>
+
         <DataTemplate DataType="{x:Type vm:DataEditGrid}">
             <StackPanel Margin="0,0,0,0" >
                 <!--<GroupBox Header="{Binding DataViewName}" BorderThickness="0" BorderBrush="DarkBlue" 
@@ -180,7 +184,9 @@
                     <ContentControl Content="{Binding currentEditGrid}" />
            </Expander>-->
             <ScrollViewer VerticalScrollBarVisibility="Visible" BorderBrush="Red" BorderThickness="3" Grid.Column="0" Grid.Row="1">
-                <ContentControl Content="{Binding currentEditGrid}" />
+                <!--<ContentControl Content="{Binding currentEditGrid}" />-->
+                <ContentControl Content="{Binding dataEditDataBase}" />
+                <!--<ItemsControl ItemsSource="{Binding dataEditDataBase.editGrids}"/>-->
             </ScrollViewer>
         
         <!--Detail grids-->

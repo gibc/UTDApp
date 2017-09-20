@@ -25,43 +25,9 @@ using UDTApp.ViewModels;
 
 namespace UDTApp.Models
 {
-    //public class UDTTableView : ValidatableBindableBase
-    //{
-    //    //public UDTTableView(ObservableCollection<UDTBase> itemCol)
-    //    //{
-    //    //    columnData = new ObservableCollection<UDTBase>();
-    //    //    tableData = new ObservableCollection<UDTData>();
-    //    //    foreach(UDTBase item in itemCol)
-    //    //    {
-    //    //        if (item.GetType() == typeof(UDTData))
-    //    //            tableData.Add(item as UDTData);
-    //    //        else
-    //    //            columnData.Add(item);
-    //    //    }
-    //    //}
+    public enum UDTTypeName {DataBase, Group, Text, Real, Number, Date, Base}
 
-    //    private ObservableCollection<UDTBase> _columnData;
-    //    public ObservableCollection<UDTBase> columnData 
-    //    {
-    //        get { return _columnData; } 
-    //        set
-    //        {
-    //            SetProperty(ref _columnData, value);
-    //        }
-    //    }
-
-    //    private ObservableCollection<UDTData> _tableData;         
-    //    public ObservableCollection<UDTData> tableData 
-    //    {
-    //        get { return _tableData; }
-    //        set
-    //        {
-    //            SetProperty(ref _tableData, value);
-    //        }
-    //    } 
-    //}
-
-    public class UDTData : UDTBase //, UDTItem
+    public class UDTData : UDTBase 
     {
         //[XmlIgnoreAttribute]
         //public DelegateCommand<EventArgs> SizeChangedCommand { get; set; }
@@ -71,8 +37,8 @@ namespace UDTApp.Models
             //ChildData = new ObservableCollection<UDTBase>();
             tableData = new ObservableCollection<UDTData>();
             columnData = new ObservableCollection<UDTBase>();
-            TypeName = "Group";
-            Name = TypeName;
+            TypeName = UDTTypeName.Group;
+            Name = TypeName.ToString();
             //backgroundBrush = Brushes.MistyRose;
             backgroundBrush = Brushes.White;
             ParentColumnNames = new List<string>();
@@ -518,37 +484,59 @@ namespace UDTApp.Models
             }
         }
 
-        private string _typeName = "";         
-        public string TypeName 
-        { 
+        private UDTTypeName _typeName = UDTTypeName.Base;
+        public UDTTypeName TypeName
+        {
             get
             {
                 return _typeName;
             }
-            set { SetProperty(ref _typeName, value); }
+            set 
+            { 
+                SetProperty(ref _typeName, value); 
+                if(value == UDTTypeName.DataBase)
+                {
+                    ToolBoxItem = false;
+                    dragButtonVisibility = Visibility.Collapsed;
+                    editButtonVisibility = Visibility.Collapsed;
+                    backgroundBrush = Brushes.SandyBrown;
+                }
+            }
         }
+
+        private Visibility _dragButtonVisibility = Visibility.Visible;
+        public Visibility dragButtonVisibility 
+        {
+            get { return _dragButtonVisibility; }
+            set { SetProperty(ref _dragButtonVisibility, value); }
+        }
+
+        private Visibility _editButtonVisibility = Visibility.Collapsed;
+        public Visibility editButtonVisibility
+        {
+            get { return _editButtonVisibility; }
+            set { SetProperty(ref _editButtonVisibility, value); }
+        }
+
 
         private bool _toolBoxItem = true;
         public bool ToolBoxItem 
         { 
             get {return _toolBoxItem; }
-            set { _toolBoxItem = value; SchemaItem = !value; } 
+            set 
+            { 
+                _toolBoxItem = value; 
+                SchemaItem = !value;
+                if (value == true) editButtonVisibility = Visibility.Collapsed;
+                else editButtonVisibility = Visibility.Visible;
+            } 
         }
 
         public bool SchemaItem { get; set; }
 
-        //private bool _allowDrop = false;
-        //virtual public bool AllowDrop
-        //{
-        //    get { return true; }
-        //    set { _allowDrop = value; }
-        //}
-
-        //private bool _isReadOnly = false;
         virtual public bool IsReadOnly
         {
             get { return ToolBoxItem; }
-            //set { _isReadOnly = value; }
         }
 
         private void saveName(EventArgs eventArgs)
@@ -666,19 +654,19 @@ namespace UDTApp.Models
                 // prevent copy to self
                 if (udtBase.dragObjId == this.objId) return;
 
-                if(udtItem.Name == "") udtItem.Name = "<Name>";
+                //if(udtItem.Name == "") udtItem.Name = "<Name>";
             
                 UDTData udtData;
-                //if (udtItem != null && col != null && !col.Contains(udtItem))
                 if (udtItem != null )
                 {
                     UDTData parent = this as UDTData;
                     udtItem.parentObj = parent;
-                    //udtItem.Name = parent.Name + ":" + udtItem.Name;
                     if (udtItem.GetType() == typeof(UDTData))
                     {
                         udtData = udtItem as UDTData;
-                        udtData.ParentColumnNames.Add(this.Name);
+                        // database item is not parent column in child items
+                        if (parent.TypeName == UDTTypeName.Group) 
+                            udtData.ParentColumnNames.Add(this.Name);
                         if (!parent.tableData.Contains(udtData))
                         {
                             udtData.Name = getUniqueGroupName(MasterGroup);
@@ -687,13 +675,11 @@ namespace UDTApp.Models
                     }
                     else
                     {
-                        //udtItem.AnyErrors = false;
                         if (!parent.columnData.Contains(udtItem))
                         {
                             udtItem.Name = getUniqueColumnName(parent.columnData);
                             parent.columnData.Add(udtItem);
                         }
-                        //parent.ChildData.Add(udtItem);
 
                     }
 
@@ -774,12 +760,14 @@ namespace UDTApp.Models
         {
             dragArgs.Handled = true;
 
-
-            // Check that the data being dragged is a file
-            if (getItemFromDragArgs(dragArgs) != null)
+            UDTBase dragItem = getItemFromDragArgs(dragArgs);
+            if (dragItem != null)
             {
-
-                dragArgs.Effects = DragDropEffects.Copy;
+                // only tables can be dropped on database item
+                if(this.TypeName == UDTTypeName.DataBase && dragItem.TypeName != UDTTypeName.Group)
+                    dragArgs.Effects = DragDropEffects.None;
+                else 
+                    dragArgs.Effects = DragDropEffects.Copy;
 
             }
             else
@@ -939,10 +927,10 @@ namespace UDTApp.Models
         public UDTTxtItem()
         { 
             Type = "[varchar](255) NULL ";
-            TypeName = "Text";
+            TypeName = UDTTypeName.Text;
             //TypeName = "T\ne\nx\nt";
             //Name = "";
-            Name = TypeName;
+            Name = TypeName.ToString();
             backgroundBrush = Brushes.LightBlue;
             sortOrder = "bbb";
         }
@@ -954,7 +942,7 @@ namespace UDTApp.Models
         public UDTIntItem()
         {
             Type = "[int] NULL ";
-            TypeName = "Number";
+            TypeName = UDTTypeName.Number;
             //Name = "";
             backgroundBrush = Brushes.LightGreen;
             sortOrder = "ccc";
@@ -967,7 +955,7 @@ namespace UDTApp.Models
         public UDTDecimalItem()
         {
             Type = "[decimal](10, 5) NULL ";
-            TypeName = "Real";
+            TypeName = UDTTypeName.Real;
             //Name = "";
             backgroundBrush = Brushes.LightSalmon;
             sortOrder = "ddd";
@@ -980,7 +968,7 @@ namespace UDTApp.Models
         public UDTDateItem()
         {
             Type = "[datetime] NULL";
-            TypeName = "Date";
+            TypeName = UDTTypeName.Date;
             //Name = "";
             backgroundBrush = Brushes.LightYellow;
             sortOrder = "eee";

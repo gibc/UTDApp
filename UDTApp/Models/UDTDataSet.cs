@@ -48,17 +48,22 @@ namespace UDTApp.Models
         }
 
         
-        private string getDbName(UDTData udtData)
-        {
-            return udtData.Name + "_db";
-        }
+        //private string getDbName(UDTData udtData)
+        //{
+        //    return udtData.Name + "_db";
+        //}
 
 
         public void createDatabase(UDTData masterItem)
         {
-            createSQLDatabase(getDbName(masterItem));
+            //createSQLDatabase(getDbName(masterItem));
+            createSQLDatabase(masterItem.Name);
             List<Guid> tableGuids = new List<Guid>();
-            createDBTable(masterItem, getDbName(masterItem), tableGuids);
+            //createDBTable(masterItem, getDbName(masterItem), tableGuids);
+            foreach(UDTData table in masterItem.tableData)
+            {
+                createDBTable(table, masterItem.Name, tableGuids);
+            }
         }
 
         private void createSQLDatabase(string DBName)
@@ -273,9 +278,15 @@ namespace UDTApp.Models
 
         public void readDatabase(UDTData masterItem)
         {
-            DataSet = new System.Data.DataSet(getDbName(masterItem));
+            //DataSet = new System.Data.DataSet(getDbName(masterItem));
+            DataSet = new System.Data.DataSet(masterItem.Name);
             DataSet.EnforceConstraints = true;
-            readTable(DataSet, masterItem, getDbName(masterItem));
+            //readTable(DataSet, masterItem, getDbName(masterItem));
+            //readTable(DataSet, masterItem, masterItem.Name);
+            foreach(UDTData table in masterItem.tableData)
+            {
+                readTable(DataSet, table, masterItem.Name);
+            }
             RaisePropertyChanged("udtDataSet");
             IsModified = false;
         }
