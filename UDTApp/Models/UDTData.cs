@@ -29,9 +29,6 @@ namespace UDTApp.Models
 
     public class UDTData : UDTBase 
     {
-        //[XmlIgnoreAttribute]
-        //public DelegateCommand<EventArgs> SizeChangedCommand { get; set; }
-
         public UDTData()
         {
             //ChildData = new ObservableCollection<UDTBase>();
@@ -47,11 +44,7 @@ namespace UDTApp.Models
             sortOrder = "zzz";
 
         }
-        //private void sizeChange(EventArgs eventArgs)
-        //{
-
-        //}
-
+ 
         public delegate void validationChangedDel();
         public event validationChangedDel validationChangedEvent;
         public void validationChanged()
@@ -65,38 +58,6 @@ namespace UDTApp.Models
         {
             if (dataChangeEvent != null) dataChangeEvent();
         }
-
-
-
-        //override public bool AllowDrop
-        //{
-        //    get { return !ToolBoxItem; }
-        //}
-
-        // on write child data insert or update UDTRelation record
-        //   where 
-        //     parent and child names are parent and child colleciton name
-        //     child column name is pareent collection name 
-        // on read UDT data set do select * from DataRelation where ParentName = [Name]
-        //  for ecah relation
-        //     create UDTData collection
-        //     select * from [ChildName] where [ChildColumnName] = [Id of this record]
-        //        for each record add record to collection
-        // To create CRUD UI
-        //   find UDTData collectons with ChildData.count = 0;
-        //     create display and edit page for each UDTData item
-        //private ObservableCollection<UDTBase> _childData;
-        //public ObservableCollection<UDTBase> ChildData 
-        //{ 
-        //    get
-        //    {
-        //        return _childData;
-        //    }
-        //    set 
-        //    {
-        //        SetProperty(ref _childData, value);
-        //    }
-        //}
 
         private ObservableCollection<UDTData> _tableData;
         //[XmlIgnoreAttribute]
@@ -146,7 +107,6 @@ namespace UDTApp.Models
             MouseMoveCommand = new DelegateCommand<MouseEventArgs>(mouseMove, disable);
             DragEnterCommand = new DelegateCommand<DragEventArgs>(dragEnter, disable);
             DragDropCommand = new DelegateCommand<DragEventArgs>(dragDrop, disable);
-            //DragOverCommand = new DelegateCommand<DragEventArgs>(dragOver, disable);
             DragOverCommand = new DelegateCommand<DragEventArgs>(dragOver);
             PreviewDragEnterCommand = new DelegateCommand<DragEventArgs>(previewDragEnter);
 
@@ -159,6 +119,8 @@ namespace UDTApp.Models
             //SizeChangedCommand = new DelegateCommand<SizeChangedEventArgs>(sizeChange);
             SizeChangedCommand = new DelegateCommand<RoutedEventArgs>(sizeChange);
             GroupBoxLoadedCommand = new DelegateCommand<RoutedEventArgs>(groupBoxLoaded);
+            ItemNameEditGotFocusCommand = new DelegateCommand<RoutedEventArgs>(itemNameEditGotFocus);
+            ItemNameEditLostFocusCommand = new DelegateCommand<RoutedEventArgs>(itemNameEditLostFocus);
 
             objId = Guid.NewGuid();
             backgroundBrush = Brushes.Black;
@@ -219,8 +181,17 @@ namespace UDTApp.Models
         public DelegateCommand<RoutedEventArgs> SizeChangedCommand { get; set; }
         [XmlIgnoreAttribute]
         public DelegateCommand<RoutedEventArgs> GroupBoxLoadedCommand { get; set; }
-        
+        [XmlIgnoreAttribute]
+        public DelegateCommand<RoutedEventArgs> ItemNameEditGotFocusCommand { get; set; }
+        [XmlIgnoreAttribute]
+        public DelegateCommand<RoutedEventArgs> ItemNameEditLostFocusCommand { get; set; }
 
+        private UDTBaseEditProps _editProps = null;
+        public UDTBaseEditProps editProps
+        {
+            get { return _editProps; }
+            set { SetProperty(ref _editProps, value); }
+        }
 
         public Guid objId;
         public Guid dragObjId = Guid.Empty;
@@ -528,7 +499,7 @@ namespace UDTApp.Models
                 _toolBoxItem = value; 
                 SchemaItem = !value;
                 if (value == true) editButtonVisibility = Visibility.Collapsed;
-                else editButtonVisibility = Visibility.Visible;
+                else if(TypeName != UDTTypeName.DataBase) editButtonVisibility = Visibility.Visible;
             } 
         }
 
@@ -596,6 +567,24 @@ namespace UDTApp.Models
         {
             TextBox gpBox = e.Source as TextBox;
             groupBox = gpBox;
+        }
+
+        private void itemNameEditGotFocus(RoutedEventArgs e)
+        {
+            if (TypeName == UDTTypeName.Text || TypeName == UDTTypeName.Date ||
+                TypeName == UDTTypeName.Real || TypeName == UDTTypeName.Number)
+            {
+                PageZeroViewModel.viewModel.currentEditItem = this;
+            }
+            else PageZeroViewModel.viewModel.currentEditItem = null;
+        }
+        private void itemNameEditLostFocus(RoutedEventArgs e)
+        {
+            if (TypeName == UDTTypeName.Text)
+            {
+                UDTTxtItem txtItem = this as UDTTxtItem;
+                //PageZeroViewModel.viewModel.currentTextProps = null;
+            }
         }
 
         // change table data items control margin when item added to collection
@@ -859,10 +848,9 @@ namespace UDTApp.Models
         {
             UDTData dataObj = context.ObjectInstance as UDTData;
             if (dataObj != null && !dataObj.ToolBoxItem)
-            //if (dataObj != null)
             {
 
-                if (dataObj.columnData.Count <= 0 && dataObj.tableData.Count <= 0)
+                if (dataObj.columnData.Count <= 0 /*&& dataObj.tableData.Count <= 0*/)
                     return new System.ComponentModel.DataAnnotations.ValidationResult("Group item must include at least one data item.");
             }
 
@@ -922,22 +910,53 @@ namespace UDTApp.Models
     //    public string ParentColumnName { get; set; }
     //}
 
-    public class UDTTxtItem : UDTBase //, UDTItem
+    public class UDTTxtItem : UDTBase 
     {
         public UDTTxtItem()
         { 
             Type = "[varchar](255) NULL ";
             TypeName = UDTTypeName.Text;
-            //TypeName = "T\ne\nx\nt";
-            //Name = "";
             Name = TypeName.ToString();
             backgroundBrush = Brushes.LightBlue;
             sortOrder = "bbb";
+
+            editProps = new UDTTextEditProps();
         }
 
+        //private UDTTextEditProps _editProps = null;
+        //public UDTTextEditProps editProps
+        //{
+        //    get { return _editProps; }
+        //    set { SetProperty(ref _editProps, value); }
+        //}
     }
 
-    public class UDTIntItem : UDTBase//, UDTItem
+    public class UDTBaseEditProps : BindableBase
+    {
+        public UDTBaseEditProps() { }
+
+        private bool _required = true;
+        public bool required
+        {
+            get { return _required; }
+            set { SetProperty(ref _required, value); }
+        }
+    }
+
+    public class UDTTextEditProps : UDTBaseEditProps
+    {
+        public UDTTextEditProps(){}
+
+        private string _defaultText = "";
+        public string defaultText
+        {
+            get { return _defaultText; }
+            set { SetProperty(ref _defaultText, value); }
+        }
+    }
+
+
+    public class UDTIntItem : UDTBase
     {
         public UDTIntItem()
         {
@@ -946,10 +965,16 @@ namespace UDTApp.Models
             //Name = "";
             backgroundBrush = Brushes.LightGreen;
             sortOrder = "ccc";
+
+            editProps = new UDTIntEditProps();
         }    
-
-
     }
+
+    public class UDTIntEditProps : UDTBaseEditProps
+    {
+        public UDTIntEditProps() { }
+    }
+
     public class UDTDecimalItem : UDTBase//, UDTItem
     {
         public UDTDecimalItem()
@@ -959,10 +984,18 @@ namespace UDTApp.Models
             //Name = "";
             backgroundBrush = Brushes.LightSalmon;
             sortOrder = "ddd";
+
+            editProps = new UDTDecimalEditProps();
         }                
  
 
     }
+
+    public class UDTDecimalEditProps : UDTBaseEditProps
+    {
+        public UDTDecimalEditProps() { }
+    }
+
     public class UDTDateItem : UDTBase//, UDTItem
     {
         public UDTDateItem()
@@ -972,8 +1005,15 @@ namespace UDTApp.Models
             //Name = "";
             backgroundBrush = Brushes.LightYellow;
             sortOrder = "eee";
+
+            editProps = new UDTDateEditProps();
         }                
  
+    }
+
+    public class UDTDateEditProps : UDTBaseEditProps
+    {
+        public UDTDateEditProps() { }
     }
 
     public class UDTItemList

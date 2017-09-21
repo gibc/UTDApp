@@ -932,13 +932,6 @@ namespace UDTApp.ViewModels
             }        
         }
 
-        //public bool _IsParentExpanderOpen = false;
-        //public bool IsParentExpanderOpen
-        //{
-        //    get { return _IsParentExpanderOpen; }
-        //    set { SetProperty(ref _IsParentExpanderOpen, value); }
-        //}
-
         private bool _IsExpanderOpen = false;
         public bool IsExpanderOpen
         {

@@ -142,8 +142,16 @@
                         <i:EventTrigger EventName="MouseLeave" >
                             <prism:InvokeCommandAction Command="{Binding MouseLeaveCommand}" />
                         </i:EventTrigger>
-                        
-                   <!--<i:EventTrigger EventName="PreviewMouseMove" >
+
+                        <i:EventTrigger EventName="GotFocus">
+                            <prism:InvokeCommandAction Command="{Binding ItemNameEditGotFocusCommand}" />
+                        </i:EventTrigger>
+
+                        <i:EventTrigger EventName="LostFocus">
+                            <prism:InvokeCommandAction Command="{Binding ItemNameEditLostFocusCommand}" />
+                        </i:EventTrigger>
+
+                        <!--<i:EventTrigger EventName="PreviewMouseMove" >
                         <prism:InvokeCommandAction Command="{Binding MouseMoveCommand }" />
                     </i:EventTrigger>
                     <i:EventTrigger EventName="DragEnter" >
@@ -332,8 +340,7 @@
                                 <prism:InvokeCommandAction Command="{Binding GroupBoxLoadedCommand}" />
                             </i:EventTrigger>
 
-
-                            </i:Interaction.Triggers>
+                           </i:Interaction.Triggers>
 
                         <TextBox.RenderTransform>
                             <TransformGroup>
@@ -387,75 +394,7 @@
 
         </DataTemplate>
 
-         <!--<DataTemplate DataType    = "{x:Type local:UDTData}">
-
-            <StackPanel Margin="0 5 0 0" ClipToBounds="False" HorizontalAlignment="Stretch" 
-                        VerticalAlignment="Stretch" >
-                
-                <ContentControl Template="{StaticResource MyPop}"/>
-
-                <Border  BorderThickness="0,0,0,0" BorderBrush="Black">
-                    <WrapPanel >
-
-                        <TextBox Name="NameEdit" Height="30" MinWidth="{Binding EditBoxMinWidth}" Margin="0,0,0,0" BorderThickness="2,2,0,2" BorderBrush="Black" Background="{Binding backgroundBrush}"
-                             Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                             HorizontalAlignment="Center" VerticalContentAlignment="Center" 
-                                 vm:FocusExtension.IsFocused="{Binding PopUpOpen}" 
-                                 ToolTip="Edit Item Name" IsEnabled="{Binding EditBoxEnabled}"/>
-
-
-
-                        <ContentControl Template="{StaticResource ButtonDrag}"/>
-
-                        <ContentControl Template="{StaticResource EditButton}"/>
-
-                    </WrapPanel>
-                </Border>
-                
-                
-
-                <ItemsControl Name="columnData" Margin="0,0,0,0" 
-                    BorderBrush="Black" BorderThickness="0" ItemsSource = "{Binding Path=columnData}"
-                              >
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <UniformGrid Rows="1"/>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.RenderTransform>
-                        <TransformGroup>
-                            <TranslateTransform X="0" Y="-15" />
-                        </TransformGroup>
-                    </ItemsControl.RenderTransform>
-                    <i:Interaction.Triggers>
-                        <i:EventTrigger EventName="Loaded" >
-                            <prism:InvokeCommandAction Command="{Binding SizeChangedCommand}" />
-                        </i:EventTrigger>
-                    </i:Interaction.Triggers>
-                </ItemsControl>
-
-                <ItemsControl HorizontalAlignment="Left" Margin="30,0,0,0" Background="Transparent" BorderBrush="Black" BorderThickness="0,0,0,0" 
-                         ItemsSource = "{Binding Path=tableData}" 
-                             >
-
-                    --><!--<ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <WrapPanel/>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>--><!--
-                </ItemsControl>
-                
-                --><!--<ItemsControl Margin="30,0,0,0" ItemsSource = "{Binding Path=columnData}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <WrapPanel/>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                </ItemsControl>--><!--
-
-            </StackPanel>
-        </DataTemplate>-->
-        
+      
         <DataTemplate DataType    = "{x:Type local:UDTTxtItem}">
 
             <StackPanel Margin="0 5 0 0"  ClipToBounds="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
@@ -478,6 +417,23 @@
                 </Border>
 
             </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate DataType = "{x:Type local:UDTTextEditProps}">
+            <StackPanel>
+                <WrapPanel>
+                    <Label HorizontalContentAlignment="Right" Content="Default Text: " 
+                           Width="80"/>
+                    <TextBox Width="80" HorizontalAlignment="Left" Text="{Binding defaultText}"
+                             FontStyle="Normal"/>
+                </WrapPanel>
+                <WrapPanel>
+                    <Label HorizontalContentAlignment="Right" Content="Required: " 
+                           Width="80"/>
+                    <CheckBox Width="80" HorizontalAlignment="Left" IsChecked="{Binding required}"
+                             VerticalAlignment="Center"/>
+                </WrapPanel>
+            </StackPanel>            
         </DataTemplate>
         
         <DataTemplate DataType    = "{x:Type local:UDTIntItem}">
@@ -505,7 +461,18 @@
                 </Border>
             </StackPanel>
         </DataTemplate>
-        
+
+        <DataTemplate DataType = "{x:Type local:UDTIntEditProps}">
+            <StackPanel>
+                <WrapPanel>
+                    <Label HorizontalContentAlignment="Right" Content="Required: " 
+                           Width="80"/>
+                    <CheckBox Width="80" HorizontalAlignment="Left" IsChecked="{Binding required}"
+                             VerticalAlignment="Center"/>
+                </WrapPanel>
+            </StackPanel>
+        </DataTemplate>
+
         <DataTemplate DataType    = "{x:Type local:UDTDecimalItem}">
             <StackPanel  Margin="0 5 0 0" ClipToBounds="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                 <!--<ContentControl Template="{StaticResource MyPop}"/>-->
@@ -531,7 +498,18 @@
                 </Border>
             </StackPanel>
         </DataTemplate>
-        
+
+        <DataTemplate DataType = "{x:Type local:UDTDecimalEditProps}">
+            <StackPanel>
+                <WrapPanel>
+                    <Label HorizontalContentAlignment="Right" Content="Required: " 
+                           Width="80"/>
+                    <CheckBox Width="80" HorizontalAlignment="Left" IsChecked="{Binding required}"
+                             VerticalAlignment="Center"/>
+                </WrapPanel>
+            </StackPanel>
+        </DataTemplate>
+
         <DataTemplate DataType    = "{x:Type local:UDTDateItem}">
             <StackPanel  Margin="0 5 0 0" ClipToBounds="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                 <!--<ContentControl Template="{StaticResource MyPop}"/>-->
@@ -558,14 +536,24 @@
             </StackPanel>
         </DataTemplate>
 
+        <DataTemplate DataType = "{x:Type local:UDTDateEditProps}">
+            <StackPanel>                
+                <WrapPanel>
+                    <Label HorizontalContentAlignment="Right" Content="Required: " 
+                           Width="80"/>
+                    <CheckBox Width="80" HorizontalAlignment="Left" IsChecked="{Binding required}"
+                             VerticalAlignment="Center"/>
+                </WrapPanel>
+            </StackPanel>
+        </DataTemplate>
+
     </UserControl.Resources>
     <Grid  Margin="0, 0, 30, 255">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" MinWidth="500"/>
-            <ColumnDefinition Width="90"/>
+            <ColumnDefinition Width="auto" MinWidth="150"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <!--<RowDefinition Height="30"/>-->
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -580,6 +568,19 @@
             <GroupBox FontWeight="Bold" Header="Data Tools" BorderThickness="2" BorderBrush="Black" Padding="0,-3,0,0" >
                 <ListBox FontWeight="Normal" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
                          BorderBrush="Transparent" ItemsSource="{Binding UDTItems}"></ListBox>
+            </GroupBox >
+            <GroupBox BorderThickness="2" BorderBrush="Black">
+                <GroupBox.Header>
+                    <WrapPanel>
+                        <TextBlock Text="{Binding currentEditItem.TypeName}" FontWeight="Bold"/>
+                        <TextBlock Text=" Item: " FontWeight="Bold"/>
+                        <TextBlock Text="{Binding currentEditItem.Name}"/>
+                    </WrapPanel>
+                </GroupBox.Header>
+                <StackPanel Background="{Binding currentEditItem.backgroundBrush}">
+                    <ContentControl Content="{Binding currentEditItem.editProps}" 
+                                    Background="{Binding currentEditItem.backgroundBrush}"/>
+                </StackPanel>
             </GroupBox>
             <!--<Button Content="SaveToXml">
                 <i:Interaction.Triggers>

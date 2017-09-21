@@ -48,13 +48,19 @@
         </DataTemplate>
 
         <DataTemplate DataType="{x:Type vm:DataEditDataBase}">
-            <ItemsControl ItemsSource ="{Binding editGrids}"/>
+            <ItemsControl ItemsSource ="{Binding editGrids}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Expander Header="{Binding DataViewName}">
+                            <ContentControl Content="{Binding}"/>
+                        </Expander>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
         </DataTemplate>
 
         <DataTemplate DataType="{x:Type vm:DataEditGrid}">
             <StackPanel Margin="0,0,0,0" >
-                <!--<GroupBox Header="{Binding DataViewName}" BorderThickness="0" BorderBrush="DarkBlue" 
-                          Margin="{Binding parentMargin}" Height="auto">-->
                     <WrapPanel>
                         <!--<WrapPanel HorizontalAlignment="Center" Margin="0,0,0,0">-->
                         <Label Margin="-5,0,0,-5" FontStyle="Italic" Foreground="Green" Content="{Binding DataViewParentName}" />
@@ -76,7 +82,6 @@
                         </i:Interaction.Triggers>
                         </DataGrid>
                     </WrapPanel>
-                <!--</GroupBox>-->
                 <GroupBox BorderThickness="0" BorderBrush="DarkBlue" 
                           Margin="{Binding parentMargin}">
                     <GroupBox.Header>
@@ -124,14 +129,6 @@
                     </Expander>
                     </StackPanel>
                 </GroupBox>
-                <!--<WrapPanel Visibility="{Binding addDeleteBtnVisibility}" HorizontalAlignment="Center" Margin="20,20,20,20">
-                    <Button Content="Add Row" Command="{Binding AddRowCommand}" Margin="0,0,10,0"/>
-                    <Button Content="Delete Row" Command="{Binding DeleteRowCommand}" Margin="10,0,0,0"/>
-                </WrapPanel>-->
-                <!--<Button Visibility="{Binding navBtnVisibility}" Content="ViewEdit" Width="80" 
-                        HorizontalAlignment="Center" Command="{Binding NavBtnCommand}"/>-->
-                <!--<Button Visibility="{Binding editBoxVisibility}" Content="Save Dataset" Width="80" 
-                        HorizontalAlignment="Center" Command="{Binding UpdateDatasetCommand}"/>-->
             </StackPanel>
 
         </DataTemplate>
@@ -184,9 +181,7 @@
                     <ContentControl Content="{Binding currentEditGrid}" />
            </Expander>-->
             <ScrollViewer VerticalScrollBarVisibility="Visible" BorderBrush="Red" BorderThickness="3" Grid.Column="0" Grid.Row="1">
-                <!--<ContentControl Content="{Binding currentEditGrid}" />-->
                 <ContentControl Content="{Binding dataEditDataBase}" />
-                <!--<ItemsControl ItemsSource="{Binding dataEditDataBase.editGrids}"/>-->
             </ScrollViewer>
         
         <!--Detail grids-->

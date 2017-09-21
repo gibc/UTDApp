@@ -31,7 +31,6 @@ namespace UDTApp.ViewModels
         public DelegateCommand CreateDataBaseCommand { get; set; }
         public DelegateCommand ReadDataBaseCommand { get; set; }
         public DelegateCommand WindowLoadedCommand { get; set; }
-        //public DelegateCommand<EventArgs> SizeChangedCommand { get; set; }
 
 
         public PageZeroViewModel()
@@ -45,22 +44,19 @@ namespace UDTApp.ViewModels
             CreateDataBaseCommand = new DelegateCommand(createDatabase);
             ReadDataBaseCommand = new DelegateCommand(readDatabase);
             WindowLoadedCommand = new DelegateCommand(windowLoaded);
-            //SizeChangedCommand = new DelegateCommand<EventArgs>(sizeChange);
 
-
-            //SchemaList = new List<UDTBase>();
-            //UDTData baseObj = new UDTData();
-            //baseObj.ChildData = DbSchema;
-            //baseObj.ToolBoxItem = false;
-            //baseObj.Name = "UDTMaster";
-            //baseObj.parentObj = new UDTData();
-            //baseObj.AnyErrors = false;
-            //baseObj.EditBoxEnabled = true;
-            //SchemaList.Add(baseObj);
+            viewModel = this;
 
         }
 
-        private UDTData masterItem = null;
+        public static PageZeroViewModel viewModel = null;
+        
+        private UDTBase _currentEditItem = null;
+        public UDTBase currentEditItem 
+        {
+            get { return _currentEditItem; }
+            set { SetProperty(ref _currentEditItem, value); }
+        }
 
         private bool _anyErrors = false;
         public bool AnyErrors 
