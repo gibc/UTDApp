@@ -60,11 +60,12 @@ namespace UDTApp.Models
             UDTData baseObj = new UDTData();
             baseObj.ToolBoxItem = false;
             baseObj.Name = ProjectName;
-            //baseObj.parentObj = new UDTData();
             baseObj.parentObj = null;
             baseObj.AnyErrors = false;
             baseObj.EditBoxEnabled = true;
             baseObj.TypeName = UDTTypeName.DataBase;
+            baseObj.ValidateProperty("Name");
+            //baseObj.PopUpOpen = false;
             SchemaData.Add(baseObj);
             return SchemaData;
         }

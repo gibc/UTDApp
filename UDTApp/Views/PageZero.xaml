@@ -27,8 +27,8 @@
 
             <Popup IsOpen="{Binding PopUpOpen, Mode=OneWay}" Opacity="0.0" AllowsTransparency="True"
                 DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Mode=Self}}"
-                        PlacementTarget="{Binding ElementName=NameEdit}"
-                        Placement="Right" HorizontalOffset="0" VerticalOffset="-10">
+                PlacementTarget="{Binding ElementName=NameEdit}"
+                Placement="Right" HorizontalOffset="0" VerticalOffset="-10">
                 
 
                 <i:Interaction.Triggers>
@@ -40,34 +40,15 @@
                 <Border BorderThickness="1" BorderBrush="Red" Background="White">
                     <StackPanel VerticalAlignment="Center" MinHeight="20" MinWidth="200" 
                                 FocusManager.FocusedElement="{Binding ElementName=NameBox}">
-                        <TextBlock Visibility="{Binding ErrorTextVisable, Converter={StaticResource BoolToVis}}" 
+                        <!--<TextBlock Visibility="{Binding ErrorTextVisable, Converter={StaticResource BoolToVis}}" 
                             HorizontalAlignment="Center" Foreground="Red" Margin="3 3 3 3" 
                             Text="{Binding ElementName=NameEdit, 
-                            Path=(Validation.Errors).CurrentItem.ErrorContent, FallbackValue='Valid Item Name'}"/>
-                        
-                        <!--<WrapPanel HorizontalAlignment="Center">
-                            <Label Height="25"  Content="Item Name: " />
-                            <TextBox Name="NameBox" Height="25" VerticalContentAlignment="Center" 
-                                vm:FocusExtension.IsFocused="{Binding PopUpOpen}"
-                                Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
-                            </TextBox>
-                        </WrapPanel>
-                        <WrapPanel HorizontalAlignment="Center">
-                            <Button Width="60" Margin="5,0,0,0" HorizontalAlignment="Left" Content="Save">
-                                <i:Interaction.Triggers>
-                                    <i:EventTrigger EventName="Click" >
-                                        <prism:InvokeCommandAction Command="{Binding SaveNameCommand }" />
-                                    </i:EventTrigger>
-                                </i:Interaction.Triggers>
-                            </Button>
-                            <Button Width ="60" Margin="5,0,0,0" HorizontalAlignment="Right" Content="Delete">
-                                <i:Interaction.Triggers>
-                                    <i:EventTrigger EventName="Click" >
-                                        <prism:InvokeCommandAction Command="{Binding DeleteItemCommand }" />
-                                    </i:EventTrigger>
-                                </i:Interaction.Triggers>
-                            </Button>
-                        </WrapPanel>-->
+                            Path=(Validation.Errors).CurrentItem.ErrorContent, FallbackValue='Valid Item Name'}"/>-->
+                        <!--<TextBlock 
+                            HorizontalAlignment="Center" Foreground="Red" Margin="3 3 3 3" 
+                            Text="{Binding currentValidationError}"/>-->
+                        <ListBox ItemsSource="{Binding currentValidationError}" Foreground="Red"/>
+                        <ListBox ItemsSource="{Binding editProps.currentValidationError}" Foreground="Red"/>
                     </StackPanel>
                 </Border>
             </Popup>
@@ -419,8 +400,18 @@
             </StackPanel>
         </DataTemplate>
 
+        <ControlTemplate x:Key="editPropErrorTemplate">
+            <WrapPanel>
+                <TextBox VerticalContentAlignment="Center" Foreground="Red" Text="{Binding Path=[0].ErrorContent}" 
+                    Background="White" BorderBrush="Red" IsReadOnly="True" Width="auto" Margin="0,0,20,0"                  
+                    VerticalAlignment="Center"/>
+                <AdornedElementPlaceholder/>
+            </WrapPanel>
+        </ControlTemplate>        
+
         <DataTemplate DataType = "{x:Type local:UDTTextEditProps}">
             <StackPanel>
+                
                 <WrapPanel>
                     <Label HorizontalContentAlignment="Right" Content="Default Text: " 
                            Width="80"/>
@@ -432,6 +423,22 @@
                            Width="80"/>
                     <CheckBox Width="80" HorizontalAlignment="Left" IsChecked="{Binding required}"
                              VerticalAlignment="Center"/>
+                </WrapPanel>
+                <WrapPanel>
+                    <Label HorizontalContentAlignment="Right" Content="Min Length: " 
+                           Width="80" />
+                    <TextBox Width="auto" MinWidth="20" HorizontalAlignment="Left"
+                             Text="{Binding minLength, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             VerticalAlignment="Center" HorizontalContentAlignment="Right"  
+                             Validation.ErrorTemplate="{StaticResource editPropErrorTemplate}"/>
+                </WrapPanel>
+                <WrapPanel>
+                    <Label HorizontalContentAlignment="Right" Content="Max Length: " 
+                           Width="80"/>
+                    <TextBox Width="auto"  MinWidth="20" HorizontalAlignment="Left" 
+                             Text="{Binding maxLength, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             VerticalAlignment="Center" 
+                             Validation.ErrorTemplate="{StaticResource editPropErrorTemplate}" />
                 </WrapPanel>
             </StackPanel>            
         </DataTemplate>
@@ -537,11 +544,18 @@
         </DataTemplate>
 
         <DataTemplate DataType = "{x:Type local:UDTDateEditProps}">
-            <StackPanel>                
+            <StackPanel>
                 <WrapPanel>
                     <Label HorizontalContentAlignment="Right" Content="Required: " 
-                           Width="80"/>
+                           Width="70"/>
                     <CheckBox Width="80" HorizontalAlignment="Left" IsChecked="{Binding required}"
+                             VerticalAlignment="Center"/>
+                </WrapPanel>
+                <WrapPanel>
+                    <Label HorizontalContentAlignment="Right" Content="Default: " 
+                           Width="70"/>
+                    <ComboBox Width="103" HorizontalAlignment="Left" SelectedItem="{Binding defaultDate}"
+                              ItemsSource="{Binding defaultList}"
                              VerticalAlignment="Center"/>
                 </WrapPanel>
             </StackPanel>

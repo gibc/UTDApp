@@ -133,8 +133,35 @@ namespace UDTApp.ViewModels
         {
             if (UDTXml.UDTXmlData.SchemaData.Count == 0) return false;
             else if (currentView != "PageZero") return false;
-            else if (UDTXml.UDTXmlData.SchemaData[0].AnyErrors) return false;
+            //else if (UDTXml.UDTXmlData.SchemaData[0].AnyErrors) return false;
+            else if (findValidationError(UDTXml.UDTXmlData.SchemaData[0])) return false;
             else return projectDataModified;
+        }
+
+        private bool findValidationError(UDTBase udtItem)
+        {
+            UDTData udtData = udtItem as UDTData;
+            if (udtData == null)
+            {
+                if (udtItem.HasErrors) return true;
+                if (udtItem.editProps.HasErrors) return true;
+                return false;
+            }
+            else
+            {
+                if (udtData.HasErrors) return true;
+                foreach(UDTData table in udtData.tableData)
+                {
+                    if (findValidationError(table))
+                        return true;
+                }
+                foreach (UDTBase column in udtData.columnData)
+                {
+                    if (findValidationError(column))
+                        return true;
+                }
+            }
+            return false;
         }
 
         private void saveData()

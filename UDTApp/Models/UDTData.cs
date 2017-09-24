@@ -93,10 +93,14 @@ namespace UDTApp.Models
     }
 
     [XmlInclude(typeof(UDTTxtItem))]
+    [XmlInclude(typeof(UDTTextEditProps))]
     [XmlInclude(typeof(UDTIntItem))]
+    [XmlInclude(typeof(UDTIntEditProps))]
     [XmlInclude(typeof(UDTData))]
     [XmlInclude(typeof(UDTDateItem))]
+    [XmlInclude(typeof(UDTDateEditProps))]
     [XmlInclude(typeof(UDTDecimalItem))]
+    [XmlInclude(typeof(UDTDecimalEditProps))]
     [XmlRoot("UDTBase"), XmlType("UDTBase")]
     public class UDTBase : ValidatableBindableBase//: ValidatableBindableBase, INotifyDataErrorInfo
     {
@@ -129,16 +133,58 @@ namespace UDTApp.Models
             //buttonHeight = 40;
             buttonHeight = 12;
             sortOrder = "zzz";
+
+            ErrorsChanged += OnErrorsChanged;
         }
 
-        //public string currentError
-        //{
-        //    get 
-        //    {
-        //        Dictionary<string, List<string>> errDic = GetAllErrors();
-        //        return errDic["Name"][0];
-        //    }
-        //}
+        public void editPropValidaionChanged()
+        {
+            //if (editProps.HasErrors) PopUpOpen = true;
+            //else if (!HasErrors) PopUpOpen = false;
+            if(!HasErrors && editProps.HasErrors)
+            {
+                List<string> errLst = new List<string>();
+                errLst.Add("<dummy>");
+                SetErrors(() => this.Name, errLst);
+            }
+            else if(!editProps.HasErrors && HasErrors)
+            {
+                List<string> errLst = (List<string>)GetErrors("Name");
+                errLst.Remove("<dummy>");
+                SetErrors(() => this.Name, errLst);
+            }
+        }
+
+        private List<string> _currentValidationError = new List<string>();
+        public List<string> currentValidationError
+        {
+            get { return _currentValidationError; }
+            set { SetProperty(ref _currentValidationError, value); }
+        }
+
+        private void OnErrorsChanged(object sender, DataErrorsChangedEventArgs e)
+        {
+            if (editProps != null && !HasErrors && editProps.HasErrors)
+            {
+                List<string> lst = new List<string>();
+                lst.Add("<dummy>");
+                SetErrors(() => this.Name, lst);
+            }
+            if (HasErrors)
+            {
+                List<string> errList = (List<string>)GetErrors(e.PropertyName);
+                List<string> showErrors = new List<string>(errList);
+                showErrors.Remove("<dummy>");
+                currentValidationError = showErrors;
+            }
+            else currentValidationError = new List<string>();
+
+            if(UDTXml.UDTXmlData.SchemaData.Count > 0)
+            { 
+                UDTData master = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
+                master.validationChanged();
+            }
+        }
 
         private bool disable(EventArgs eventArgs) 
         {
@@ -291,7 +337,7 @@ namespace UDTApp.Models
             }
         }
 
-        private void SetAnyErrorAll(UDTData dataItem, bool value)
+        public void SetAnyErrorAll(UDTData dataItem, bool value)
         {
             Debug.Write(string.Format(">>>> Enter SetAnyErrorAll value {0} Name: {1}\r", value, dataItem.Name));
             dataItem.AnyErrors = value;
@@ -766,7 +812,7 @@ namespace UDTApp.Models
         private void mouseEnter(MouseEventArgs data)
         {
             TextBox txtBox = data.Source as TextBox; 
-            if (txtBox.IsMouseOver && HasErrors)
+            if (txtBox.IsMouseOver && HasErrors || (editProps != null && editProps.HasErrors))
             {
                 PopUpOpen = true;
             }
@@ -849,9 +895,14 @@ namespace UDTApp.Models
             UDTData dataObj = context.ObjectInstance as UDTData;
             if (dataObj != null && !dataObj.ToolBoxItem)
             {
-
-                if (dataObj.columnData.Count <= 0 /*&& dataObj.tableData.Count <= 0*/)
+                if(dataObj.TypeName == UDTTypeName.DataBase)
+                {
+                    if(dataObj.tableData.Count <= 0)
+                        return new System.ComponentModel.DataAnnotations.ValidationResult("Data base must include at least one group item.");
+                }
+                else if (dataObj.columnData.Count <= 0)
                     return new System.ComponentModel.DataAnnotations.ValidationResult("Group item must include at least one data item.");
+                dataObj.PopUpOpen = false;
             }
 
             return System.ComponentModel.DataAnnotations.ValidationResult.Success;
@@ -920,7 +971,8 @@ namespace UDTApp.Models
             backgroundBrush = Brushes.LightBlue;
             sortOrder = "bbb";
 
-            editProps = new UDTTextEditProps();
+            editProps = new UDTTextEditProps(editPropValidaionChanged);
+            //editProps.parentItem = this;
         }
 
         //private UDTTextEditProps _editProps = null;
@@ -931,9 +983,44 @@ namespace UDTApp.Models
         //}
     }
 
-    public class UDTBaseEditProps : BindableBase
+    public class UDTBaseEditProps : ValidatableBindableBase
     {
-        public UDTBaseEditProps() { }
+        public UDTBaseEditProps(Action editPropChanged) 
+        {
+            ErrorsChanged += OnErrorsChanged;
+            editPropValidationChanged = editPropChanged;
+        }
+
+        private void OnErrorsChanged(object sender, DataErrorsChangedEventArgs e)
+        {
+            if (HasErrors)
+            {
+                List<string> errList = (List<string>)GetErrors(e.PropertyName);
+                currentValidationError = errList;
+            }
+            else currentValidationError = new List<string>();
+            editPropValidationChanged();
+
+            UDTData master = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
+            master.validationChanged();
+        }
+
+        public Action editPropValidationChanged { get; set; }
+
+
+        private List<string> _currentValidationError = new List<string>();
+        public List<string> currentValidationError
+        {
+            get { return _currentValidationError; }
+            set { SetProperty(ref _currentValidationError, value); }
+        }
+
+        //private UDTBase _parentItem = null;
+        //public UDTBase parentItem
+        //{
+        //    get { return _parentItem; }
+        //    set { SetProperty(ref _parentItem, value); }
+        //}
 
         private bool _required = true;
         public bool required
@@ -945,14 +1032,71 @@ namespace UDTApp.Models
 
     public class UDTTextEditProps : UDTBaseEditProps
     {
-        public UDTTextEditProps(){}
+        public UDTTextEditProps(Action editPropChanged) : base(editPropChanged)
+        {
+        }
+
 
         private string _defaultText = "";
         public string defaultText
         {
             get { return _defaultText; }
-            set { SetProperty(ref _defaultText, value); }
+            set 
+            { 
+                SetProperty(ref _defaultText, value); 
+            }
         }
+
+        private string _minLength = "0";
+        [Required (ErrorMessage = "Min Length is required.")]
+        [Range(0, 255, ErrorMessage = "Min Length must a number between 0 and 254")]
+        [CustomValidation(typeof(UDTTextEditProps), "CheckMinLess")]
+        public string minLength
+        {
+            get { return _minLength; }
+            set 
+            { 
+                SetProperty(ref _minLength, value);
+            }
+        }
+
+        private string _maxLength = "255";
+        [Required(ErrorMessage = "Max Length is required.")]
+        [Range(1, 255, ErrorMessage = "Max Length must a number between 1 and 255")]
+        [CustomValidation(typeof(UDTTextEditProps), "CheckMaxMore")]
+        public string maxLength
+        {
+            get { return _maxLength; }
+            set 
+            { 
+                SetProperty(ref _maxLength, value);
+            }
+        }
+
+        public static System.ComponentModel.DataAnnotations.ValidationResult CheckMinLess(string name, ValidationContext context)
+        {
+            UDTTextEditProps dataObj = context.ObjectInstance as UDTTextEditProps;
+            if (dataObj != null && Int32.Parse(dataObj.minLength) >= Int32.Parse(dataObj.maxLength))
+            {
+                return new System.ComponentModel.DataAnnotations.ValidationResult("Min Length must be less than Max Lenght");
+            }
+            IEnumerable errors = dataObj.GetErrors("maxLength");
+            if (errors.GetEnumerator().MoveNext())
+                dataObj.ValidateProperty("maxLength"); return System.ComponentModel.DataAnnotations.ValidationResult.Success;
+        }
+        public static System.ComponentModel.DataAnnotations.ValidationResult CheckMaxMore(string name, ValidationContext context)
+        {
+            UDTTextEditProps dataObj = context.ObjectInstance as UDTTextEditProps;
+            if (dataObj != null && Int32.Parse(dataObj.minLength) >= Int32.Parse(dataObj.maxLength))
+            {
+                return new System.ComponentModel.DataAnnotations.ValidationResult("Min Length must be less than Max Lenght");
+            }
+            IEnumerable errors = dataObj.GetErrors("minLength");
+            if(errors.GetEnumerator().MoveNext())
+                dataObj.ValidateProperty("minLength");
+            return System.ComponentModel.DataAnnotations.ValidationResult.Success;
+        }
+
     }
 
 
@@ -966,13 +1110,14 @@ namespace UDTApp.Models
             backgroundBrush = Brushes.LightGreen;
             sortOrder = "ccc";
 
-            editProps = new UDTIntEditProps();
+            editProps = new UDTIntEditProps(editPropValidaionChanged);
         }    
     }
 
     public class UDTIntEditProps : UDTBaseEditProps
     {
-        public UDTIntEditProps() { }
+        public UDTIntEditProps(Action editPropChanged) : base(editPropChanged) 
+        { }
     }
 
     public class UDTDecimalItem : UDTBase//, UDTItem
@@ -985,7 +1130,7 @@ namespace UDTApp.Models
             backgroundBrush = Brushes.LightSalmon;
             sortOrder = "ddd";
 
-            editProps = new UDTDecimalEditProps();
+            editProps = new UDTDecimalEditProps(editPropValidaionChanged);
         }                
  
 
@@ -993,10 +1138,11 @@ namespace UDTApp.Models
 
     public class UDTDecimalEditProps : UDTBaseEditProps
     {
-        public UDTDecimalEditProps() { }
+        public UDTDecimalEditProps(Action editPropChanged) : base(editPropChanged)
+        { }
     }
 
-    public class UDTDateItem : UDTBase//, UDTItem
+    public class UDTDateItem : UDTBase
     {
         public UDTDateItem()
         {
@@ -1006,14 +1152,35 @@ namespace UDTApp.Models
             backgroundBrush = Brushes.LightYellow;
             sortOrder = "eee";
 
-            editProps = new UDTDateEditProps();
+            editProps = new UDTDateEditProps(editPropValidaionChanged);
         }                
  
     }
 
+    public enum DateDefault { CurrentDay, CurrentWeek, CurrentMonth, CurrentYear, None }
     public class UDTDateEditProps : UDTBaseEditProps
     {
-        public UDTDateEditProps() { }
+        public UDTDateEditProps(Action editPropChanged) : base(editPropChanged)
+        { 
+            defaultList.Add(DateDefault.CurrentDay);
+            defaultList.Add(DateDefault.CurrentWeek);
+            defaultList.Add(DateDefault.CurrentMonth);
+            defaultList.Add(DateDefault.CurrentYear);
+            defaultList.Add(DateDefault.None);
+        }
+
+        private DateDefault _defaultDate = DateDefault.None;        
+        public DateDefault defaultDate
+        {
+            get { return _defaultDate; }
+            set { SetProperty(ref _defaultDate, value); }
+        }
+        private List<DateDefault> _defaultList = new List<DateDefault>();
+        public List<DateDefault> defaultList
+        {
+            get { return _defaultList; }
+            set { SetProperty(ref _defaultList, value); }
+        }
     }
 
     public class UDTItemList

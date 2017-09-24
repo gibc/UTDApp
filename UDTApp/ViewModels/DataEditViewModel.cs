@@ -162,13 +162,17 @@ namespace UDTApp.ViewModels
         }
 
         private string _editText = null;
-        [Required(ErrorMessage = "Entry is required.")]
+        //[Required(ErrorMessage = "Entry is required.")]
         [CustomValidation(typeof(UDTDataTextBox), "CheckTextEntry")]
         public string editText 
         {
             get { return _editText; }
             set 
-            { 
+            {
+                if (_editText == null)
+                {
+                    getDefaultValue(udtItem, ref value);
+                }
                 SetProperty(ref _editText, value);
                 validationChanged(HasErrors);
                 if(!HasErrors)
@@ -176,6 +180,16 @@ namespace UDTApp.ViewModels
                     if (row[colName] as string != value)
                         row[colName] = value;
                 }
+            }
+        }
+
+        private void getDefaultValue(UDTBase udtItem, ref string value)
+        {
+            if (udtItem.TypeName == UDTTypeName.Text)
+            {
+                UDTTextEditProps editProps = udtItem.editProps as UDTTextEditProps;
+                if (editProps.defaultText.Length > 0)
+                    value = editProps.defaultText;
             }
         }
 
@@ -187,7 +201,7 @@ namespace UDTApp.ViewModels
             {
                 SetProperty(ref _row, value);
                 if (_row[colName] == DBNull.Value)
-                    editText = "";
+                    editText = null;
                 else if (udtItem.GetType() == typeof(UDTTxtItem) && _row[colName] != DBNull.Value)
                     editText = (string)_row[colName];
                 else if (udtItem.GetType() == typeof(UDTDateItem))
@@ -208,6 +222,15 @@ namespace UDTApp.ViewModels
             UDTDataTextBox dataObj = context.ObjectInstance as UDTDataTextBox;
             if (dataObj != null && dataObj.udtItem.GetType() == typeof(UDTDateItem))
             {
+                UDTDateEditProps editProps = dataObj.udtItem.editProps as UDTDateEditProps;
+                if (editProps.required && name.Length <= 0)
+                {
+                    return new System.ComponentModel.DataAnnotations.ValidationResult("Date entry is required.");
+                }
+                else if (!editProps.required && name.Length <= 0)
+                {
+                    return System.ComponentModel.DataAnnotations.ValidationResult.Success;
+                } 
                 DateTime val;
                 if(!DateTime.TryParse(name, out val))
                 {
@@ -216,6 +239,15 @@ namespace UDTApp.ViewModels
             }
             else if (dataObj != null && dataObj.udtItem.GetType() == typeof(UDTIntItem))
             {
+                UDTIntEditProps editProps = dataObj.udtItem.editProps as UDTIntEditProps;
+                if (editProps.required && name.Length <= 0)
+                {
+                    return new System.ComponentModel.DataAnnotations.ValidationResult("Number entry is required.");
+                }
+                else if (!editProps.required && name.Length <= 0)
+                {
+                    return System.ComponentModel.DataAnnotations.ValidationResult.Success;
+                } 
                 int val;
                 if (!Int32.TryParse(name, out val))
                 {
@@ -224,13 +256,34 @@ namespace UDTApp.ViewModels
             }
             else if (dataObj != null && dataObj.udtItem.GetType() == typeof(UDTDecimalItem))
             {
+                UDTDecimalEditProps editProps = dataObj.udtItem.editProps as UDTDecimalEditProps;
+                if (editProps.required && name.Length <= 0)
+                {
+                    return new System.ComponentModel.DataAnnotations.ValidationResult("Decimal entry is required.");
+                }
+                else if (!editProps.required && name.Length <= 0)
+                {
+                    return System.ComponentModel.DataAnnotations.ValidationResult.Success;
+                } 
                 decimal val;
                 if (!Decimal.TryParse(name, out val))
                 {
                     return new System.ComponentModel.DataAnnotations.ValidationResult("Entry is not a valid decimal.");
                 }
             }
+            else if (dataObj != null && dataObj.udtItem.GetType() == typeof(UDTTxtItem))
+            {
+                UDTTextEditProps editProps = dataObj.udtItem.editProps as UDTTextEditProps;
+                if (editProps.required && name.Length <= 0)
+                {
+                    return new System.ComponentModel.DataAnnotations.ValidationResult("Text entry is required.");
+                }
+                else if (!editProps.required && name.Length <= 0)
+                {
+                    return System.ComponentModel.DataAnnotations.ValidationResult.Success;
+                } 
 
+            }
 
             return System.ComponentModel.DataAnnotations.ValidationResult.Success;
 
