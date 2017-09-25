@@ -8,6 +8,7 @@
              prism:ViewModelLocator.AutoWireViewModel="True"
              xmlns:local="clr-namespace:UDTApp.Models"
              xmlns:vm="clr-namespace:UDTApp.ViewModels"
+             xmlns:diag="clr-namespace:System.Diagnostics;assembly=WindowsBase"
              xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" 
              d:DesignHeight="300" d:DesignWidth="300">
 
@@ -48,7 +49,7 @@
                             HorizontalAlignment="Center" Foreground="Red" Margin="3 3 3 3" 
                             Text="{Binding currentValidationError}"/>-->
                         <ListBox ItemsSource="{Binding currentValidationError}" Foreground="Red"/>
-                        <ListBox ItemsSource="{Binding editProps.currentValidationError}" Foreground="Red"/>
+                        <!--<ListBox ItemsSource="{Binding editProps.currentValidationError}" Foreground="Red"/>-->
                     </StackPanel>
                 </Border>
             </Popup>
@@ -436,9 +437,13 @@
                     <Label HorizontalContentAlignment="Right" Content="Max Length: " 
                            Width="80"/>
                     <TextBox Width="auto"  MinWidth="20" HorizontalAlignment="Left" 
-                             Text="{Binding maxLength, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                              VerticalAlignment="Center" 
-                             Validation.ErrorTemplate="{StaticResource editPropErrorTemplate}" />
+                             Validation.ErrorTemplate="{StaticResource editPropErrorTemplate}">
+                        <TextBox.Text>
+                            <Binding Path="maxLength" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged"
+                                diag:PresentationTraceSources.TraceLevel="High"/>
+                        </TextBox.Text>
+                    </TextBox>
                 </WrapPanel>
             </StackPanel>            
         </DataTemplate>

@@ -139,8 +139,6 @@ namespace UDTApp.Models
 
         public void editPropValidaionChanged()
         {
-            //if (editProps.HasErrors) PopUpOpen = true;
-            //else if (!HasErrors) PopUpOpen = false;
             if(!HasErrors && editProps.HasErrors)
             {
                 List<string> errLst = new List<string>();
@@ -153,6 +151,23 @@ namespace UDTApp.Models
                 errLst.Remove("<dummy>");
                 SetErrors(() => this.Name, errLst);
             }
+            updateErrorList("Name");
+        }
+
+        private void updateErrorList(string propName)
+        {
+            List<string> showErrors = new List<string>();
+            if (HasErrors)
+            {
+                List<string> errList = (List<string>)GetErrors(propName);
+                showErrors.AddRange(errList);
+                showErrors.Remove("<dummy>");
+            }
+            if (editProps != null && editProps.HasErrors)
+            {
+                showErrors.AddRange(editProps.currentValidationError);
+            }
+            currentValidationError = showErrors;
         }
 
         private List<string> _currentValidationError = new List<string>();
@@ -170,14 +185,7 @@ namespace UDTApp.Models
                 lst.Add("<dummy>");
                 SetErrors(() => this.Name, lst);
             }
-            if (HasErrors)
-            {
-                List<string> errList = (List<string>)GetErrors(e.PropertyName);
-                List<string> showErrors = new List<string>(errList);
-                showErrors.Remove("<dummy>");
-                currentValidationError = showErrors;
-            }
-            else currentValidationError = new List<string>();
+            updateErrorList(e.PropertyName);
 
             if(UDTXml.UDTXmlData.SchemaData.Count > 0)
             { 
@@ -991,11 +999,21 @@ namespace UDTApp.Models
             editPropValidationChanged = editPropChanged;
         }
 
+        static string[] noErrors = new string[0];
         private void OnErrorsChanged(object sender, DataErrorsChangedEventArgs e)
         {
             if (HasErrors)
             {
-                List<string> errList = (List<string>)GetErrors(e.PropertyName);
+                List<string> errList = new List<string>();
+                string[] errAry = null;
+                try
+                {
+                    errAry = (string[])GetErrors(e.PropertyName);
+                }
+                catch
+                {
+                    errList = (List<string>)GetErrors(e.PropertyName);
+                }
                 currentValidationError = errList;
             }
             else currentValidationError = new List<string>();
@@ -1048,9 +1066,10 @@ namespace UDTApp.Models
         }
 
         private string _minLength = "0";
-        [Required (ErrorMessage = "Min Length is required.")]
-        [Range(0, 255, ErrorMessage = "Min Length must a number between 0 and 254")]
-        [CustomValidation(typeof(UDTTextEditProps), "CheckMinLess")]
+        //[Required (ErrorMessage = "Min Length is required.")]
+        //[Range(0, 255, ErrorMessage = "Min Length must a number between 0 and 254")]
+        //[CustomValidation(typeof(UDTTextEditProps), "ACheckValidNumber")]
+        [CustomValidation(typeof(UDTTextEditProps), "CheckMaxMore")]
         public string minLength
         {
             get { return _minLength; }
@@ -1061,8 +1080,11 @@ namespace UDTApp.Models
         }
 
         private string _maxLength = "255";
-        [Required(ErrorMessage = "Max Length is required.")]
-        [Range(1, 255, ErrorMessage = "Max Length must a number between 1 and 255")]
+        //[RegularExpression(@"^[0-9]{1,3}$", ErrorMessage = "error Message ")]
+        //[RegularExpression(@"^[0-9]", ErrorMessage = "error Message ")]
+        //[Required(ErrorMessage = "Max Length is required.")]
+        //[Range( 1, 255, ErrorMessage = "Max Length must a number between 1 and 255")]
+        //[CustomValidation(typeof(UDTTextEditProps), "ACheckValidNumber")]
         [CustomValidation(typeof(UDTTextEditProps), "CheckMaxMore")]
         public string maxLength
         {
@@ -1073,27 +1095,67 @@ namespace UDTApp.Models
             }
         }
 
-        public static System.ComponentModel.DataAnnotations.ValidationResult CheckMinLess(string name, ValidationContext context)
+        //public static System.ComponentModel.DataAnnotations.ValidationResult ACheckValidNumber(string name, ValidationContext context)
+        //{
+        //    string[] noErrors = new string[0];
+        //    UDTTextEditProps dataObj = context.ObjectInstance as UDTTextEditProps;
+        //    if(dataObj != null)
+        //    {
+        //        try
+        //        {
+        //            string[] err = (string[])dataObj.GetErrors(context.DisplayName);
+        //        }
+        //        catch
+        //        {
+        //            List<string> lst = (List<string>)dataObj.GetErrors(context.DisplayName);
+        //        }
+ 
+        //        if (name.Length > 3 || name.Length <= 0 ||
+        //            !name.All(char.IsDigit) || Int32.Parse(name) > 255)
+        //        {
+        //            return new System.ComponentModel.DataAnnotations.ValidationResult("Max Length must a number beween 1 and 255");
+        //        }
+
+        //    }
+        //    return System.ComponentModel.DataAnnotations.ValidationResult.Success;
+        //}
+        public bool IsValidNumber(string name)
         {
-            UDTTextEditProps dataObj = context.ObjectInstance as UDTTextEditProps;
-            if (dataObj != null && Int32.Parse(dataObj.minLength) >= Int32.Parse(dataObj.maxLength))
-            {
-                return new System.ComponentModel.DataAnnotations.ValidationResult("Min Length must be less than Max Lenght");
-            }
-            IEnumerable errors = dataObj.GetErrors("maxLength");
-            if (errors.GetEnumerator().MoveNext())
-                dataObj.ValidateProperty("maxLength"); return System.ComponentModel.DataAnnotations.ValidationResult.Success;
+            return !(name.Length > 3 || name.Length <= 0 ||
+                    !name.All(char.IsDigit) || Int32.Parse(name) > 255);
         }
         public static System.ComponentModel.DataAnnotations.ValidationResult CheckMaxMore(string name, ValidationContext context)
         {
             UDTTextEditProps dataObj = context.ObjectInstance as UDTTextEditProps;
-            if (dataObj != null && Int32.Parse(dataObj.minLength) >= Int32.Parse(dataObj.maxLength))
+            
+            if (dataObj != null)
             {
-                return new System.ComponentModel.DataAnnotations.ValidationResult("Min Length must be less than Max Lenght");
+
+                if (!dataObj.IsValidNumber(name))
+                {
+                    string msgName = "Max Length";
+                    if (context.DisplayName == "minLength")
+                        msgName = "Min Length";
+                    string msg = string.Format("{0} must a number beween 1 and 255", msgName);
+                    return new System.ComponentModel.DataAnnotations.ValidationResult(msg);
+                }
+
+                int minVal = Int32.MinValue; 
+                Int32.TryParse(dataObj.minLength, out minVal);
+                int maxVal = Int32.MaxValue;
+                Int32.TryParse(dataObj.maxLength, out maxVal);
+                if (maxVal <= minVal || minVal == Int32.MinValue || maxVal == Int32.MaxValue)
+                {
+                    return new System.ComponentModel.DataAnnotations.ValidationResult("Min Length must be less than Max Lenght");
+                }
+                if (dataObj.HasErrors)
+                {
+                    if (dataObj.IsValidNumber(dataObj.maxLength))
+                        dataObj.SetErrors(() => dataObj.maxLength, new List<string>());
+                    if (dataObj.IsValidNumber(dataObj.minLength))
+                        dataObj.SetErrors(() => dataObj.minLength, new List<string>());
+                }
             }
-            IEnumerable errors = dataObj.GetErrors("minLength");
-            if(errors.GetEnumerator().MoveNext())
-                dataObj.ValidateProperty("minLength");
             return System.ComponentModel.DataAnnotations.ValidationResult.Success;
         }
 
