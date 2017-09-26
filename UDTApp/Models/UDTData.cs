@@ -1225,7 +1225,30 @@ namespace UDTApp.Models
     public class UDTDecimalEditProps : UDTBaseEditProps
     {
         public UDTDecimalEditProps(Action editPropChanged) : base(editPropChanged)
-        { }
+        {
+            defaultPicker = new UDTNumberPicker("Default Value", Decimal.MaxValue, Decimal.MinValue, NumberPickerType.Decimal);
+            minPicker = new UDTNumberPicker("Min Value", Decimal.MaxValue, Decimal.MinValue, NumberPickerType.Decimal, minChanged);
+            maxPicker = new UDTNumberPicker("Max Value", Decimal.MaxValue, Decimal.MinValue, NumberPickerType.Decimal, maxChanged);
+        }
+        public UDTNumberPicker defaultPicker { get; set; }
+        public UDTNumberPicker minPicker { get; set; }
+        public UDTNumberPicker maxPicker { get; set; }
+
+        private void minChanged(decimal newVal)
+        {
+            if (newVal >= maxPicker.number)
+            {
+                maxPicker.number = newVal + 1;
+            }
+        }
+
+        private void maxChanged(decimal newVal)
+        {
+            if (newVal <= minPicker.number)
+            {
+                minPicker.number = newVal - 1;
+            }
+        }
     }
 
     public class UDTDateItem : UDTBase
@@ -1301,73 +1324,93 @@ namespace UDTApp.Models
             set
             {
                 SetProperty(ref _number, value);
-                RaisePropertyChanged("txtNumber");
+                txtNumber = getNumText(number);
                 if (numberChanged != null) numberChanged(_number);
             }
         }
+
+        private string getNumText(decimal num)
+        {
+            string numTxt = "";
+            if (pickerType == NumberPickerType.Integer)
+                numTxt = string.Format("{0:n0}", number);
+            else if (pickerType == NumberPickerType.Decimal)
+            {
+                numTxt = string.Format("{0}", number);
+                if (_txtNumber.Length > 0 && _txtNumber.Last() == '.')
+                    return numTxt + '.';
+                else return numTxt;
+            }
+            return numTxt;
+        }
+
         private string _txtNumber = "";
         public string txtNumber
         {
             get 
             {
-                if (_txtNumber == "-0") return _txtNumber;
-                else if(pickerType == NumberPickerType.Integer)
-                    return string.Format("{0:n0}", number);
-                else if (pickerType == NumberPickerType.Decimal)
-                    return string.Format("{0:d0}", number);
-                return "";
+                if (!textParsed) return _txtNumber;
+                return getNumText(number);
             }
             set
             {
                 SetProperty(ref _txtNumber, filterDigits(value));
-                //int num;
-                //Int64 bigInt;
-                //if (Int32.TryParse(_txtNumber, out num))
-                //    number = num;
-                //else if(Int64.TryParse(_txtNumber, out bigInt))
-                //{
-                //    if (bigInt > 0)
-                //        number = Int32.MaxValue;
-                //    else
-                //        number = Int32.MinValue;
-                //}
-                number = parseNumber(_txtNumber);
-                if (numberChanged != null) numberChanged(_number);
+                textParsed = false;
+                if (!containsOnlyZeros(_txtNumber))
+                {
+                    textParsed = true;
+                    parseNumber(_txtNumber);
+                    if (numberChanged != null) numberChanged(_number);
+                }
             }
         }
 
-        private decimal parseNumber(string txtNum)
+        private bool textParsed = false;
+        private bool containsOnlyZeros(string val)
         {
-            decimal retVal = 0;
+            bool retVal = true;
+            foreach(char c in val)
+            {
+                if (!(c == '0' || c == '.' || c == '-'))
+                {
+                    return false;
+                }
+            }
+            return retVal;
+        }
+
+        private void parseNumber(string txtNum)
+        {
             if(pickerType == NumberPickerType.Integer)
             {
                 int num;
                 if (Int32.TryParse(txtNum, out num))
-                    retVal = num;
+                    _number = num;
                 else if (txtNum[0] == '-')
                 {
-                    retVal = Int32.MinValue;
+                    _number = numMin;
                 }
                 else
                 {
-                    retVal = Int32.MaxValue;
+                    _number = numMax;
                 }
             }
             else if(pickerType == NumberPickerType.Decimal)
             {
-                decimal num;
-                if (Decimal.TryParse(txtNum, out num))
-                    retVal = num;
+                if (Decimal.TryParse(txtNum, out _number)) return;
                 else if (txtNum[0] == '-')
                 {
-                    retVal = Decimal.MinValue;
+                    _number = numMin;
                 }
                 else
                 {
-                    retVal = Decimal.MaxValue;
+                    _number = numMax;
                 }
             }
-            return retVal;
+            if (_number > numMax)
+                _number = numMax;
+            else if (_number < numMin)
+                _number = numMin;
         }
 
         private string filterDigits(string txt)
@@ -1375,18 +1418,41 @@ namespace UDTApp.Models
             string outTxt = "";
             if (string.IsNullOrEmpty(txt))
                 return "0";
-
-            foreach(char c in txt)
+            if (pickerType == NumberPickerType.Integer)
             {
-                if (txt.First() == c)
-                { 
-                    if(Char.IsDigit(c) || c == '+' || c == '-')
-                        outTxt += c;
-                }
-
-                else if(Char.IsDigit(c))
+                foreach (char c in txt)
                 {
-                    outTxt += c;
+                    if (txt.First() == c)
+                    {
+                        if (Char.IsDigit(c) || c == '+' || c == '-')
+                            outTxt += c;
+                    }
+
+                    else if (Char.IsDigit(c))
+                    {
+                        outTxt += c;
+                    }
+                }
+            }
+            else
+            {
+                bool haveDecPt = false;
+                foreach (char c in txt)
+                {
+                    if (txt.First() == c)
+                    {
+                        if (Char.IsDigit(c) || c == '+' || c == '-' || c == '.')
+                            outTxt += c;
+                    }
+                    else if (Char.IsDigit(c))
+                    {
+                        outTxt += c;
+                    }
+                    else if (c == '.' && !haveDecPt)
+                    {
+                        haveDecPt = true;
+                        outTxt += c;
+                    }
                 }
             }
             if (string.IsNullOrEmpty(outTxt))
@@ -1394,13 +1460,13 @@ namespace UDTApp.Models
             return outTxt;
         }
 
-        private bool _isUsed = false;
-        public bool isUsed
+        private bool _notUsed = true;
+        public bool notUsed
         {
-            get { return _isUsed; }
+            get { return _notUsed; }
             set
             {
-                SetProperty(ref _isUsed, value);
+                SetProperty(ref _notUsed, value);
             }
         }
 

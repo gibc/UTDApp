@@ -275,8 +275,8 @@
                                       FontWeight="ExtraBold" BorderThickness="2" Interval="5"/>
                     </WrapPanel>
                     <WrapPanel>
-                        <Label Content="Is Used"/>
-                        <CheckBox IsChecked="{Binding isUsed}" VerticalAlignment="Center"/>
+                        <Label Content="Not Used"/>
+                        <CheckBox IsChecked="{Binding notUsed}" VerticalAlignment="Center"/>
                     </WrapPanel>
 
                 </StackPanel>
@@ -540,6 +540,11 @@
                     <CheckBox Width="80" HorizontalAlignment="Left" IsChecked="{Binding required}"
                              VerticalAlignment="Center"/>
                 </WrapPanel>
+                <StackPanel>
+                    <ContentControl Content="{Binding defaultPicker}" VerticalAlignment="Center"/>
+                    <ContentControl Content="{Binding minPicker}" VerticalAlignment="Center"/>
+                    <ContentControl Content="{Binding maxPicker}" VerticalAlignment="Center"/>
+                </StackPanel>            
             </StackPanel>
         </DataTemplate>
 
