@@ -1179,22 +1179,46 @@ namespace UDTApp.Models
     public class UDTIntEditProps : UDTBaseEditProps
     {
         public UDTIntEditProps(Action editPropChanged) : base(editPropChanged) 
-        { }
+        {
+            defaultPicker = new UDTNumberPicker("Default Value", Int32.MaxValue, Int32.MinValue);
+            minPicker = new UDTNumberPicker("Min Value", Int32.MaxValue, Int32.MinValue, NumberPickerType.Integer, minChanged);
+            maxPicker = new UDTNumberPicker("Max Value", Int32.MaxValue, Int32.MinValue, NumberPickerType.Integer, maxChanged);
+        }
+
+        public UDTNumberPicker defaultPicker { get; set; }
+        public UDTNumberPicker minPicker { get; set; }
+        public UDTNumberPicker maxPicker { get; set; }
+
+        private void minChanged(decimal newVal) 
+        { 
+            if(newVal >= maxPicker.number)
+            {
+                maxPicker.number = newVal + 1;
+            }
+        }
+
+        private void maxChanged(decimal newVal) 
+        {
+            if (newVal <= minPicker.number)
+            {
+                minPicker.number = newVal - 1;
+            }
+        }
+ 
     }
 
-    public class UDTDecimalItem : UDTBase//, UDTItem
+    public class UDTDecimalItem : UDTBase
     {
         public UDTDecimalItem()
         {
             Type = "[decimal](10, 5) NULL ";
             TypeName = UDTTypeName.Real;
-            //Name = "";
             backgroundBrush = Brushes.LightSalmon;
             sortOrder = "ddd";
 
             editProps = new UDTDecimalEditProps(editPropValidaionChanged);
-        }                
- 
+        }
+
 
     }
 
@@ -1243,6 +1267,176 @@ namespace UDTApp.Models
             get { return _defaultList; }
             set { SetProperty(ref _defaultList, value); }
         }
+    }
+
+    public enum NumberPickerType { Integer, Decimal}
+    public class UDTNumberPicker : ValidatableBindableBase
+    {
+        public DelegateCommand<EventArgs> UpCommand { get; set; }
+        public DelegateCommand<EventArgs> DownCommand { get; set; }
+        public DelegateCommand<EventArgs> FastUpCommand { get; set; }
+        public DelegateCommand<EventArgs> FastDownCommand { get; set; }
+
+        public UDTNumberPicker(string _name, decimal _numMax, decimal _numMin, 
+            NumberPickerType _pickerType = NumberPickerType.Integer,           
+            Action<decimal> _numberChanged = null)
+        {
+            name = _name;
+            numberChanged = _numberChanged;
+            numMax = _numMax;
+            numMin = _numMin;
+            pickerType = _pickerType;
+            UpCommand = new DelegateCommand<EventArgs>(upBtnClk);
+            DownCommand = new DelegateCommand<EventArgs>(downBtnClk);
+            FastUpCommand = new DelegateCommand<EventArgs>(fastUpBtnClk);
+            FastDownCommand = new DelegateCommand<EventArgs>(fastDownBtnClk);
+        }
+
+        public string name { get; set; }
+
+        private decimal _number = 0;
+        public decimal number
+        {
+            get { return _number; }
+            set
+            {
+                SetProperty(ref _number, value);
+                RaisePropertyChanged("txtNumber");
+                if (numberChanged != null) numberChanged(_number);
+            }
+        }
+        private string _txtNumber = "";
+        public string txtNumber
+        {
+            get 
+            {
+                if (_txtNumber == "-0") return _txtNumber;
+                else if(pickerType == NumberPickerType.Integer)
+                    return string.Format("{0:n0}", number);
+                else if (pickerType == NumberPickerType.Decimal)
+                    return string.Format("{0:d0}", number);
+                return "";
+            }
+            set
+            {
+                SetProperty(ref _txtNumber, filterDigits(value));
+                //int num;
+                //Int64 bigInt;
+                //if (Int32.TryParse(_txtNumber, out num))
+                //    number = num;
+                //else if(Int64.TryParse(_txtNumber, out bigInt))
+                //{
+                //    if (bigInt > 0)
+                //        number = Int32.MaxValue;
+                //    else
+                //        number = Int32.MinValue;
+                //}
+                number = parseNumber(_txtNumber);
+                if (numberChanged != null) numberChanged(_number);
+            }
+        }
+
+        private decimal parseNumber(string txtNum)
+        {
+            decimal retVal = 0;
+            if(pickerType == NumberPickerType.Integer)
+            {
+                int num;
+                if (Int32.TryParse(txtNum, out num))
+                    retVal = num;
+                else if (txtNum[0] == '-')
+                {
+                    retVal = Int32.MinValue;
+                }
+                else
+                {
+                    retVal = Int32.MaxValue;
+                }
+            }
+            else if(pickerType == NumberPickerType.Decimal)
+            {
+                decimal num;
+                if (Decimal.TryParse(txtNum, out num))
+                    retVal = num;
+                else if (txtNum[0] == '-')
+                {
+                    retVal = Decimal.MinValue;
+                }
+                else
+                {
+                    retVal = Decimal.MaxValue;
+                }
+            }
+            return retVal;
+        }
+
+        private string filterDigits(string txt)
+        {
+            string outTxt = "";
+            if (string.IsNullOrEmpty(txt))
+                return "0";
+
+            foreach(char c in txt)
+            {
+                if (txt.First() == c)
+                { 
+                    if(Char.IsDigit(c) || c == '+' || c == '-')
+                        outTxt += c;
+                }
+
+                else if(Char.IsDigit(c))
+                {
+                    outTxt += c;
+                }
+            }
+            if (string.IsNullOrEmpty(outTxt))
+                return "0";
+            return outTxt;
+        }
+
+        private bool _isUsed = false;
+        public bool isUsed
+        {
+            get { return _isUsed; }
+            set
+            {
+                SetProperty(ref _isUsed, value);
+            }
+        }
+
+        public Action<decimal> numberChanged { get; set; }
+
+        private void upBtnClk(EventArgs args)
+        {
+            if(number < numMax)
+            { 
+                number++;
+            }
+        }
+        private void downBtnClk(EventArgs args)
+        {
+            if(number > numMin)
+            {
+                number--;
+            }
+        }
+        private void fastUpBtnClk(EventArgs args)
+        {
+            if (number < numMax - 100)
+            { 
+                number = number + 100;
+            }
+        }
+        private void fastDownBtnClk(EventArgs args)
+        {
+            if (number > numMin + 100)
+            { 
+                number = number - 100;
+            }
+        }
+        private decimal numMin = Decimal.MinValue;
+        private decimal numMax = Decimal.MaxValue;
+        NumberPickerType pickerType = NumberPickerType.Integer;
     }
 
     public class UDTItemList

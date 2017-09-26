@@ -253,19 +253,35 @@
 
         </Style>
 
-        <!--<ControlTemplate x:Key="validationErrorTemplate">
-            <Canvas>
-            <DockPanel  >
-                <TextBlock Foreground="Red" Text="{Binding Path=[0].ErrorContent}"
-                    DockPanel.Dock="Right">              
-                </TextBlock>
-                <AdornedElementPlaceholder 
-                   x:Name="ErrorAdorner"
-                />
+        <DataTemplate DataType    = "{x:Type local:UDTNumberPicker}">
+            <GroupBox Header="{Binding name}" BorderBrush="Black">
+                <StackPanel>
+                    <Border BorderBrush="Black" BorderThickness="1" Margin="5,0,0,0">
+                        <TextBox Text="{Binding txtNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                 Background="White" />
+                    </Border>
+                    <WrapPanel Margin="5,0,0,0">
+                        <RepeatButton Width="15" Height="15" Content=">" VerticalContentAlignment="Top" 
+                                      Command="{Binding UpCommand}" Padding="0,-3,0,0" 
+                                      FontWeight="ExtraBold" BorderThickness="2"/>
+                        <RepeatButton Width="15" Height="15" Content="&lt;" VerticalContentAlignment="Top"  
+                                      Command="{Binding DownCommand}" Padding="0,-3,0,0" Margin="3,0,0,0"
+                                      FontWeight="ExtraBold" BorderThickness="2"/>
+                        <RepeatButton Width="20" Height="15" Content=">>" VerticalContentAlignment="Top" 
+                                      Command="{Binding FastUpCommand}" Padding="0,-3,0,0" Margin="3,0,0,0" 
+                                      FontWeight="ExtraBold" BorderThickness="2" Interval="5"/>
+                        <RepeatButton Width="20" Height="15" Content="&lt;&lt;" VerticalContentAlignment="Top"  
+                                      Command="{Binding FastDownCommand}" Padding="0,-3,0,0" Margin="3,0,0,0"
+                                      FontWeight="ExtraBold" BorderThickness="2" Interval="5"/>
+                    </WrapPanel>
+                    <WrapPanel>
+                        <Label Content="Is Used"/>
+                        <CheckBox IsChecked="{Binding isUsed}" VerticalAlignment="Center"/>
+                    </WrapPanel>
 
-            </DockPanel>
-            </Canvas>
-        </ControlTemplate>-->
+                </StackPanel>
+            </GroupBox>
+        </DataTemplate>
 
         <DataTemplate DataType    = "{x:Type local:UDTData}">
             <Border BorderBrush="Red" BorderThickness="0">
@@ -482,6 +498,11 @@
                     <CheckBox Width="80" HorizontalAlignment="Left" IsChecked="{Binding required}"
                              VerticalAlignment="Center"/>
                 </WrapPanel>
+                <StackPanel>
+                    <ContentControl Content="{Binding defaultPicker}" VerticalAlignment="Center"/>
+                    <ContentControl Content="{Binding minPicker}" VerticalAlignment="Center"/>
+                    <ContentControl Content="{Binding maxPicker}" VerticalAlignment="Center"/>
+                </StackPanel>
             </StackPanel>
         </DataTemplate>
 
