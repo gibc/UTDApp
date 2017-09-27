@@ -44,7 +44,8 @@ namespace UDTApp.Models
             saveFileDialog.Filter = "Xml (*.xml)|*.xml";
             if (saveFileDialog.ShowDialog().Value)
             {
-                FileStream xmlFile = File.Open(saveFileDialog.FileName, FileMode.OpenOrCreate);
+                //FileStream xmlFile = File.Open(saveFileDialog.FileName, FileMode.OpenOrCreate);
+                FileStream xmlFile = File.Open(saveFileDialog.FileName, FileMode.Create);
                 Byte[] info = new UTF8Encoding(true).GetBytes(xml);
                 xmlFile.Write(info, 0, info.Length);
                 xmlFile.Close();

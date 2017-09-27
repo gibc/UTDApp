@@ -100,7 +100,9 @@ namespace UDTApp.Models
     [XmlInclude(typeof(UDTDateItem))]
     [XmlInclude(typeof(UDTDateEditProps))]
     [XmlInclude(typeof(UDTDecimalItem))]
-    [XmlInclude(typeof(UDTDecimalEditProps))]
+    [XmlInclude(typeof(UDTDecimalEditProps))]  
+    [XmlInclude(typeof(UDTNumberPicker))]
+    [XmlInclude(typeof(UDTBaseEditProps))]
     [XmlRoot("UDTBase"), XmlType("UDTBase")]
     public class UDTBase : ValidatableBindableBase//: ValidatableBindableBase, INotifyDataErrorInfo
     {
@@ -241,6 +243,7 @@ namespace UDTApp.Models
         public DelegateCommand<RoutedEventArgs> ItemNameEditLostFocusCommand { get; set; }
 
         private UDTBaseEditProps _editProps = null;
+        //[XmlIgnoreAttribute]
         public UDTBaseEditProps editProps
         {
             get { return _editProps; }
@@ -316,8 +319,9 @@ namespace UDTApp.Models
         }
         private bool newDrop = false;
 
-        public UDTData MasterGroup 
-        { 
+        [XmlIgnoreAttribute]
+        public UDTData MasterGroup
+        {
             get
             {
                 if (UDTXml.UDTXmlData.SchemaData.Count <= 0) return null;
@@ -993,6 +997,10 @@ namespace UDTApp.Models
 
     public class UDTBaseEditProps : ValidatableBindableBase
     {
+        public UDTBaseEditProps()
+        {
+            editPropValidationChanged = null;      
+        }
         public UDTBaseEditProps(Action editPropChanged) 
         {
             ErrorsChanged += OnErrorsChanged;
@@ -1023,6 +1031,9 @@ namespace UDTApp.Models
             master.validationChanged();
         }
 
+        // NOTE: will be set by the non-default ctor that is called by the 
+        // default ctor of all classes that create instantes of this class
+        [XmlIgnoreAttribute]
         public Action editPropValidationChanged { get; set; }
 
 
@@ -1048,8 +1059,11 @@ namespace UDTApp.Models
         }
     }
 
+    [XmlInclude(typeof(UDTBaseEditProps))]
     public class UDTTextEditProps : UDTBaseEditProps
     {
+        private UDTTextEditProps() : base() { }
+
         public UDTTextEditProps(Action editPropChanged) : base(editPropChanged)
         {
         }
@@ -1176,8 +1190,12 @@ namespace UDTApp.Models
         }    
     }
 
+    [XmlInclude(typeof(UDTBaseEditProps))]
+    [XmlInclude(typeof(UDTNumberPicker))]
     public class UDTIntEditProps : UDTBaseEditProps
     {
+        private UDTIntEditProps() : base() { }
+
         public UDTIntEditProps(Action editPropChanged) : base(editPropChanged) 
         {
             defaultPicker = new UDTNumberPicker("Default Value", Int32.MaxValue, Int32.MinValue);
@@ -1222,8 +1240,12 @@ namespace UDTApp.Models
 
     }
 
+    [XmlInclude(typeof(UDTBaseEditProps))]
+    [XmlInclude(typeof(UDTNumberPicker))]
     public class UDTDecimalEditProps : UDTBaseEditProps
     {
+        private UDTDecimalEditProps() : base() { }
+
         public UDTDecimalEditProps(Action editPropChanged) : base(editPropChanged)
         {
             defaultPicker = new UDTNumberPicker("Default Value", Decimal.MaxValue, Decimal.MinValue, NumberPickerType.Decimal);
@@ -1267,8 +1289,12 @@ namespace UDTApp.Models
     }
 
     public enum DateDefault { CurrentDay, CurrentWeek, CurrentMonth, CurrentYear, None }
+    [XmlInclude(typeof(UDTBaseEditProps))]
+    [XmlInclude(typeof(DateDefault))]
     public class UDTDateEditProps : UDTBaseEditProps
     {
+        private UDTDateEditProps() : base() { }
+
         public UDTDateEditProps(Action editPropChanged) : base(editPropChanged)
         { 
             defaultList.Add(DateDefault.CurrentDay);
@@ -1295,10 +1321,16 @@ namespace UDTApp.Models
     public enum NumberPickerType { Integer, Decimal}
     public class UDTNumberPicker : ValidatableBindableBase
     {
+        [XmlIgnoreAttribute]
         public DelegateCommand<EventArgs> UpCommand { get; set; }
+        [XmlIgnoreAttribute]
         public DelegateCommand<EventArgs> DownCommand { get; set; }
+        [XmlIgnoreAttribute]
         public DelegateCommand<EventArgs> FastUpCommand { get; set; }
+        [XmlIgnoreAttribute]
         public DelegateCommand<EventArgs> FastDownCommand { get; set; }
+
+        private UDTNumberPicker() { }
 
         public UDTNumberPicker(string _name, decimal _numMax, decimal _numMin, 
             NumberPickerType _pickerType = NumberPickerType.Integer,           
@@ -1470,6 +1502,7 @@ namespace UDTApp.Models
             }
         }
 
+        [XmlIgnoreAttribute]
         public Action<decimal> numberChanged { get; set; }
 
         private void upBtnClk(EventArgs args)
