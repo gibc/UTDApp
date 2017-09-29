@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using UDTApp.Models;
+using UDTApp.ViewModels.DataEntryControls;
 
 namespace UDTApp.ViewModels
 {
@@ -152,7 +153,106 @@ namespace UDTApp.ViewModels
         }
     }
 
-    public class UDTDataTextBox : ValidatableBindableBase
+    public class UDTDataBoxBase : ValidatableBindableBase
+    {
+        public UDTDataBoxBase()
+        {
+
+        }
+
+        public string colName { get; set; }
+        public UDTBase udtItem = null;
+        public Action<bool> validationChanged { get; set; }
+        
+        private DataRowView _row = null;
+        public DataRowView row
+        {
+            get { return _row; }
+            set
+            {
+                SetProperty(ref _row, value);
+                setColumn();
+            }
+        }
+
+        virtual protected void setColumn() { }
+    }
+
+    public class UDTDataNumberBox : UDTDataBoxBase
+    {
+        public UDTDataNumberBox(string _colName, UDTBase item, Action<bool> _validationChanged)
+        {
+            colName = _colName;
+            udtItem = item;
+            validationChanged = _validationChanged;
+            editProps = item.editProps as UDTIntEditProps;
+            decimal maxNum = Decimal.MaxValue;
+            decimal minNum = Decimal.MinValue;
+            if (!editProps.maxPicker.notUsed)
+                maxNum = editProps.maxPicker.number;
+            if (!editProps.minPicker.notUsed)
+                minNum = editProps.minPicker.number;
+            numberEntryBox = new UDTNumberEntry
+                (item.Name,
+                maxNum,
+                minNum,
+                NumberPickerType.Integer,
+                numberChanged);
+        }
+
+        private UDTNumberEntry _numberEntryBox = null;
+        public UDTNumberEntry numberEntryBox 
+        {
+            get { return _numberEntryBox; }
+            set { SetProperty(ref _numberEntryBox, value); }
+        }
+
+        override protected void setColumn()
+        {
+            if (row[colName] == DBNull.Value)
+            {
+                if(!editProps.defaultPicker.notUsed)
+                {
+                    _numberEntryBox.number = editProps.defaultPicker.number;
+                }
+                else _numberEntryBox.txtNumber = "";
+            }
+            else if (udtItem.GetType() == typeof(UDTIntItem))
+            { 
+                int intVal = (int)row[colName];
+                _numberEntryBox.number = intVal;
+            }
+        }
+
+        private UDTIntEditProps editProps = null;
+
+        private void numberChanged(decimal number)
+        {
+            if (editProps.required && _numberEntryBox.txtNumber == "")
+            {
+                List<string> errLst = new List<string>();
+                errLst.Add("Number entry is required.");
+                SetErrors(() => this.numberEntryBox, errLst);
+            }
+            validationChanged(HasErrors);
+            if (!HasErrors)
+            {
+                if(row[colName] == DBNull.Value)
+                {
+                    row[colName] = number;
+                }
+                else
+                {
+                    int currentVal = (int)row[colName];
+                    if(currentVal != (int)number)
+                    row[colName] = number;
+                }
+
+            }
+        }
+    }
+
+    public class UDTDataTextBox : UDTDataBoxBase//ValidatableBindableBase
     {
         public UDTDataTextBox(string _colName, UDTBase item, Action<bool> _validationChanged)
         {
@@ -162,7 +262,6 @@ namespace UDTApp.ViewModels
         }
 
         private string _editText = null;
-        //[Required(ErrorMessage = "Entry is required.")]
         [CustomValidation(typeof(UDTDataTextBox), "CheckTextEntry")]
         public string editText 
         {
@@ -193,29 +292,43 @@ namespace UDTApp.ViewModels
             }
         }
 
-        private DataRowView _row = null;
-        public DataRowView row 
+        //private DataRowView _row = null;
+        //public DataRowView row 
+        //{
+        //    get { return _row; }
+        //    set 
+        //    {
+        //        SetProperty(ref _row, value);
+        //        //if (_row[colName] == DBNull.Value)
+        //        //    editText = null;
+        //        //else if (udtItem.GetType() == typeof(UDTTxtItem) && _row[colName] != DBNull.Value)
+        //        //    editText = (string)_row[colName];
+        //        //else if (udtItem.GetType() == typeof(UDTDateItem))
+        //        //    editText = (string)_row[colName].ToString();
+        //        //else if (udtItem.GetType() == typeof(UDTIntItem))
+        //        //    editText = (string)_row[colName].ToString();
+        //        //else if (udtItem.GetType() == typeof(UDTDecimalItem))
+        //        //    editText = (string)_row[colName].ToString();
+        //    }
+        //}
+
+        override protected void setColumn()
         {
-            get { return _row; }
-            set 
-            {
-                SetProperty(ref _row, value);
-                if (_row[colName] == DBNull.Value)
-                    editText = null;
-                else if (udtItem.GetType() == typeof(UDTTxtItem) && _row[colName] != DBNull.Value)
-                    editText = (string)_row[colName];
-                else if (udtItem.GetType() == typeof(UDTDateItem))
-                    editText = (string)_row[colName].ToString();
-                else if (udtItem.GetType() == typeof(UDTIntItem))
-                    editText = (string)_row[colName].ToString();
-                else if (udtItem.GetType() == typeof(UDTDecimalItem))
-                    editText = (string)_row[colName].ToString();
-            }
+            if (row[colName] == DBNull.Value)
+                editText = null;
+            else if (udtItem.GetType() == typeof(UDTTxtItem) && row[colName] != DBNull.Value)
+                editText = (string)row[colName];
+            else if (udtItem.GetType() == typeof(UDTDateItem))
+                editText = (string)row[colName].ToString();
+            else if (udtItem.GetType() == typeof(UDTIntItem))
+                editText = (string)row[colName].ToString();
+            else if (udtItem.GetType() == typeof(UDTDecimalItem))
+                editText = (string)row[colName].ToString();
         }
 
-        public string colName { get; set; }
-        public UDTBase udtItem = null;
-        public Action<bool> validationChanged { get; set; }
+        //public string colName { get; set; }
+        //public UDTBase udtItem = null;
+        //public Action<bool> validationChanged { get; set; }
 
         public static System.ComponentModel.DataAnnotations.ValidationResult CheckTextEntry(string name, ValidationContext context)
         {
@@ -449,10 +562,14 @@ namespace UDTApp.ViewModels
             if(udtData.parentObj != null)
                 _parentGridVisable = Visibility.Visible;
 
-            editBoxes = new List<UDTDataTextBox>();
+            editBoxes = new List<UDTDataBoxBase>();
             foreach (UDTBase item in udtData.columnData)
             {
-                editBoxes.Add(new UDTDataTextBox(item.Name, item, editBoxValidationChanged));
+                // TBD: create editBox type based on item typeName
+                if(item.TypeName == UDTTypeName.Number)
+                    editBoxes.Add(new UDTDataNumberBox(item.Name, item, editBoxValidationChanged));
+                else 
+                    editBoxes.Add(new UDTDataTextBox(item.Name, item, editBoxValidationChanged));
             }
 
             childGrids = new List<DataEditGrid>();
@@ -938,8 +1055,8 @@ namespace UDTApp.ViewModels
             set { SetProperty(ref _editBoxMsgVisibility, value); }
         }
 
-        private List<UDTDataTextBox> _editBoxes = null;
-        public List<UDTDataTextBox> editBoxes 
+        private List<UDTDataBoxBase> _editBoxes = null;
+        public List<UDTDataBoxBase> editBoxes 
         {
             get { return _editBoxes; }
             set
@@ -1049,7 +1166,7 @@ namespace UDTApp.ViewModels
             {
                 //childGrid.raiseCanExecuteChanged();
             }
-            foreach(UDTDataTextBox editBox in editBoxes)
+            foreach(UDTDataBoxBase editBox in editBoxes)
             {
                 if(editBox.HasErrors)
                 { 
@@ -1066,7 +1183,7 @@ namespace UDTApp.ViewModels
         private void updateEditBoxes(DataRowView selectedRow)
         {
             
-            foreach (UDTDataTextBox editBox in editBoxes)
+            foreach (UDTDataBoxBase editBox in editBoxes)
                 editBox.row = selectedRow;
         }
 

@@ -7,6 +7,7 @@
              xmlns:prism="http://prismlibrary.com/"
              prism:ViewModelLocator.AutoWireViewModel="True"
              xmlns:local="clr-namespace:UDTApp.Models"
+             xmlns:dataEntry="clr-namespace:UDTApp.ViewModels.DataEntryControls"
              xmlns:vm="clr-namespace:UDTApp.ViewModels"
              xmlns:diag="clr-namespace:System.Diagnostics;assembly=WindowsBase"
              xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" 
@@ -253,7 +254,8 @@
 
         </Style>
 
-        <DataTemplate DataType    = "{x:Type local:UDTNumberPicker}">
+        <!--Moved to app resources-->
+        <!--<DataTemplate DataType    = "{x:Type dataEntry:UDTNumberPicker}">
             <GroupBox Header="{Binding name}" BorderBrush="Black">
                 <StackPanel>
                     <Border BorderBrush="Black" BorderThickness="1" Margin="5,0,0,0">
@@ -281,7 +283,7 @@
 
                 </StackPanel>
             </GroupBox>
-        </DataTemplate>
+        </DataTemplate>-->
 
         <DataTemplate DataType    = "{x:Type local:UDTData}">
             <Border BorderBrush="Red" BorderThickness="0">
@@ -435,7 +437,11 @@
                     <TextBox Width="80" HorizontalAlignment="Left" Text="{Binding defaultText}"
                              FontStyle="Normal"/>
                 </WrapPanel>
-                <WrapPanel>
+                <StackPanel>
+                    <ContentControl Content="{Binding minPicker}" VerticalAlignment="Center"/>
+                    <ContentControl Content="{Binding maxPicker}" VerticalAlignment="Center"/>
+                </StackPanel>
+                <!--<WrapPanel>
                     <Label HorizontalContentAlignment="Right" Content="Required: " 
                            Width="80"/>
                     <CheckBox Width="80" HorizontalAlignment="Left" IsChecked="{Binding required}"
@@ -460,7 +466,7 @@
                                 diag:PresentationTraceSources.TraceLevel="High"/>
                         </TextBox.Text>
                     </TextBox>
-                </WrapPanel>
+                </WrapPanel>-->
             </StackPanel>            
         </DataTemplate>
         
@@ -589,6 +595,27 @@
                               ItemsSource="{Binding defaultList}"
                              VerticalAlignment="Center"/>
                 </WrapPanel>
+                <GroupBox Header="Allowed Date Range" BorderBrush="Black" BorderThickness="1">
+                    <StackPanel>
+                        <WrapPanel>
+                            <Label Content="Min: "/>
+                            <DatePicker SelectedDateFormat="Short"  SelectedDate="{Binding minDate, Mode=TwoWay}"
+                              DisplayDateStart="1/01/0001" DisplayDateEnd="12/31/3000" 
+                              FirstDayOfWeek="Sunday"/>
+                       </WrapPanel>
+                        <WrapPanel>
+                            <Label Content="Max: "/>
+                            <DatePicker SelectedDateFormat="Short" SelectedDate="{Binding maxDate, Mode=TwoWay}"
+                              DisplayDateStart="1/01/0001" DisplayDateEnd="12/31/3000" 
+                              FirstDayOfWeek="Sunday"/>
+                        </WrapPanel>
+                        <WrapPanel>
+                            <Label Content="Not Used"/>
+                            <CheckBox IsChecked="{Binding dateRangeNotUsed}" VerticalAlignment="Center">
+                            </CheckBox>
+                        </WrapPanel>
+                    </StackPanel>
+                    </GroupBox>
             </StackPanel>
         </DataTemplate>
 

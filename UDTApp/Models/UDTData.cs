@@ -22,6 +22,7 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using System.Xml.Serialization;
 using UDTApp.ViewModels;
+using UDTApp.ViewModels.DataEntryControls;
 
 namespace UDTApp.Models
 {
@@ -1044,14 +1045,8 @@ namespace UDTApp.Models
             set { SetProperty(ref _currentValidationError, value); }
         }
 
-        //private UDTBase _parentItem = null;
-        //public UDTBase parentItem
-        //{
-        //    get { return _parentItem; }
-        //    set { SetProperty(ref _parentItem, value); }
-        //}
 
-        private bool _required = true;
+        private bool _required = false;
         public bool required
         {
             get { return _required; }
@@ -1066,6 +1061,10 @@ namespace UDTApp.Models
 
         public UDTTextEditProps(Action editPropChanged) : base(editPropChanged)
         {
+            minPicker = new UDTNumberPicker("Min Text Length", 254, 0, NumberPickerType.Integer, minChanged);
+            maxPicker = new UDTNumberPicker("Max Text", 255, 1, NumberPickerType.Integer, maxChanged);
+            minPicker.number = 0;
+            maxPicker.number = 255;
         }
 
 
@@ -1079,99 +1078,95 @@ namespace UDTApp.Models
             }
         }
 
-        private string _minLength = "0";
-        //[Required (ErrorMessage = "Min Length is required.")]
-        //[Range(0, 255, ErrorMessage = "Min Length must a number between 0 and 254")]
-        //[CustomValidation(typeof(UDTTextEditProps), "ACheckValidNumber")]
-        [CustomValidation(typeof(UDTTextEditProps), "CheckMaxMore")]
-        public string minLength
-        {
-            get { return _minLength; }
-            set 
-            { 
-                SetProperty(ref _minLength, value);
-            }
-        }
+        public UDTNumberPicker minPicker { get; set; }
+        public UDTNumberPicker maxPicker { get; set; }
 
-        private string _maxLength = "255";
-        //[RegularExpression(@"^[0-9]{1,3}$", ErrorMessage = "error Message ")]
-        //[RegularExpression(@"^[0-9]", ErrorMessage = "error Message ")]
-        //[Required(ErrorMessage = "Max Length is required.")]
-        //[Range( 1, 255, ErrorMessage = "Max Length must a number between 1 and 255")]
-        //[CustomValidation(typeof(UDTTextEditProps), "ACheckValidNumber")]
-        [CustomValidation(typeof(UDTTextEditProps), "CheckMaxMore")]
-        public string maxLength
-        {
-            get { return _maxLength; }
-            set 
-            { 
-                SetProperty(ref _maxLength, value);
-            }
-        }
-
-        //public static System.ComponentModel.DataAnnotations.ValidationResult ACheckValidNumber(string name, ValidationContext context)
+        //private string _minLength = "0";
+        ////[Required (ErrorMessage = "Min Length is required.")]
+        ////[Range(0, 255, ErrorMessage = "Min Length must a number between 0 and 254")]
+        ////[CustomValidation(typeof(UDTTextEditProps), "ACheckValidNumber")]
+        //[CustomValidation(typeof(UDTTextEditProps), "CheckMaxMore")]
+        //public string minLength
         //{
-        //    string[] noErrors = new string[0];
+        //    get { return _minLength; }
+        //    set 
+        //    { 
+        //        SetProperty(ref _minLength, value);
+        //    }
+        //}
+
+        private void minChanged(decimal newVal)
+        {
+            if (newVal >= maxPicker.number)
+            {
+                maxPicker.number = newVal + 1;
+            }
+        }
+
+        private void maxChanged(decimal newVal)
+        {
+            if (newVal <= minPicker.number)
+            {
+                minPicker.number = newVal - 1;
+            }
+        }
+
+        //private string _maxLength = "255";
+        ////[RegularExpression(@"^[0-9]{1,3}$", ErrorMessage = "error Message ")]
+        ////[RegularExpression(@"^[0-9]", ErrorMessage = "error Message ")]
+        ////[Required(ErrorMessage = "Max Length is required.")]
+        ////[Range( 1, 255, ErrorMessage = "Max Length must a number between 1 and 255")]
+        ////[CustomValidation(typeof(UDTTextEditProps), "ACheckValidNumber")]
+        //[CustomValidation(typeof(UDTTextEditProps), "CheckMaxMore")]
+        //public string maxLength
+        //{
+        //    get { return _maxLength; }
+        //    set 
+        //    { 
+        //        SetProperty(ref _maxLength, value);
+        //    }
+        //}
+
+        //public bool IsValidNumber(string name)
+        //{
+        //    return !(name.Length > 3 || name.Length <= 0 ||
+        //            !name.All(char.IsDigit) || Int32.Parse(name) > 255);
+        //}
+
+        //public static System.ComponentModel.DataAnnotations.ValidationResult CheckMaxMore(string name, ValidationContext context)
+        //{
         //    UDTTextEditProps dataObj = context.ObjectInstance as UDTTextEditProps;
-        //    if(dataObj != null)
+            
+        //    if (dataObj != null)
         //    {
-        //        try
+
+        //        if (!dataObj.IsValidNumber(name))
         //        {
-        //            string[] err = (string[])dataObj.GetErrors(context.DisplayName);
-        //        }
-        //        catch
-        //        {
-        //            List<string> lst = (List<string>)dataObj.GetErrors(context.DisplayName);
-        //        }
- 
-        //        if (name.Length > 3 || name.Length <= 0 ||
-        //            !name.All(char.IsDigit) || Int32.Parse(name) > 255)
-        //        {
-        //            return new System.ComponentModel.DataAnnotations.ValidationResult("Max Length must a number beween 1 and 255");
+        //            string msgName = "Max Length";
+        //            if (context.DisplayName == "minLength")
+        //                msgName = "Min Length";
+        //            string msg = string.Format("{0} must a number beween 1 and 255", msgName);
+        //            return new System.ComponentModel.DataAnnotations.ValidationResult(msg);
         //        }
 
+        //        int minVal = Int32.MinValue; 
+        //        Int32.TryParse(dataObj.minLength, out minVal);
+        //        int maxVal = Int32.MaxValue;
+        //        Int32.TryParse(dataObj.maxLength, out maxVal);
+        //        if (maxVal <= minVal || minVal == Int32.MinValue || maxVal == Int32.MaxValue)
+        //        {
+        //            return new System.ComponentModel.DataAnnotations.ValidationResult("Min Length must be less than Max Lenght");
+        //        }
+        //        if (dataObj.HasErrors)
+        //        {
+        //            if (dataObj.IsValidNumber(dataObj.maxLength))
+        //                dataObj.SetErrors(() => dataObj.maxLength, new List<string>());
+        //            if (dataObj.IsValidNumber(dataObj.minLength))
+        //                dataObj.SetErrors(() => dataObj.minLength, new List<string>());
+        //        }
         //    }
         //    return System.ComponentModel.DataAnnotations.ValidationResult.Success;
         //}
-        public bool IsValidNumber(string name)
-        {
-            return !(name.Length > 3 || name.Length <= 0 ||
-                    !name.All(char.IsDigit) || Int32.Parse(name) > 255);
-        }
-        public static System.ComponentModel.DataAnnotations.ValidationResult CheckMaxMore(string name, ValidationContext context)
-        {
-            UDTTextEditProps dataObj = context.ObjectInstance as UDTTextEditProps;
-            
-            if (dataObj != null)
-            {
-
-                if (!dataObj.IsValidNumber(name))
-                {
-                    string msgName = "Max Length";
-                    if (context.DisplayName == "minLength")
-                        msgName = "Min Length";
-                    string msg = string.Format("{0} must a number beween 1 and 255", msgName);
-                    return new System.ComponentModel.DataAnnotations.ValidationResult(msg);
-                }
-
-                int minVal = Int32.MinValue; 
-                Int32.TryParse(dataObj.minLength, out minVal);
-                int maxVal = Int32.MaxValue;
-                Int32.TryParse(dataObj.maxLength, out maxVal);
-                if (maxVal <= minVal || minVal == Int32.MinValue || maxVal == Int32.MaxValue)
-                {
-                    return new System.ComponentModel.DataAnnotations.ValidationResult("Min Length must be less than Max Lenght");
-                }
-                if (dataObj.HasErrors)
-                {
-                    if (dataObj.IsValidNumber(dataObj.maxLength))
-                        dataObj.SetErrors(() => dataObj.maxLength, new List<string>());
-                    if (dataObj.IsValidNumber(dataObj.minLength))
-                        dataObj.SetErrors(() => dataObj.minLength, new List<string>());
-                }
-            }
-            return System.ComponentModel.DataAnnotations.ValidationResult.Success;
-        }
 
     }
 
@@ -1316,227 +1311,249 @@ namespace UDTApp.Models
             get { return _defaultList; }
             set { SetProperty(ref _defaultList, value); }
         }
+
+        private bool _dateRangeNotUsed = true;
+        public bool dateRangeNotUsed
+        {
+            get { return _dateRangeNotUsed; }
+            set { SetProperty(ref _dateRangeNotUsed, value); }
+        }
+
+        private DateTime _minDate = DateTime.Parse("1/1/2000");
+        public DateTime minDate
+        {
+            get { return _minDate; }
+            set { SetProperty(ref _minDate, value); }
+        }
+
+        private DateTime _maxDate = DateTime.Parse("1/1/2020");
+        public DateTime maxDate
+        {
+            get { return _maxDate; }
+            set { SetProperty(ref _maxDate, value); }
+        }
+
     }
 
-    public enum NumberPickerType { Integer, Decimal}
-    public class UDTNumberPicker : ValidatableBindableBase
-    {
-        [XmlIgnoreAttribute]
-        public DelegateCommand<EventArgs> UpCommand { get; set; }
-        [XmlIgnoreAttribute]
-        public DelegateCommand<EventArgs> DownCommand { get; set; }
-        [XmlIgnoreAttribute]
-        public DelegateCommand<EventArgs> FastUpCommand { get; set; }
-        [XmlIgnoreAttribute]
-        public DelegateCommand<EventArgs> FastDownCommand { get; set; }
+    //public enum NumberPickerType { Integer, Decimal}
+    //public class UDTNumberPicker : ValidatableBindableBase
+    //{
+    //    [XmlIgnoreAttribute]
+    //    public DelegateCommand<EventArgs> UpCommand { get; set; }
+    //    [XmlIgnoreAttribute]
+    //    public DelegateCommand<EventArgs> DownCommand { get; set; }
+    //    [XmlIgnoreAttribute]
+    //    public DelegateCommand<EventArgs> FastUpCommand { get; set; }
+    //    [XmlIgnoreAttribute]
+    //    public DelegateCommand<EventArgs> FastDownCommand { get; set; }
 
-        private UDTNumberPicker() { }
+    //    private UDTNumberPicker() { }
 
-        public UDTNumberPicker(string _name, decimal _numMax, decimal _numMin, 
-            NumberPickerType _pickerType = NumberPickerType.Integer,           
-            Action<decimal> _numberChanged = null)
-        {
-            name = _name;
-            numberChanged = _numberChanged;
-            numMax = _numMax;
-            numMin = _numMin;
-            pickerType = _pickerType;
-            UpCommand = new DelegateCommand<EventArgs>(upBtnClk);
-            DownCommand = new DelegateCommand<EventArgs>(downBtnClk);
-            FastUpCommand = new DelegateCommand<EventArgs>(fastUpBtnClk);
-            FastDownCommand = new DelegateCommand<EventArgs>(fastDownBtnClk);
-        }
+    //    public UDTNumberPicker(string _name, decimal _numMax, decimal _numMin, 
+    //        NumberPickerType _pickerType = NumberPickerType.Integer,           
+    //        Action<decimal> _numberChanged = null)
+    //    {
+    //        name = _name;
+    //        numberChanged = _numberChanged;
+    //        numMax = _numMax;
+    //        numMin = _numMin;
+    //        pickerType = _pickerType;
+    //        UpCommand = new DelegateCommand<EventArgs>(upBtnClk);
+    //        DownCommand = new DelegateCommand<EventArgs>(downBtnClk);
+    //        FastUpCommand = new DelegateCommand<EventArgs>(fastUpBtnClk);
+    //        FastDownCommand = new DelegateCommand<EventArgs>(fastDownBtnClk);
+    //    }
 
-        public string name { get; set; }
+    //    public string name { get; set; }
 
-        private decimal _number = 0;
-        public decimal number
-        {
-            get { return _number; }
-            set
-            {
-                SetProperty(ref _number, value);
-                txtNumber = getNumText(number);
-                if (numberChanged != null) numberChanged(_number);
-            }
-        }
+    //    private decimal _number = 0;
+    //    public decimal number
+    //    {
+    //        get { return _number; }
+    //        set
+    //        {
+    //            SetProperty(ref _number, value);
+    //            txtNumber = getNumText(number);
+    //            if (numberChanged != null) numberChanged(_number);
+    //        }
+    //    }
 
-        private string getNumText(decimal num)
-        {
-            string numTxt = "";
-            if (pickerType == NumberPickerType.Integer)
-                numTxt = string.Format("{0:n0}", number);
-            else if (pickerType == NumberPickerType.Decimal)
-            {
-                numTxt = string.Format("{0}", number);
-                if (_txtNumber.Length > 0 && _txtNumber.Last() == '.')
-                    return numTxt + '.';
-                else return numTxt;
-            }
-            return numTxt;
-        }
+    //    private string getNumText(decimal num)
+    //    {
+    //        string numTxt = "";
+    //        if (pickerType == NumberPickerType.Integer)
+    //            numTxt = string.Format("{0:n0}", number);
+    //        else if (pickerType == NumberPickerType.Decimal)
+    //        {
+    //            numTxt = string.Format("{0}", number);
+    //            if (_txtNumber.Length > 0 && _txtNumber.Last() == '.')
+    //                return numTxt + '.';
+    //            else return numTxt;
+    //        }
+    //        return numTxt;
+    //    }
 
-        private string _txtNumber = "";
-        public string txtNumber
-        {
-            get 
-            {
-                if (!textParsed) return _txtNumber;
-                return getNumText(number);
-            }
-            set
-            {
-                SetProperty(ref _txtNumber, filterDigits(value));
-                textParsed = false;
-                if (!containsOnlyZeros(_txtNumber))
-                {
-                    textParsed = true;
-                    parseNumber(_txtNumber);
-                    if (numberChanged != null) numberChanged(_number);
-                }
-            }
-        }
+    //    private string _txtNumber = "";
+    //    public string txtNumber
+    //    {
+    //        get 
+    //        {
+    //            if (!textParsed) return _txtNumber;
+    //            return getNumText(number);
+    //        }
+    //        set
+    //        {
+    //            SetProperty(ref _txtNumber, filterDigits(value));
+    //            textParsed = false;
+    //            if (!containsOnlyZeros(_txtNumber))
+    //            {
+    //                textParsed = true;
+    //                parseNumber(_txtNumber);
+    //                if (numberChanged != null) numberChanged(_number);
+    //            }
+    //        }
+    //    }
 
-        private bool textParsed = false;
-        private bool containsOnlyZeros(string val)
-        {
-            bool retVal = true;
-            foreach(char c in val)
-            {
-                if (!(c == '0' || c == '.' || c == '-'))
-                {
-                    return false;
-                }
-            }
-            return retVal;
-        }
+    //    private bool textParsed = false;
+    //    private bool containsOnlyZeros(string val)
+    //    {
+    //        bool retVal = true;
+    //        foreach(char c in val)
+    //        {
+    //            if (!(c == '0' || c == '.' || c == '-'))
+    //            {
+    //                return false;
+    //            }
+    //        }
+    //        return retVal;
+    //    }
 
-        private void parseNumber(string txtNum)
-        {
-            if(pickerType == NumberPickerType.Integer)
-            {
-                int num;
-                if (Int32.TryParse(txtNum, out num))
-                    _number = num;
-                else if (txtNum[0] == '-')
-                {
-                    _number = numMin;
-                }
-                else
-                {
-                    _number = numMax;
-                }
-            }
-            else if(pickerType == NumberPickerType.Decimal)
-            {
-                if (Decimal.TryParse(txtNum, out _number)) return;
-                else if (txtNum[0] == '-')
-                {
-                    _number = numMin;
-                }
-                else
-                {
-                    _number = numMax;
-                }
-            }
-            if (_number > numMax)
-                _number = numMax;
-            else if (_number < numMin)
-                _number = numMin;
-        }
+    //    private void parseNumber(string txtNum)
+    //    {
+    //        if(pickerType == NumberPickerType.Integer)
+    //        {
+    //            int num;
+    //            if (Int32.TryParse(txtNum, out num))
+    //                _number = num;
+    //            else if (txtNum[0] == '-')
+    //            {
+    //                _number = numMin;
+    //            }
+    //            else
+    //            {
+    //                _number = numMax;
+    //            }
+    //        }
+    //        else if(pickerType == NumberPickerType.Decimal)
+    //        {
+    //            if (Decimal.TryParse(txtNum, out _number)) return;
+    //            else if (txtNum[0] == '-')
+    //            {
+    //                _number = numMin;
+    //            }
+    //            else
+    //            {
+    //                _number = numMax;
+    //            }
+    //        }
+    //        if (_number > numMax)
+    //            _number = numMax;
+    //        else if (_number < numMin)
+    //            _number = numMin;
+    //    }
 
-        private string filterDigits(string txt)
-        {
-            string outTxt = "";
-            if (string.IsNullOrEmpty(txt))
-                return "0";
-            if (pickerType == NumberPickerType.Integer)
-            {
-                foreach (char c in txt)
-                {
-                    if (txt.First() == c)
-                    {
-                        if (Char.IsDigit(c) || c == '+' || c == '-')
-                            outTxt += c;
-                    }
+    //    private string filterDigits(string txt)
+    //    {
+    //        string outTxt = "";
+    //        if (string.IsNullOrEmpty(txt))
+    //            return "0";
+    //        if (pickerType == NumberPickerType.Integer)
+    //        {
+    //            foreach (char c in txt)
+    //            {
+    //                if (txt.First() == c)
+    //                {
+    //                    if (Char.IsDigit(c) || c == '+' || c == '-')
+    //                        outTxt += c;
+    //                }
 
-                    else if (Char.IsDigit(c))
-                    {
-                        outTxt += c;
-                    }
-                }
-            }
-            else
-            {
-                bool haveDecPt = false;
-                foreach (char c in txt)
-                {
-                    if (txt.First() == c)
-                    {
-                        if (Char.IsDigit(c) || c == '+' || c == '-' || c == '.')
-                            outTxt += c;
-                    }
-                    else if (Char.IsDigit(c))
-                    {
-                        outTxt += c;
-                    }
-                    else if (c == '.' && !haveDecPt)
-                    {
-                        haveDecPt = true;
-                        outTxt += c;
-                    }
-                }
-            }
-            if (string.IsNullOrEmpty(outTxt))
-                return "0";
-            return outTxt;
-        }
+    //                else if (Char.IsDigit(c))
+    //                {
+    //                    outTxt += c;
+    //                }
+    //            }
+    //        }
+    //        else
+    //        {
+    //            bool haveDecPt = false;
+    //            foreach (char c in txt)
+    //            {
+    //                if (txt.First() == c)
+    //                {
+    //                    if (Char.IsDigit(c) || c == '+' || c == '-' || c == '.')
+    //                        outTxt += c;
+    //                }
+    //                else if (Char.IsDigit(c))
+    //                {
+    //                    outTxt += c;
+    //                }
+    //                else if (c == '.' && !haveDecPt)
+    //                {
+    //                    haveDecPt = true;
+    //                    outTxt += c;
+    //                }
+    //            }
+    //        }
+    //        if (string.IsNullOrEmpty(outTxt))
+    //            return "0";
+    //        return outTxt;
+    //    }
 
-        private bool _notUsed = true;
-        public bool notUsed
-        {
-            get { return _notUsed; }
-            set
-            {
-                SetProperty(ref _notUsed, value);
-            }
-        }
+    //    private bool _notUsed = true;
+    //    public bool notUsed
+    //    {
+    //        get { return _notUsed; }
+    //        set
+    //        {
+    //            SetProperty(ref _notUsed, value);
+    //        }
+    //    }
 
-        [XmlIgnoreAttribute]
-        public Action<decimal> numberChanged { get; set; }
+    //    [XmlIgnoreAttribute]
+    //    public Action<decimal> numberChanged { get; set; }
 
-        private void upBtnClk(EventArgs args)
-        {
-            if(number < numMax)
-            { 
-                number++;
-            }
-        }
-        private void downBtnClk(EventArgs args)
-        {
-            if(number > numMin)
-            {
-                number--;
-            }
-        }
-        private void fastUpBtnClk(EventArgs args)
-        {
-            if (number < numMax - 100)
-            { 
-                number = number + 100;
-            }
-        }
-        private void fastDownBtnClk(EventArgs args)
-        {
-            if (number > numMin + 100)
-            { 
-                number = number - 100;
-            }
-        }
-        private decimal numMin = Decimal.MinValue;
-        private decimal numMax = Decimal.MaxValue;
-        NumberPickerType pickerType = NumberPickerType.Integer;
-    }
+    //    private void upBtnClk(EventArgs args)
+    //    {
+    //        if(number < numMax)
+    //        { 
+    //            number++;
+    //        }
+    //    }
+    //    private void downBtnClk(EventArgs args)
+    //    {
+    //        if(number > numMin)
+    //        {
+    //            number--;
+    //        }
+    //    }
+    //    private void fastUpBtnClk(EventArgs args)
+    //    {
+    //        if (number < numMax - 100)
+    //        { 
+    //            number = number + 100;
+    //        }
+    //    }
+    //    private void fastDownBtnClk(EventArgs args)
+    //    {
+    //        if (number > numMin + 100)
+    //        { 
+    //            number = number - 100;
+    //        }
+    //    }
+    //    private decimal numMin = Decimal.MinValue;
+    //    private decimal numMax = Decimal.MaxValue;
+    //    NumberPickerType pickerType = NumberPickerType.Integer;
+    //}
 
     public class UDTItemList
     {

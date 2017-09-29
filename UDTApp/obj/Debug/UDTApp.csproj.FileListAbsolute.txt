@@ -94,3 +94,4 @@ C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\obj\Debug\UDTApp.exe
 C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\obj\Debug\UDTApp.pdb
 C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\obj\Debug\Views\NewProject.baml
 C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\obj\Debug\Views\NewProject.g.cs
+C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\obj\Debug\App.baml

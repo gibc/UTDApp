@@ -95,6 +95,7 @@
     <Compile Include="Models\UDTUserData.cs" />
     <Compile Include="Models\UDTXml.cs" />
     <Compile Include="ViewModels\DataEditViewModel.cs" />
+    <Compile Include="ViewModels\DataEntryControls.cs" />
     <Compile Include="ViewModels\DataViewModel.cs" />
     <Compile Include="ViewModels\ISubPage.cs" />
     <Compile Include="ViewModels\NewProjectViewModel.cs" />

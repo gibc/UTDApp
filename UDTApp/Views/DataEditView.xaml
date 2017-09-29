@@ -35,7 +35,15 @@
                 </Grid>
             </GroupBox>
         </DataTemplate>
-
+        
+        <DataTemplate DataType="{x:Type vm:UDTDataNumberBox}">
+            <WrapPanel Margin="0,0,0,13" KeyboardNavigation.TabNavigation="Continue" >
+                <Label Content="{Binding colName}" Width="85" Height="25" Focusable="False"
+                       HorizontalContentAlignment="Right" IsTabStop="False" />
+                <ContentControl Content="{Binding numberEntryBox}"/>
+            </WrapPanel>
+        </DataTemplate>
+        
         <DataTemplate DataType="{x:Type vm:UDTDataTextBox}">
             <WrapPanel Margin="0,0,0,13" KeyboardNavigation.TabNavigation="Continue" >
                 <Label Content="{Binding colName}" Width="85" Height="25" Focusable="False"
