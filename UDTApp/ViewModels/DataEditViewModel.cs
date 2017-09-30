@@ -188,10 +188,10 @@ namespace UDTApp.ViewModels
             editProps = item.editProps as UDTIntEditProps;
             decimal maxNum = Decimal.MaxValue;
             decimal minNum = Decimal.MinValue;
-            if (!editProps.maxPicker.notUsed)
-                maxNum = editProps.maxPicker.number;
-            if (!editProps.minPicker.notUsed)
-                minNum = editProps.minPicker.number;
+            if (editProps.maxPicker.number != null)
+                maxNum = (Decimal)editProps.maxPicker.number;
+            if (editProps.minPicker.number != null)
+                minNum = (Decimal)editProps.minPicker.number;
             numberEntryBox = new UDTNumberEntry
                 (item.Name,
                 maxNum,
@@ -211,7 +211,7 @@ namespace UDTApp.ViewModels
         {
             if (row[colName] == DBNull.Value)
             {
-                if(!editProps.defaultPicker.notUsed)
+                if (editProps.defaultPicker.number != null)
                 {
                     _numberEntryBox.number = editProps.defaultPicker.number;
                 }
@@ -226,13 +226,17 @@ namespace UDTApp.ViewModels
 
         private UDTIntEditProps editProps = null;
 
-        private void numberChanged(decimal number)
+        private void numberChanged(decimal? number)
         {
-            if (editProps.required && _numberEntryBox.txtNumber == "")
+            if (editProps.required && _numberEntryBox.number == null)
             {
                 List<string> errLst = new List<string>();
                 errLst.Add("Number entry is required.");
                 SetErrors(() => this.numberEntryBox, errLst);
+            }
+            else
+            {
+                SetErrors(() => this.numberEntryBox, new List<string>());
             }
             validationChanged(HasErrors);
             if (!HasErrors)

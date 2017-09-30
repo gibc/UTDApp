@@ -48,10 +48,11 @@
                                       Command="{Binding FastDownCommand}" Padding="0,-3,0,0" Margin="3,0,0,0"
                                       FontWeight="ExtraBold" BorderThickness="2" Interval="5"/>
                     </WrapPanel>
-                    <WrapPanel>
+                    <!--<WrapPanel>
                         <Label Content="Not Used"/>
-                        <CheckBox IsChecked="{Binding notUsed}" VerticalAlignment="Center"/>
-                    </WrapPanel>
+                        <CheckBox IsChecked="{Binding notUsed}" Command="{Binding NotUsedCommand}" 
+                                  VerticalAlignment="Center"/>
+                    </WrapPanel>-->
 
                 </StackPanel>
             </GroupBox>

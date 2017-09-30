@@ -1081,21 +1081,7 @@ namespace UDTApp.Models
         public UDTNumberPicker minPicker { get; set; }
         public UDTNumberPicker maxPicker { get; set; }
 
-        //private string _minLength = "0";
-        ////[Required (ErrorMessage = "Min Length is required.")]
-        ////[Range(0, 255, ErrorMessage = "Min Length must a number between 0 and 254")]
-        ////[CustomValidation(typeof(UDTTextEditProps), "ACheckValidNumber")]
-        //[CustomValidation(typeof(UDTTextEditProps), "CheckMaxMore")]
-        //public string minLength
-        //{
-        //    get { return _minLength; }
-        //    set 
-        //    { 
-        //        SetProperty(ref _minLength, value);
-        //    }
-        //}
-
-        private void minChanged(decimal newVal)
+        private void minChanged(decimal? newVal)
         {
             if (newVal >= maxPicker.number)
             {
@@ -1103,7 +1089,7 @@ namespace UDTApp.Models
             }
         }
 
-        private void maxChanged(decimal newVal)
+        private void maxChanged(decimal? newVal)
         {
             if (newVal <= minPicker.number)
             {
@@ -1202,7 +1188,7 @@ namespace UDTApp.Models
         public UDTNumberPicker minPicker { get; set; }
         public UDTNumberPicker maxPicker { get; set; }
 
-        private void minChanged(decimal newVal) 
+        private void minChanged(decimal? newVal) 
         { 
             if(newVal >= maxPicker.number)
             {
@@ -1210,7 +1196,7 @@ namespace UDTApp.Models
             }
         }
 
-        private void maxChanged(decimal newVal) 
+        private void maxChanged(decimal? newVal) 
         {
             if (newVal <= minPicker.number)
             {
@@ -1251,7 +1237,11 @@ namespace UDTApp.Models
         public UDTNumberPicker minPicker { get; set; }
         public UDTNumberPicker maxPicker { get; set; }
 
-        private void minChanged(decimal newVal)
+        //private void defaultChanged(decimal? newVal)
+        //{
+        //    if (newVal == null) defaultPicker.number = 0;
+        //}
+        private void minChanged(decimal? newVal)
         {
             if (newVal >= maxPicker.number)
             {
@@ -1259,7 +1249,7 @@ namespace UDTApp.Models
             }
         }
 
-        private void maxChanged(decimal newVal)
+        private void maxChanged(decimal? newVal)
         {
             if (newVal <= minPicker.number)
             {

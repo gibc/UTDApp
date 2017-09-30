@@ -23,5 +23,10 @@ namespace UDTApp
             Bootstrapper bs = new Bootstrapper();
             bs.Run();
         }
+
+        private void CheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }

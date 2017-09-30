@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Xml.Serialization;
 
 namespace UDTApp.ViewModels.DataEntryControls
@@ -13,15 +14,15 @@ namespace UDTApp.ViewModels.DataEntryControls
         public UDTPickerBase()
         { }
 
-        private bool _notUsed = true;
-        public bool notUsed
-        {
-            get { return _notUsed; }
-            set
-            {
-                SetProperty(ref _notUsed, value);
-            }
-        }
+        //private bool _notUsed = true;
+        //public bool notUsed
+        //{
+        //    get { return _notUsed; }
+        //    set
+        //    {
+        //        SetProperty(ref _notUsed, value);
+        //    }
+        //}
         protected NumberPickerType pickerType = NumberPickerType.Integer;
     }
 
@@ -29,7 +30,7 @@ namespace UDTApp.ViewModels.DataEntryControls
     {
         public UDTNumberEntry(string _name, decimal _numMax, decimal _numMin,
             NumberPickerType _pickerType = NumberPickerType.Integer,
-            Action<decimal> _numberChanged = null) :
+            Action<decimal?> _numberChanged = null) :
             base(_name, _numMax, _numMin,_pickerType, _numberChanged)
         {
 
@@ -46,12 +47,21 @@ namespace UDTApp.ViewModels.DataEntryControls
         public DelegateCommand<EventArgs> FastUpCommand { get; set; }
         [XmlIgnoreAttribute]
         public DelegateCommand<EventArgs> FastDownCommand { get; set; }
+        //[XmlIgnoreAttribute]
+        //public DelegateCommand<RoutedEventArgs> NotUsedCommand { get; set; }
 
-        private UDTNumberPicker() { }
+        private UDTNumberPicker() 
+        {
+            UpCommand = new DelegateCommand<EventArgs>(upBtnClk);
+            DownCommand = new DelegateCommand<EventArgs>(downBtnClk);
+            FastUpCommand = new DelegateCommand<EventArgs>(fastUpBtnClk);
+            FastDownCommand = new DelegateCommand<EventArgs>(fastDownBtnClk);
+            //NotUsedCommand = new DelegateCommand<RoutedEventArgs>(notUsedClk);
+        }
 
         public UDTNumberPicker(string _name, decimal _numMax, decimal _numMin,
             NumberPickerType _pickerType = NumberPickerType.Integer,
-            Action<decimal> _numberChanged = null)
+            Action<decimal?> _numberChanged = null) 
         {
             name = _name;
             numberChanged = _numberChanged;
@@ -62,12 +72,13 @@ namespace UDTApp.ViewModels.DataEntryControls
             DownCommand = new DelegateCommand<EventArgs>(downBtnClk);
             FastUpCommand = new DelegateCommand<EventArgs>(fastUpBtnClk);
             FastDownCommand = new DelegateCommand<EventArgs>(fastDownBtnClk);
+            //NotUsedCommand = new DelegateCommand<RoutedEventArgs>(notUsedClk);
         }
 
         public string name { get; set; }
 
-        private decimal _number = 0;
-        public decimal number
+        private decimal? _number = null;
+        public decimal? number
         {
             get { return _number; }
             set
@@ -78,9 +89,10 @@ namespace UDTApp.ViewModels.DataEntryControls
             }
         }
 
-        private string getNumText(decimal num)
+        private string getNumText(decimal? num)
         {
             string numTxt = "";
+            if (num == null) return numTxt;
             if (pickerType == NumberPickerType.Integer)
                 numTxt = string.Format("{0:n0}", number);
             else if (pickerType == NumberPickerType.Decimal)
@@ -99,6 +111,7 @@ namespace UDTApp.ViewModels.DataEntryControls
             get
             {
                 if (!textParsed) return _txtNumber;
+                else if (number == null) return "";
                 return getNumText(number);
             }
             set
@@ -117,6 +130,7 @@ namespace UDTApp.ViewModels.DataEntryControls
         private bool textParsed = false;
         private bool containsOnlyZeros(string val)
         {
+            if (string.IsNullOrEmpty(val)) return false;
             bool retVal = true;
             foreach (char c in val)
             {
@@ -130,7 +144,9 @@ namespace UDTApp.ViewModels.DataEntryControls
 
         private void parseNumber(string txtNum)
         {
-            if (pickerType == NumberPickerType.Integer)
+            if (string.IsNullOrEmpty(txtNum))
+                _number = null;
+            else if (pickerType == NumberPickerType.Integer)
             {
                 int num;
                 if (Int32.TryParse(txtNum, out num))
@@ -146,7 +162,12 @@ namespace UDTApp.ViewModels.DataEntryControls
             }
             else if (pickerType == NumberPickerType.Decimal)
             {
-                if (Decimal.TryParse(txtNum, out _number)) return;
+                Decimal val;
+                if (Decimal.TryParse(txtNum, out val))
+                {
+                    _number = val;
+                    return;
+                }
                 else if (txtNum[0] == '-')
                 {
                     _number = numMin;
@@ -166,7 +187,7 @@ namespace UDTApp.ViewModels.DataEntryControls
         {
             string outTxt = "";
             if (string.IsNullOrEmpty(txt))
-                return "0";
+                return outTxt;
             if (pickerType == NumberPickerType.Integer)
             {
                 foreach (char c in txt)
@@ -204,8 +225,8 @@ namespace UDTApp.ViewModels.DataEntryControls
                     }
                 }
             }
-            if (string.IsNullOrEmpty(outTxt))
-                return "0";
+            //if (string.IsNullOrEmpty(outTxt))
+            //    return "0";
             return outTxt;
         }
 
@@ -220,10 +241,11 @@ namespace UDTApp.ViewModels.DataEntryControls
         //}
 
         [XmlIgnoreAttribute]
-        public Action<decimal> numberChanged { get; set; }
+        public Action<decimal?> numberChanged { get; set; }
 
         private void upBtnClk(EventArgs args)
         {
+            if (number == null) number = 0;
             if (number < numMax)
             {
                 number++;
@@ -232,6 +254,7 @@ namespace UDTApp.ViewModels.DataEntryControls
         }
         private void downBtnClk(EventArgs args)
         {
+            if (number == null) number = 0;
             if (number > numMin)
             {
                 number--;
@@ -240,6 +263,7 @@ namespace UDTApp.ViewModels.DataEntryControls
         }
         private void fastUpBtnClk(EventArgs args)
         {
+            if (number == null) number = 0;
             if (number < numMax - 100)
             {
                 number = number + 100;
@@ -248,12 +272,22 @@ namespace UDTApp.ViewModels.DataEntryControls
         }
         private void fastDownBtnClk(EventArgs args)
         {
+            if (number == null) number = 0;
             if (number > numMin + 100)
             {
                 number = number - 100;
             }
             else number = numMin;
         }
+
+        //private void notUsedClk(RoutedEventArgs args)
+        //{
+        //    if (notUsed)
+        //        number = null;
+        //    else if (number == null)
+        //        number = 0;
+        //}
+
         private decimal numMin = Decimal.MinValue;
         private decimal numMax = Decimal.MaxValue;
         //NumberPickerType pickerType = NumberPickerType.Integer;

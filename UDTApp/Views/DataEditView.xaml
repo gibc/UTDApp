@@ -40,7 +40,21 @@
             <WrapPanel Margin="0,0,0,13" KeyboardNavigation.TabNavigation="Continue" >
                 <Label Content="{Binding colName}" Width="85" Height="25" Focusable="False"
                        HorizontalContentAlignment="Right" IsTabStop="False" />
-                <ContentControl Content="{Binding numberEntryBox}"/>
+                <ContentControl Content="{Binding numberEntryBox}" >
+                    
+                    <Validation.ErrorTemplate>
+                        <ControlTemplate>
+                            <DockPanel>
+                                <Border BorderBrush="Red" BorderThickness="2">
+                                    <AdornedElementPlaceholder x:Name="controlWithError"/>
+                                </Border>
+                            </DockPanel>
+                        </ControlTemplate>
+                    </Validation.ErrorTemplate>
+                    
+
+                    
+                </ContentControl>
             </WrapPanel>
         </DataTemplate>
         
