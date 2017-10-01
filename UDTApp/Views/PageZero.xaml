@@ -432,6 +432,13 @@
             <StackPanel>
                 
                 <WrapPanel>
+                    <Label HorizontalContentAlignment="Right" Content="Required: " 
+                           Width="80"/>
+                    <CheckBox Width="80" HorizontalAlignment="Left" IsChecked="{Binding required}"
+                             VerticalAlignment="Center"/>
+                </WrapPanel>
+                
+                <WrapPanel>
                     <Label HorizontalContentAlignment="Right" Content="Default Text: " 
                            Width="80"/>
                     <TextBox Width="80" HorizontalAlignment="Left" Text="{Binding defaultText}"

@@ -17,7 +17,7 @@
                 <Setter.Value>
                     <ControlTemplate>
                         <StackPanel>
-                            <Border BorderThickness="0" BorderBrush="DarkRed">
+                            <Border HorizontalAlignment="Left" BorderThickness="2" BorderBrush="Red">
                                 <StackPanel>
                                     <AdornedElementPlaceholder
                                 x:Name="errorControl" />

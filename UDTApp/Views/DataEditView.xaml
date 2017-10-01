@@ -14,6 +14,42 @@
 
     <UserControl.Resources>
 
+        <Style x:Key="editError" TargetType="ContentControl">
+            <Setter Property="Validation.ErrorTemplate">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <StackPanel>
+                            <Border HorizontalAlignment="Left" BorderThickness="1" BorderBrush="Red">
+                                <StackPanel>
+                                    <AdornedElementPlaceholder
+                                                        x:Name="errorControl" />
+                                </StackPanel>
+                            </Border>
+                            <Border Panel.ZIndex="20" BorderThickness="1" BorderBrush="Red" >
+                                <TextBlock Height="15" FontSize="11"
+                                    Text="{Binding AdornedElement.ToolTip, ElementName=errorControl}" 
+                                    Foreground="Red" Background="White" Opacity=".85" />
+                                <Border.RenderTransform>
+                                    <TransformGroup>
+                                        <TranslateTransform X="0" Y="-10" />
+                                    </TransformGroup>
+                                </Border.RenderTransform>
+                            </Border>
+
+                        </StackPanel>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="Validation.HasError" Value="true">
+                    <Setter Property="ToolTip"
+                        Value="{Binding RelativeSource={RelativeSource Self}
+                            , Path=(Validation.Errors)[0].ErrorContent}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+
         <DataTemplate DataType="{x:Type vm:UDTDataButton}" >
             <Button Command="{Binding ButtonClickCommand}" Content="{Binding buttonName}" Width="Auto" Height="20"></Button>
         </DataTemplate>
@@ -40,21 +76,7 @@
             <WrapPanel Margin="0,0,0,13" KeyboardNavigation.TabNavigation="Continue" >
                 <Label Content="{Binding colName}" Width="85" Height="25" Focusable="False"
                        HorizontalContentAlignment="Right" IsTabStop="False" />
-                <ContentControl Content="{Binding numberEntryBox}" >
-                    
-                    <Validation.ErrorTemplate>
-                        <ControlTemplate>
-                            <DockPanel>
-                                <Border BorderBrush="Red" BorderThickness="2">
-                                    <AdornedElementPlaceholder x:Name="controlWithError"/>
-                                </Border>
-                            </DockPanel>
-                        </ControlTemplate>
-                    </Validation.ErrorTemplate>
-                    
-
-                    
-                </ContentControl>
+                <ContentControl Content="{Binding numberEntryBox}" Style="{StaticResource editError}"/>
             </WrapPanel>
         </DataTemplate>
         
