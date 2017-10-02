@@ -9,35 +9,20 @@ using System.Xml.Serialization;
 
 namespace UDTApp.ViewModels.DataEntryControls
 {
-    public class UDTPickerBase: ValidatableBindableBase
-    {
-        public UDTPickerBase()
-        { }
-
-        //private bool _notUsed = true;
-        //public bool notUsed
-        //{
-        //    get { return _notUsed; }
-        //    set
-        //    {
-        //        SetProperty(ref _notUsed, value);
-        //    }
-        //}
-        protected NumberPickerType pickerType = NumberPickerType.Integer;
-    }
 
     public class UDTNumberEntry : UDTNumberPicker
     {
         public UDTNumberEntry(string _name, decimal _numMax, decimal _numMin,
             NumberPickerType _pickerType = NumberPickerType.Integer,
             Action<decimal?> _numberChanged = null) :
-            base(_name, _numMax, _numMin,_pickerType, _numberChanged)
+            base(_name, _numMax, _numMin, _pickerType, _numberChanged)
         {
 
         }
     }
+
     public enum NumberPickerType { Integer, Decimal, Text, Date }
-    public class UDTNumberPicker : UDTPickerBase
+    public class UDTNumberPicker : ValidatableBindableBase
     {
         [XmlIgnoreAttribute]
         public DelegateCommand<EventArgs> UpCommand { get; set; }
@@ -47,8 +32,6 @@ namespace UDTApp.ViewModels.DataEntryControls
         public DelegateCommand<EventArgs> FastUpCommand { get; set; }
         [XmlIgnoreAttribute]
         public DelegateCommand<EventArgs> FastDownCommand { get; set; }
-        //[XmlIgnoreAttribute]
-        //public DelegateCommand<RoutedEventArgs> NotUsedCommand { get; set; }
 
         private UDTNumberPicker() 
         {
@@ -56,23 +39,17 @@ namespace UDTApp.ViewModels.DataEntryControls
             DownCommand = new DelegateCommand<EventArgs>(downBtnClk);
             FastUpCommand = new DelegateCommand<EventArgs>(fastUpBtnClk);
             FastDownCommand = new DelegateCommand<EventArgs>(fastDownBtnClk);
-            //NotUsedCommand = new DelegateCommand<RoutedEventArgs>(notUsedClk);
         }
 
         public UDTNumberPicker(string _name, decimal _numMax, decimal _numMin,
             NumberPickerType _pickerType = NumberPickerType.Integer,
-            Action<decimal?> _numberChanged = null) 
+            Action<decimal?> _numberChanged = null) : this()
         {
             name = _name;
             numberChanged = _numberChanged;
             numMax = _numMax;
             numMin = _numMin;
             pickerType = _pickerType;
-            UpCommand = new DelegateCommand<EventArgs>(upBtnClk);
-            DownCommand = new DelegateCommand<EventArgs>(downBtnClk);
-            FastUpCommand = new DelegateCommand<EventArgs>(fastUpBtnClk);
-            FastDownCommand = new DelegateCommand<EventArgs>(fastDownBtnClk);
-            //NotUsedCommand = new DelegateCommand<RoutedEventArgs>(notUsedClk);
         }
 
         public string name { get; set; }
@@ -291,5 +268,6 @@ namespace UDTApp.ViewModels.DataEntryControls
         private decimal numMin = Decimal.MinValue;
         private decimal numMax = Decimal.MaxValue;
         //NumberPickerType pickerType = NumberPickerType.Integer;
+        protected NumberPickerType pickerType = NumberPickerType.Integer;
     }
 }

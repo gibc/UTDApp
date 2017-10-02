@@ -178,6 +178,12 @@ namespace UDTApp.ViewModels
         virtual protected void setColumn() { }
     }
 
+    public class UDTDataDecimalBox : UDTDataNumberBox
+    {
+        public UDTDataDecimalBox(string _colName, UDTBase item, Action<bool> _validationChanged) :
+            base(_colName, item, _validationChanged) { }
+    }
+
     public class UDTDataNumberBox : UDTDataBoxBase
     {
         public UDTDataNumberBox(string _colName, UDTBase item, Action<bool> _validationChanged)
@@ -185,18 +191,22 @@ namespace UDTApp.ViewModels
             colName = _colName;
             udtItem = item;
             validationChanged = _validationChanged;
-            editProps = item.editProps as UDTIntEditProps;
+            //editProps = item.editProps as UDTIntEditProps;
+            editProps = item.editProps;
             decimal maxNum = Decimal.MaxValue;
             decimal minNum = Decimal.MinValue;
             if (editProps.maxPicker.number != null)
                 maxNum = (Decimal)editProps.maxPicker.number;
             if (editProps.minPicker.number != null)
                 minNum = (Decimal)editProps.minPicker.number;
+            NumberPickerType pickType = NumberPickerType.Integer;
+            if (item.TypeName == UDTTypeName.Real)
+                pickType = NumberPickerType.Decimal;
             numberEntryBox = new UDTNumberEntry
                 (item.Name,
                 maxNum,
                 minNum,
-                NumberPickerType.Integer,
+                pickType,
                 numberChanged);
         }
 
@@ -224,7 +234,8 @@ namespace UDTApp.ViewModels
             }
         }
 
-        private UDTIntEditProps editProps = null;
+        //private UDTIntEditProps editProps = null;
+        private dynamic editProps = null;
 
         private void numberChanged(decimal? number)
         {
@@ -247,9 +258,18 @@ namespace UDTApp.ViewModels
                 }
                 else
                 {
-                    int currentVal = (int)row[colName];
-                    if(currentVal != (int)number)
-                    row[colName] = number;
+                    if(udtItem.TypeName == UDTTypeName.Number)
+                    {
+                        int currentVal = (int)row[colName];
+                        if(currentVal != (int)number)
+                            row[colName] = number;
+                    }
+                    else if (udtItem.TypeName == UDTTypeName.Real)
+                    {
+                        decimal currentVal = (decimal)row[colName];
+                        if (currentVal != (decimal)number)
+                            row[colName] = number;
+                    }
                 }
 
             }
@@ -570,7 +590,7 @@ namespace UDTApp.ViewModels
             foreach (UDTBase item in udtData.columnData)
             {
                 // TBD: create editBox type based on item typeName
-                if(item.TypeName == UDTTypeName.Number)
+                if (item.TypeName == UDTTypeName.Number || item.TypeName == UDTTypeName.Real)
                     editBoxes.Add(new UDTDataNumberBox(item.Name, item, editBoxValidationChanged));
                 else 
                     editBoxes.Add(new UDTDataTextBox(item.Name, item, editBoxValidationChanged));
