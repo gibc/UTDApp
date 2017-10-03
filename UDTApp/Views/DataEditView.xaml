@@ -14,7 +14,8 @@
 
     <UserControl.Resources>
 
-        <Style x:Key="editError" TargetType="ContentControl">
+
+        <Style x:Key="editErrorBase" >
             <Setter Property="Validation.ErrorTemplate">
                 <Setter.Value>
                     <ControlTemplate>
@@ -42,12 +43,18 @@
             </Setter>
             <Style.Triggers>
                 <Trigger Property="Validation.HasError" Value="true">
-                    <Setter Property="ToolTip"
+                    <Setter Property="Control.ToolTip"
                         Value="{Binding RelativeSource={RelativeSource Self}
                             , Path=(Validation.Errors)[0].ErrorContent}" />
                 </Trigger>
             </Style.Triggers>
         </Style>
+        
+        <Style x:Key="editError" TargetType="ContentControl" 
+               BasedOn="{StaticResource editErrorBase}"/>
+
+        <Style x:Key="dateEditError" TargetType="DatePicker" 
+               BasedOn="{StaticResource editErrorBase}"/>
 
 
         <DataTemplate DataType="{x:Type vm:UDTDataButton}" >
@@ -71,7 +78,19 @@
                 </Grid>
             </GroupBox>
         </DataTemplate>
-        
+
+        <DataTemplate DataType="{x:Type vm:UDTDataDateBox}">
+            <WrapPanel Margin="0,0,0,13" KeyboardNavigation.TabNavigation="Continue" >
+                <Label Content="{Binding colName}" Width="85" Height="25" Focusable="False"
+                       HorizontalContentAlignment="Right" IsTabStop="False" />
+                <DatePicker SelectedDateFormat="Short"  
+                            SelectedDate="{Binding dateEntry, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            Style="{StaticResource dateEditError}"
+                              DisplayDateStart="1/01/0001" DisplayDateEnd="12/31/3000" 
+                              FirstDayOfWeek="Sunday"/>
+            </WrapPanel>
+        </DataTemplate>
+
         <DataTemplate DataType="{x:Type vm:UDTDataNumberBox}">
             <WrapPanel Margin="0,0,0,13" KeyboardNavigation.TabNavigation="Continue" >
                 <Label Content="{Binding colName}" Width="85" Height="25" Focusable="False"

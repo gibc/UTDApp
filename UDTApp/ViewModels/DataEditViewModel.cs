@@ -175,7 +175,116 @@ namespace UDTApp.ViewModels
             }
         }
 
+        protected dynamic editProps = null;
+
         virtual protected void setColumn() { }
+    }
+
+    public class UDTDataDateBox : UDTDataBoxBase
+    {
+        public UDTDataDateBox(string _colName, UDTBase item, Action<bool> _validationChanged) 
+        {
+            colName = _colName;
+            udtItem = item;
+            validationChanged = _validationChanged;
+            editProps = item.editProps;
+        }
+
+        private DateTime? _date = null;
+        public DateTime? dateEntry
+        {
+            get { return _date; }
+            set 
+            { 
+                SetProperty(ref _date, value);
+                dateChanged();
+            }
+        }
+
+        override protected void setColumn()
+        {
+            if (row[colName] == DBNull.Value)
+            {
+                UDTDateEditProps dateEditProps = editProps as UDTDateEditProps;
+                if (dateEditProps.defaultDate == DateDefault.None)
+                {
+                    dateEntry = null;
+                }
+                else if (dateEditProps.defaultDate == DateDefault.CurrentDay)
+                {
+                    dateEntry = DateTime.Now;
+                }
+                else if (dateEditProps.defaultDate == DateDefault.CurrentWeek)
+                {
+                    DateTime now = DateTime.Now;
+                    int pastSunday = 6 - (int)now.DayOfWeek;
+                    dateEntry = new DateTime(now.Year, now.Month, now.Day - pastSunday);
+                }
+                else if (dateEditProps.defaultDate == DateDefault.CurrentMonth)
+                {
+                    DateTime now = DateTime.Now;
+                    dateEntry = new DateTime(now.Year, now.Month, 1);
+                }
+                else if (dateEditProps.defaultDate == DateDefault.CurrentYear)
+                {
+                    DateTime now = DateTime.Now;
+                    dateEntry = new DateTime(now.Year, 1, 1);
+                }
+            }
+            else if (udtItem.GetType() == typeof(UDTDateItem))
+            {
+                DateTime dateVal = (DateTime)row[colName];
+                dateEntry = dateVal;
+            }
+        }
+
+        private void dateChanged()
+        {
+            if (editProps.required && dateEntry == null)
+            {
+                List<string> errLst = new List<string>();
+                errLst.Add("Date/Time entry is required.");
+                SetErrors(() => this.dateEntry, errLst);
+            }
+            else
+            {
+                SetErrors(() => this.dateEntry, new List<string>());
+            }
+            validationChanged(HasErrors);
+            if (!HasErrors)
+            {
+                UDTDateEditProps dateEditProps = editProps as UDTDateEditProps;
+                if (dateEntry == null)
+                {
+                    row[colName] = DBNull.Value;
+                }
+                else
+                {
+                    if(!dateEditProps.dateRangeNotUsed)
+                    {
+                        if(dateEntry < dateEditProps.minDate)
+                        {
+                            dateEntry = dateEditProps.minDate;
+                        }
+                        else if (dateEntry > dateEditProps.maxDate)
+                        {
+                            dateEntry = dateEditProps.maxDate;
+                        }
+                    }
+
+                    if (row[colName] == DBNull.Value)
+                    {
+                        row[colName] = dateEntry;
+                    }
+                    else 
+                    {
+                        DateTime currentVal = (DateTime)row[colName];
+                        if (currentVal != dateEntry)
+                            row[colName] = dateEntry;
+                    }
+                }
+            }
+        }
     }
 
     public class UDTDataDecimalBox : UDTDataNumberBox
@@ -235,7 +344,7 @@ namespace UDTApp.ViewModels
         }
 
         //private UDTIntEditProps editProps = null;
-        private dynamic editProps = null;
+        //private dynamic editProps = null;
 
         private void numberChanged(decimal? number)
         {
@@ -592,6 +701,8 @@ namespace UDTApp.ViewModels
                 // TBD: create editBox type based on item typeName
                 if (item.TypeName == UDTTypeName.Number || item.TypeName == UDTTypeName.Real)
                     editBoxes.Add(new UDTDataNumberBox(item.Name, item, editBoxValidationChanged));
+                else if (item.TypeName == UDTTypeName.Date)
+                    editBoxes.Add(new UDTDataDateBox(item.Name, item, editBoxValidationChanged));
                 else 
                     editBoxes.Add(new UDTDataTextBox(item.Name, item, editBoxValidationChanged));
             }
