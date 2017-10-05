@@ -5,8 +5,6 @@
 
     <Style TargetType = "{x:Type local:MaskedEdit}"
       BasedOn = "{StaticResource {x:Type TextBox}}">
-        <!--<Setter Property = "Background" Value = "LightSalmon" />
-        <Setter Property = "Foreground" Value = "Blue"/>-->
     </Style>
     
     <!--<Style TargetType="{x:Type local:MaskedEdit}">
