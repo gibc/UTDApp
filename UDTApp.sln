@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UDTApp", "UDTApp\UDTApp.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UDTAppControlLibrary", "UDTAppControlLibrary\UDTAppControlLibrary.csproj", "{F3143ADA-78B2-4870-8DDA-1B28A6BA2135}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomControlTest", "CustomControlTest\CustomControlTest.csproj", "{8F7087C2-0A69-4245-8A7D-E149F4336517}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{F3143ADA-78B2-4870-8DDA-1B28A6BA2135}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F3143ADA-78B2-4870-8DDA-1B28A6BA2135}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F3143ADA-78B2-4870-8DDA-1B28A6BA2135}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8F7087C2-0A69-4245-8A7D-E149F4336517}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8F7087C2-0A69-4245-8A7D-E149F4336517}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8F7087C2-0A69-4245-8A7D-E149F4336517}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8F7087C2-0A69-4245-8A7D-E149F4336517}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
