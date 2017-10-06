@@ -45,10 +45,30 @@ namespace UDTAppControlLibrary.Controls
     ///     <MyNamespace:MaskedEdit/>
     ///
     /// </summary>
-    public class MaskedEdit : TextBox
+    public class MaskedTextBox : TextBox
     {
         public static readonly DependencyProperty MaskedTextProperty =
-    DependencyProperty.Register("MaskedText", typeof(string), typeof(MaskedEdit), new UIPropertyMetadata(null));
+            DependencyProperty.Register("MaskedText", typeof(string), typeof(MaskedTextBox),
+            new UIPropertyMetadata(new PropertyChangedCallback(OnMaskTextPropertyChange)),
+            new ValidateValueCallback(maskTextValidateCallback));
+
+        static private bool maskTextValidateCallback(object arg)
+        {
+            return true;
+        }
+
+        static void OnMaskTextPropertyChange(DependencyObject src, DependencyPropertyChangedEventArgs args)
+        {
+            MaskedTextBox maskedEdit = src as MaskedTextBox;
+            if (maskedEdit.maskedTextProvider != null && !maskedEdit.maskedTextProvider.MaskCompleted)
+            {
+                maskedEdit.maskedTextProvider.Replace(maskedEdit.MaskedText, 0);
+                maskedEdit.Text = maskedEdit.maskedTextProvider.ToDisplayString();
+                maskedEdit.CaretIndex = 0;
+            }
+            else if (maskedEdit.maskedTextProvider == null)
+                maskedEdit.Text = maskedEdit.MaskedText;
+        }
 
         public string MaskedText
         {
@@ -56,40 +76,55 @@ namespace UDTAppControlLibrary.Controls
             set { SetValue(MaskedTextProperty, value); }
         }
 
-        static MaskedEdit()
+        public static readonly DependencyProperty MaskProperty =
+            DependencyProperty.Register("Mask", typeof(string), typeof(MaskedTextBox),
+            new UIPropertyMetadata(new PropertyChangedCallback(OnMaskPropertyChange)),
+            new ValidateValueCallback(maskValidateCallback));
+
+        static private bool maskValidateCallback(object arg)
         {
-            DefaultStyleKeyProperty.OverrideMetadata(typeof(MaskedEdit), new FrameworkPropertyMetadata(typeof(MaskedEdit)));
+            return true;
         }
 
-        public MaskedEdit()
+        static void OnMaskPropertyChange(DependencyObject src, DependencyPropertyChangedEventArgs args)
+        {
+            MaskedTextBox maskedEdit = src as MaskedTextBox;
+            maskedEdit.maskedTextProvider = new MaskedTextProvider((string)args.NewValue);
+            if(!string.IsNullOrEmpty(maskedEdit.MaskedText))
+            {
+                maskedEdit.maskedTextProvider.Replace(maskedEdit.MaskedText, 0);
+                maskedEdit.Text = maskedEdit.maskedTextProvider.ToDisplayString();
+                maskedEdit.CaretIndex = 0;
+            }
+            else
+            {
+                maskedEdit.Text = maskedEdit.maskedTextProvider.ToDisplayString();
+                maskedEdit.CaretIndex = 0;
+            }
+        }
+
+        public string Mask
+        {
+            get { return (string)GetValue(MaskProperty); }
+            set { SetValue(MaskProperty, value);}
+        }
+
+
+        static MaskedTextBox()
+        {
+            DefaultStyleKeyProperty.OverrideMetadata(typeof(MaskedTextBox), new FrameworkPropertyMetadata(typeof(MaskedTextBox)));
+        }
+
+        public MaskedTextBox()
         {
             PreviewKeyDown += new KeyEventHandler(previewKeyDownEvent);
             TextChanged += new TextChangedEventHandler(textChangedEvent);
             PreviewTextInput += new TextCompositionEventHandler(previewTextInput);
         }
 
-        //private string _MaskedText = null;
-        //public string MaskedText 
-        //{
-        //    get { return _MaskedText; }
-        //    set { _MaskedText = value; }
-        //}
-
-        public string _mask = "";
-        public string Mask 
-        {
-            get { return _mask; }
-            set 
-            { 
-                _mask = value;
-                maskedTextProvider = new MaskedTextProvider(value);
-                Text = maskedTextProvider.ToDisplayString();
-            }
-        }
-
         MaskedTextProvider maskedTextProvider = null;
 
-        private void previewKeyDownEvent(object src, KeyEventArgs arg)
+        virtual protected void previewKeyDownEvent(object src, KeyEventArgs arg)
         {
             if (arg.Key == Key.Space)
             {
@@ -97,20 +132,40 @@ namespace UDTAppControlLibrary.Controls
             }
             if (arg.Key == Key.Back)
             {
-                if(CaretIndex > 0) CaretIndex--;
+                if(CaretIndex > 0)
+                {
+                    if (maskedTextProvider.Replace(maskedTextProvider.PromptChar, CaretIndex - 1))
+                    {
+                        int tmpCaretIndex = CaretIndex;
+                        Text = maskedTextProvider.ToDisplayString();
+                        CaretIndex = tmpCaretIndex - 1;
+                    }
+                }
                 arg.Handled = true;
             }
             if (arg.Key == Key.Delete)
             {
+                if(SelectionLength > 0)
+                {
+                    int tmpCaretIndex = CaretIndex;
+                    for (int i = SelectionStart; i < SelectionStart+SelectionLength; i++)
+                    {
+                        maskedTextProvider.Replace(maskedTextProvider.PromptChar, i);
+                    }
+                    Text = maskedTextProvider.ToDisplayString();
+                    CaretIndex = tmpCaretIndex;
+                }
                 arg.Handled = true;
             }
             base.OnPreviewKeyDown(arg);
         }
-        private void textChangedEvent(object src, TextChangedEventArgs arg)
+
+        virtual protected void textChangedEvent(object src, TextChangedEventArgs arg)
         {
             string curtxt = Text;
         }
-        private void previewTextInput(object src, TextCompositionEventArgs arg)
+
+        virtual protected void previewTextInput(object src, TextCompositionEventArgs arg)
         {
             int caretPos = CaretIndex;
             MaskedTextResultHint hint;
@@ -118,14 +173,8 @@ namespace UDTAppControlLibrary.Controls
             {
                 maskedTextProvider.Replace(arg.Text[0], CaretIndex);
                 Text = maskedTextProvider.ToDisplayString();
-                //CaretIndex = caretPos + 1; 
-                //arg.Handled = true;
             }
-            else if (hint.ToString() != "NonEditPosition")
-            {
-                //CaretIndex = caretPos + 1;
-                //arg.Handled = true;
-            }
+
             arg.Handled = true;
             Text = maskedTextProvider.ToDisplayString();
             if ((int)hint < 0 && (int)hint > -54)

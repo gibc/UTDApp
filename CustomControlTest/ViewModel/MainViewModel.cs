@@ -1,23 +1,43 @@
-﻿using System;
+﻿using Prism.Mvvm;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace CustomControlTest.ViewModel
 {
-    public class MainViewModel
+    public class MainViewModel : ValidatableBindableBase
     {
         public MainViewModel()
         {
-
+            mask = "00/00/0000";
+            maskedText = "02/11/2007";
         }
 
         public string _maskedText = "";
-        public string maskedText 
+        public string maskedText
         {
             get { return _maskedText; }
-            set { _maskedText = value; }
+            set 
+            { 
+                SetProperty(ref _maskedText, value);
+            }
+        }
+
+        public string _mask = "";
+        public string mask
+        {
+            get { return _mask; }
+            set 
+            { 
+                SetProperty(ref _mask, value);
+                //RaisePropertyChanged("maskedText");
+                //string tmp = _maskedText;
+                //maskedText = "";
+                //maskedText = tmp;
+            }
         }
     }
 }

@@ -3,7 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="clr-namespace:UDTAppControlLibrary.Controls">
 
-    <Style TargetType = "{x:Type local:MaskedEdit}"
+    <Style TargetType = "{x:Type local:MaskedTextBox}"
       BasedOn = "{StaticResource {x:Type TextBox}}">
     </Style>
     
