@@ -67,7 +67,7 @@ namespace UDTAppControlLibrary.Controls
                 maskedEdit.CaretIndex = 0;
             }
             else if (maskedEdit.maskedTextProvider == null)
-                maskedEdit.Text = maskedEdit.MaskedText;
+                maskedEdit.Text = maskedEdit.MaskedText; 
         }
 
         public string MaskedText
@@ -90,6 +90,7 @@ namespace UDTAppControlLibrary.Controls
         {
             MaskedTextBox maskedEdit = src as MaskedTextBox;
             maskedEdit.maskedTextProvider = new MaskedTextProvider((string)args.NewValue);
+            maskedEdit.maskedTextProvider.ResetOnSpace = false;
             if(!string.IsNullOrEmpty(maskedEdit.MaskedText))
             {
                 maskedEdit.maskedTextProvider.Replace(maskedEdit.MaskedText, 0);
@@ -122,12 +123,21 @@ namespace UDTAppControlLibrary.Controls
             PreviewTextInput += new TextCompositionEventHandler(previewTextInput);
         }
 
-        MaskedTextProvider maskedTextProvider = null;
+        protected MaskedTextProvider maskedTextProvider = null;
 
         virtual protected void previewKeyDownEvent(object src, KeyEventArgs arg)
         {
             if (arg.Key == Key.Space)
             {
+                //if (CaretIndex > 0)
+                {
+                    if (maskedTextProvider.Replace(' ', CaretIndex))
+                    {
+                        int tmpCaretIndex = CaretIndex;
+                        Text = maskedTextProvider.ToDisplayString();
+                        CaretIndex = tmpCaretIndex + 1;
+                    }
+                } 
                 arg.Handled = true;
             }
             if (arg.Key == Key.Back)
@@ -188,5 +198,260 @@ namespace UDTAppControlLibrary.Controls
 
     }
 
+    public class MaskedNumberBox : TextBox
+    {
+        public static readonly DependencyProperty MaskedNumberProperty =
+            DependencyProperty.Register("MaskedNumber", typeof(Int32?), typeof(MaskedNumberBox),
+            new UIPropertyMetadata(new PropertyChangedCallback(OnMaskNumberPropertyChange)),
+            new ValidateValueCallback(maskNumberValidateCallback));
+
+        static private bool maskNumberValidateCallback(object arg)
+        {
+            return true;
+        }
+
+        static void OnMaskNumberPropertyChange(DependencyObject src, DependencyPropertyChangedEventArgs args)
+        {
+            MaskedNumberBox maskedNumber = src as MaskedNumberBox;
+            Int32? newVal = (Int32?)args.NewValue;
+            if (newVal != null)
+                maskedNumber.maskedNumberProvider.displayText =
+                    maskedNumber.maskedNumberProvider.getNumberText(newVal);
+            else
+                maskedNumber.maskedNumberProvider.displayText = 
+                    maskedNumber.maskedNumberProvider.prompt;
+
+            int caretTmp = maskedNumber.CaretIndex;
+            maskedNumber.Text = maskedNumber.maskedNumberProvider.displayText;
+            maskedNumber.CaretIndex = caretTmp;
+        }
+
+        public Int32? MaskedNumber
+        {
+            get { return (Int32?)GetValue(MaskedNumberProperty); }
+            set { SetValue(MaskedNumberProperty, value); }
+        }
+
+        static MaskedNumberBox()
+        {
+            DefaultStyleKeyProperty.OverrideMetadata(typeof(MaskedNumberBox), new FrameworkPropertyMetadata(typeof(MaskedNumberBox)));
+        }
+
+
+        public MaskedNumberBox()
+        {
+            TextChanged += new TextChangedEventHandler(textChanged);
+            PreviewTextInput += new TextCompositionEventHandler(previewTextInput);
+            maskedNumberProvider = new MaskedNumberProvider();
+            maskedNumberProvider.prompt = "Enter a Number.";
+        }
+
+        private MaskedNumberProvider maskedNumberProvider;
+
+        private void previewTextInput(object src, TextCompositionEventArgs arg)
+        {
+            if(!maskedNumberProvider.acceptChar(CaretIndex, arg.Text[0], Text))
+            { 
+                arg.Handled = true;
+            }
+            else if(Text == maskedNumberProvider.prompt)
+            { 
+                arg.Handled = true;
+                Text = arg.Text;
+            }
+
+        }
+
+        private void textChanged(object src, TextChangedEventArgs arg)
+        {
+            arg.Handled = true;
+            int caretTmp = CaretIndex;
+            maskedNumberProvider.setDisplayText(Text);
+            this.FontWeight = FontWeights.Normal;
+            if (maskedNumberProvider.displayText == maskedNumberProvider.prompt)
+            {
+                this.FontWeight = FontWeights.UltraLight;
+            }
+
+            Text = maskedNumberProvider.displayText;
+            CaretIndex = caretTmp;
+
+            if (maskedNumberProvider.numberComplete)
+                MaskedNumber = (Int32)maskedNumberProvider.parseNumber(maskedNumberProvider.displayText);
+        }
+    }
+
+    public class MaskedDecimalProvider : MaskedNumberProvider
+    {
+        public MaskedDecimalProvider() { }
+
+        public Decimal? parseDecimal(string txtNum)
+        {
+            Decimal? number = null;
+            if (string.IsNullOrEmpty(txtNum))
+                return number;
+
+            Decimal num;
+            txtNum = txtNum.Replace(",", "");
+
+            if (Decimal.TryParse(txtNum, out num))
+            {
+                number = num;
+            }
+            else if (txtNum[0] == '-')
+            {
+                number = decimalMin;
+            }
+            else
+            {
+                number = decimalMax;
+            }
+
+            if (number > decimalMax)
+                number = decimalMax;
+            else if (number < decimalMin)
+                number = decimalMin;
+
+            return number;
+        }
+
+        public override bool acceptChar(int postion, char c, string context)
+        {
+            bool haveDecPt = context.Contains(".");
+            if (postion == 0)
+            {
+                return (Char.IsDigit(c) || c == '+' || c == '-' || (c == '.' && !haveDecPt));
+            }
+            else
+            {
+                return (Char.IsDigit(c) || (c == '.' && !haveDecPt));
+            }           
+        }
+
+
+        public string getDecimalText(Decimal? num)
+        {
+            string numTxt = "";
+            if (num == null) return numTxt;
+
+            numTxt = string.Format("{0}", num);
+            if (displayText.Length > 0 && displayText.Last() == '.')
+                return numTxt + '.';
+            else return numTxt;
+
+        }
+    }
+
+    public class MaskedNumberProvider
+    {
+        public MaskedNumberProvider()
+        {
+
+        }
+
+        private bool _numberComplete = false;
+        public bool numberComplete
+        {
+            get { return _numberComplete; }
+            set { _numberComplete = value; }
+        }
+
+        private string _prompt = "";
+        public string prompt
+        {
+            get { return _prompt; }
+            set { _prompt = value; }
+        }
+
+        public void setDisplayText(string ctrlText)
+        {
+            numberComplete = false;
+            if (string.IsNullOrEmpty(ctrlText))
+            {
+                displayText = prompt;
+            }
+            else
+            {
+                displayText = ctrlText;
+                numberComplete = canParse(displayText);
+            }
+        }
+
+        private string _displayText = "";
+        public string displayText
+        {
+            get { return _displayText; }
+            set { _displayText = value; }
+        }
+
+
+        protected Int32? numberMin = Int32.MinValue;
+        protected Int32? numberMax = Int32.MaxValue;
+        protected Decimal? decimalMin = Decimal.MinValue;
+        protected Decimal? decimalMax = Decimal.MaxValue;
+
+        protected virtual bool canParse(string val)
+        {
+            if (string.IsNullOrEmpty(val)) return false;
+            if (val == prompt) return false;
+            bool retVal = false;
+            foreach (char c in val)
+            {
+                if (!(c == '0' || c == '.' || c == '-'))
+                {
+                    return true;
+                }
+            }
+            return retVal;
+        }
+
+
+
+        public Int32? parseNumber(string txtNum)
+        {
+            Int32? number = null;
+            if (string.IsNullOrEmpty(txtNum))
+                return number;
+
+            int num;
+            txtNum = txtNum.Replace(",", "");
+            if (Int32.TryParse(txtNum, out num))
+                number = num;
+            else if (txtNum[0] == '-')
+            {
+                number = numberMin;
+            }
+            else
+            {
+                number = numberMax;
+            }
+
+            if (number > numberMax)
+                number = numberMax;
+            else if (number < numberMin)
+                number = numberMin;
+
+            return number;
+        }
+
+        public virtual bool acceptChar(int postion, char c, string context)
+        {
+            if(postion == 0)
+            {
+                return (c != '0' && Char.IsDigit(c) || c == '+' || c == '-' );
+            }
+            else
+            {
+                return Char.IsDigit(c);
+            }
+        }
+
+        public virtual string getNumberText(Int32? num)
+        {
+            if (num == null) return "";
+            return string.Format("{0:n0}", num);
+        }
+
+    }
 
 }

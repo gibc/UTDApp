@@ -33,10 +33,16 @@ namespace CustomControlTest.ViewModel
             set 
             { 
                 SetProperty(ref _mask, value);
-                //RaisePropertyChanged("maskedText");
-                //string tmp = _maskedText;
-                //maskedText = "";
-                //maskedText = tmp;
+            }
+        }
+
+        public Int32 _maskNumber = 12345;
+        public Int32 maskNumber
+        {
+            get { return _maskNumber; }
+            set
+            {
+                SetProperty(ref _maskNumber, value);
             }
         }
     }
