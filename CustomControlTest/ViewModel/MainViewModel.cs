@@ -36,13 +36,23 @@ namespace CustomControlTest.ViewModel
             }
         }
 
-        public Int32 _maskNumber = 12345;
-        public Int32 maskNumber
+        public Int32? _maskNumber = 12345;
+        public Int32? maskNumber
         {
             get { return _maskNumber; }
             set
             {
                 SetProperty(ref _maskNumber, value);
+            }
+        }
+
+        public Decimal? _maskDecimal = 123.456m;
+        public Decimal? maskDecimal
+        {
+            get { return _maskDecimal; }
+            set
+            {
+                SetProperty(ref _maskDecimal, value);
             }
         }
     }

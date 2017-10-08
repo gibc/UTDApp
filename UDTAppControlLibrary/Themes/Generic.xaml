@@ -10,7 +10,11 @@
     <Style TargetType = "{x:Type local:MaskedNumberBox}"
       BasedOn = "{StaticResource {x:Type TextBox}}">
     </Style>
-    
+
+    <Style TargetType = "{x:Type local:MaskedDecimalBox}"
+      BasedOn = "{StaticResource {x:Type TextBox}}">
+    </Style>
+
     <!--<Style TargetType="{x:Type local:MaskedEdit}">
         <Setter Property="Template">
             <Setter.Value>

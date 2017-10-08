@@ -250,208 +250,78 @@ namespace UDTAppControlLibrary.Controls
 
         private void previewTextInput(object src, TextCompositionEventArgs arg)
         {
-            if(!maskedNumberProvider.acceptChar(CaretIndex, arg.Text[0], Text))
-            { 
-                arg.Handled = true;
-            }
-            else if(Text == maskedNumberProvider.prompt)
-            { 
-                arg.Handled = true;
-                Text = arg.Text;
-            }
-
+            maskedNumberProvider.previewText(this, arg);
         }
 
         private void textChanged(object src, TextChangedEventArgs arg)
         {
-            arg.Handled = true;
-            int caretTmp = CaretIndex;
-            maskedNumberProvider.setDisplayText(Text);
-            this.FontWeight = FontWeights.Normal;
-            if (maskedNumberProvider.displayText == maskedNumberProvider.prompt)
-            {
-                this.FontWeight = FontWeights.UltraLight;
-            }
-
-            Text = maskedNumberProvider.displayText;
-            CaretIndex = caretTmp;
-
+            maskedNumberProvider.textChanged(this, arg);
             if (maskedNumberProvider.numberComplete)
-                MaskedNumber = (Int32)maskedNumberProvider.parseNumber(maskedNumberProvider.displayText);
+                MaskedNumber = maskedNumberProvider.parseNumber(maskedNumberProvider.displayText);
         }
     }
 
-    public class MaskedDecimalProvider : MaskedNumberProvider
+    public class MaskedDecimalBox : TextBox
     {
-        public MaskedDecimalProvider() { }
+        public static readonly DependencyProperty MaskedDecimalProperty =
+            DependencyProperty.Register("MaskedDecimal", typeof(Decimal?), typeof(MaskedDecimalBox),
+            new UIPropertyMetadata(new PropertyChangedCallback(OnMaskDecimalPropertyChange)),
+            new ValidateValueCallback(maskDecimalValidateCallback));
 
-        public Decimal? parseDecimal(string txtNum)
+        static private bool maskDecimalValidateCallback(object arg)
         {
-            Decimal? number = null;
-            if (string.IsNullOrEmpty(txtNum))
-                return number;
+            return true;
+        }
 
-            Decimal num;
-            txtNum = txtNum.Replace(",", "");
-
-            if (Decimal.TryParse(txtNum, out num))
-            {
-                number = num;
-            }
-            else if (txtNum[0] == '-')
-            {
-                number = decimalMin;
-            }
+        static void OnMaskDecimalPropertyChange(DependencyObject src, DependencyPropertyChangedEventArgs args)
+        {
+            MaskedDecimalBox maskedDecimal = src as MaskedDecimalBox;
+            Decimal? newVal = (Decimal?)args.NewValue;
+            if (newVal != null)
+                maskedDecimal.maskedDecimalProvider.displayText =
+                    maskedDecimal.maskedDecimalProvider.getDecimalText(newVal);
             else
-            {
-                number = decimalMax;
-            }
+                maskedDecimal.maskedDecimalProvider.displayText =
+                    maskedDecimal.maskedDecimalProvider.prompt;
 
-            if (number > decimalMax)
-                number = decimalMax;
-            else if (number < decimalMin)
-                number = decimalMin;
-
-            return number;
+            int caretTmp = maskedDecimal.CaretIndex;
+            maskedDecimal.Text = maskedDecimal.maskedDecimalProvider.displayText;
+            maskedDecimal.CaretIndex = caretTmp;
         }
 
-        public override bool acceptChar(int postion, char c, string context)
+        public Decimal? MaskedDecimal
         {
-            bool haveDecPt = context.Contains(".");
-            if (postion == 0)
-            {
-                return (Char.IsDigit(c) || c == '+' || c == '-' || (c == '.' && !haveDecPt));
-            }
-            else
-            {
-                return (Char.IsDigit(c) || (c == '.' && !haveDecPt));
-            }           
+            get { return (Decimal?)GetValue(MaskedDecimalProperty); }
+            set { SetValue(MaskedDecimalProperty, value); }
         }
 
-
-        public string getDecimalText(Decimal? num)
+        static MaskedDecimalBox()
         {
-            string numTxt = "";
-            if (num == null) return numTxt;
-
-            numTxt = string.Format("{0}", num);
-            if (displayText.Length > 0 && displayText.Last() == '.')
-                return numTxt + '.';
-            else return numTxt;
-
+            DefaultStyleKeyProperty.OverrideMetadata(typeof(MaskedDecimalBox), new FrameworkPropertyMetadata(typeof(MaskedDecimalBox)));
         }
-    }
 
-    public class MaskedNumberProvider
-    {
-        public MaskedNumberProvider()
+
+        public MaskedDecimalBox()
         {
-
+            TextChanged += new TextChangedEventHandler(textChanged);
+            PreviewTextInput += new TextCompositionEventHandler(previewTextInput);
+            maskedDecimalProvider = new MaskedDecimalProvider();
+            maskedDecimalProvider.prompt = "Enter a Decimal.";
         }
 
-        private bool _numberComplete = false;
-        public bool numberComplete
+        private MaskedDecimalProvider maskedDecimalProvider;
+
+        private void previewTextInput(object src, TextCompositionEventArgs arg)
         {
-            get { return _numberComplete; }
-            set { _numberComplete = value; }
+            maskedDecimalProvider.previewText(this, arg);
         }
 
-        private string _prompt = "";
-        public string prompt
+        private void textChanged(object src, TextChangedEventArgs arg)
         {
-            get { return _prompt; }
-            set { _prompt = value; }
+            maskedDecimalProvider.textChanged(this, arg);
+            if (maskedDecimalProvider.numberComplete)
+                MaskedDecimal = maskedDecimalProvider.parseDecimal(maskedDecimalProvider.displayText);
         }
-
-        public void setDisplayText(string ctrlText)
-        {
-            numberComplete = false;
-            if (string.IsNullOrEmpty(ctrlText))
-            {
-                displayText = prompt;
-            }
-            else
-            {
-                displayText = ctrlText;
-                numberComplete = canParse(displayText);
-            }
-        }
-
-        private string _displayText = "";
-        public string displayText
-        {
-            get { return _displayText; }
-            set { _displayText = value; }
-        }
-
-
-        protected Int32? numberMin = Int32.MinValue;
-        protected Int32? numberMax = Int32.MaxValue;
-        protected Decimal? decimalMin = Decimal.MinValue;
-        protected Decimal? decimalMax = Decimal.MaxValue;
-
-        protected virtual bool canParse(string val)
-        {
-            if (string.IsNullOrEmpty(val)) return false;
-            if (val == prompt) return false;
-            bool retVal = false;
-            foreach (char c in val)
-            {
-                if (!(c == '0' || c == '.' || c == '-'))
-                {
-                    return true;
-                }
-            }
-            return retVal;
-        }
-
-
-
-        public Int32? parseNumber(string txtNum)
-        {
-            Int32? number = null;
-            if (string.IsNullOrEmpty(txtNum))
-                return number;
-
-            int num;
-            txtNum = txtNum.Replace(",", "");
-            if (Int32.TryParse(txtNum, out num))
-                number = num;
-            else if (txtNum[0] == '-')
-            {
-                number = numberMin;
-            }
-            else
-            {
-                number = numberMax;
-            }
-
-            if (number > numberMax)
-                number = numberMax;
-            else if (number < numberMin)
-                number = numberMin;
-
-            return number;
-        }
-
-        public virtual bool acceptChar(int postion, char c, string context)
-        {
-            if(postion == 0)
-            {
-                return (c != '0' && Char.IsDigit(c) || c == '+' || c == '-' );
-            }
-            else
-            {
-                return Char.IsDigit(c);
-            }
-        }
-
-        public virtual string getNumberText(Int32? num)
-        {
-            if (num == null) return "";
-            return string.Format("{0:n0}", num);
-        }
-
     }
 
 }
