@@ -214,12 +214,12 @@ namespace UDTAppControlLibrary.Controls
         {
             MaskedNumberBox maskedNumber = src as MaskedNumberBox;
             Int32? newVal = (Int32?)args.NewValue;
-            if (newVal != null)
+            //if (newVal != null)
                 maskedNumber.maskedNumberProvider.displayText =
-                    maskedNumber.maskedNumberProvider.getNumberText(newVal);
-            else
-                maskedNumber.maskedNumberProvider.displayText = 
-                    maskedNumber.maskedNumberProvider.prompt;
+                    maskedNumber.maskedNumberProvider.fromatProvider.formatNumber(newVal, maskedNumber.Text);
+            //else
+            //    maskedNumber.maskedNumberProvider.displayText = 
+            //        maskedNumber.maskedNumberProvider.prompt;
 
             int caretTmp = maskedNumber.CaretIndex;
             maskedNumber.Text = maskedNumber.maskedNumberProvider.displayText;
@@ -242,11 +242,10 @@ namespace UDTAppControlLibrary.Controls
         {
             TextChanged += new TextChangedEventHandler(textChanged);
             PreviewTextInput += new TextCompositionEventHandler(previewTextInput);
-            maskedNumberProvider = new MaskedNumberProvider();
-            maskedNumberProvider.prompt = "Enter a Number.";
+            maskedNumberProvider = new MaskedNumberProvider<Int32?>(FormatType.Interger, Int32.MaxValue, Int32.MinValue);
         }
 
-        private MaskedNumberProvider maskedNumberProvider;
+        private MaskedNumberProvider<Int32?> maskedNumberProvider;
 
         private void previewTextInput(object src, TextCompositionEventArgs arg)
         {
@@ -257,7 +256,7 @@ namespace UDTAppControlLibrary.Controls
         {
             maskedNumberProvider.textChanged(this, arg);
             if (maskedNumberProvider.numberComplete)
-                MaskedNumber = maskedNumberProvider.parseNumber(maskedNumberProvider.displayText);
+                MaskedNumber = maskedNumberProvider.fromatProvider.parseNumber(maskedNumberProvider.displayText);
         }
     }
 
@@ -277,12 +276,12 @@ namespace UDTAppControlLibrary.Controls
         {
             MaskedDecimalBox maskedDecimal = src as MaskedDecimalBox;
             Decimal? newVal = (Decimal?)args.NewValue;
-            if (newVal != null)
+            //if (newVal != null)
                 maskedDecimal.maskedDecimalProvider.displayText =
-                    maskedDecimal.maskedDecimalProvider.getDecimalText(newVal);
-            else
-                maskedDecimal.maskedDecimalProvider.displayText =
-                    maskedDecimal.maskedDecimalProvider.prompt;
+                    maskedDecimal.maskedDecimalProvider.fromatProvider.formatNumber(newVal, maskedDecimal.Text);
+            //else
+            //    maskedDecimal.maskedDecimalProvider.displayText =
+            //        maskedDecimal.maskedDecimalProvider.prompt;
 
             int caretTmp = maskedDecimal.CaretIndex;
             maskedDecimal.Text = maskedDecimal.maskedDecimalProvider.displayText;
@@ -305,11 +304,10 @@ namespace UDTAppControlLibrary.Controls
         {
             TextChanged += new TextChangedEventHandler(textChanged);
             PreviewTextInput += new TextCompositionEventHandler(previewTextInput);
-            maskedDecimalProvider = new MaskedDecimalProvider();
-            maskedDecimalProvider.prompt = "Enter a Decimal.";
+            maskedDecimalProvider = new MaskedNumberProvider<Decimal?>(FormatType.Decimal, Decimal.MaxValue, Decimal.MinValue);
         }
 
-        private MaskedDecimalProvider maskedDecimalProvider;
+        private MaskedNumberProvider<Decimal?> maskedDecimalProvider;
 
         private void previewTextInput(object src, TextCompositionEventArgs arg)
         {
@@ -320,7 +318,7 @@ namespace UDTAppControlLibrary.Controls
         {
             maskedDecimalProvider.textChanged(this, arg);
             if (maskedDecimalProvider.numberComplete)
-                MaskedDecimal = maskedDecimalProvider.parseDecimal(maskedDecimalProvider.displayText);
+                MaskedDecimal = maskedDecimalProvider.fromatProvider.parseNumber(maskedDecimalProvider.displayText);
         }
     }
 
