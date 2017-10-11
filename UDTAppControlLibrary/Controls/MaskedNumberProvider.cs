@@ -111,19 +111,6 @@ namespace UDTAppControlLibrary.Controls
         public void setDisplayText(string ctrlText)
         {
             numberComplete = false;
-            //if (ctrlText == prompt)
-            //{
-            //    displayText = ctrlText;
-            //}
-            //else if (string.IsNullOrEmpty(ctrlText))
-            //{
-            //    displayText = prompt;
-            //}
-            //else
-            //{
-            //    displayText = textFormat.formatText(ctrlText);
-            //    numberComplete = canParse(displayText);
-            //}
             displayText = fromatProvider.formatText(ctrlText);
             numberComplete = fromatProvider.canParse(displayText);
 
@@ -210,7 +197,8 @@ namespace UDTAppControlLibrary.Controls
 
         public virtual void previewText(TextBox src, TextCompositionEventArgs arg)
         {
-            if (!fromatProvider.acceptChar(src.CaretIndex, arg.Text[0], src.Text))
+
+            if (!fromatProvider.acceptChar(src.CaretIndex, arg.Text[0], src))
             {
                 arg.Handled = true;
             }
@@ -226,6 +214,7 @@ namespace UDTAppControlLibrary.Controls
         {
             arg.Handled = true;
             int caretTmp = src.CaretIndex;
+            int lengthTmp = src.Text.Length;
             setDisplayText(src.Text);
             src.FontWeight = FontWeights.Normal;
             if (displayText == fromatProvider.prompt)
@@ -233,21 +222,25 @@ namespace UDTAppControlLibrary.Controls
                 src.FontWeight = FontWeights.UltraLight;
             }
 
+            if (displayText.Length != lengthTmp)
+            {
+                caretTmp = caretTmp + (displayText.Length - lengthTmp);
+            }
             src.Text = displayText;
             src.CaretIndex = caretTmp;
         }
 
     }
 
-    public struct FormatChar
+    public struct FormatString
     {
-        public FormatChar(string fmtChar, int _offset)
+        public FormatString(string fmtString, int _offset)
         {
-            fromatChar = fmtChar; 
+            fromatChars = fmtString; 
             offset = _offset; 
         }
-        public string fromatChar;
-        // +1 is first pos, -1 is last position
+        public string fromatChars;
+        // +1 is prepend, -1 is append
         public int offset;
 
     }
@@ -258,19 +251,18 @@ namespace UDTAppControlLibrary.Controls
         public NumberFromatProvider(FormatType fmtType, T maxNumber, T minNumber)
         {
             type = fmtType;
-            //numberMax = (T)Convert.ChangeType(maxNumber, typeof(T));
-            //numberMin = (T)Convert.ChangeType(minNumber, typeof(T)); ;
             numberMax = maxNumber;
             numberMin = minNumber;
             if (type == FormatType.Currency)
             {
                 prompt = "Enter $ Amount";
-                formatChars.Add(new FormatChar("$", 1));
+                formatChars.Add(new FormatString("$", 1));
             }
             if (type == FormatType.Percent)
             {
                 prompt = "Enter %";
-                formatChars.Add(new FormatChar("%", -1));
+                formatChars.Add(new FormatString(" %", -2));
+                //formatChars.Add(new FormatChar("%", -1));
             }
             if (type == FormatType.Interger)
             {
@@ -288,24 +280,37 @@ namespace UDTAppControlLibrary.Controls
             string numTxt = "";
             if (number == null) return prompt;
 
+            else if (type == FormatType.Currency)
+            {
+                numTxt = string.Format("{0:c}", number);
+                //numTxt = formatText(numTxt);
+            }
+            else if (type == FormatType.Percent)
+            {
+                Decimal? percent = ToDecimal(number) * 100;
+                numTxt = string.Format("{0}", percent);
+                if(numTxt.Contains("."))
+                    numTxt = numTxt.TrimEnd('0');
+            }
             else if (type == FormatType.Decimal)
             {
                 numTxt = string.Format("{0}", number);
-                int wholeNum = (int)Convert.ChangeType(number, typeof(Int32)); ;
+                //Decimal? decNum = (Decimal?)ToDecimal(number); 
+                //int wholeNum = (int)decNum;
 
-                string numTxtWhole = string.Format("{0:n0}", wholeNum);
-                int decPos = numTxt.IndexOf(".");
-                if (decPos > 0)
-                {
-                    numTxt = numTxt.Substring(decPos);
-                    numTxt = string.Format("{0}{1}", numTxtWhole, numTxt);
-                }
-                else
-                    numTxt = numTxtWhole;
+                //string numTxtWhole = string.Format("{0:n0}", wholeNum);
+                //int decPos = numTxt.IndexOf(".");
+                //if (decPos > 0)
+                //{
+                //    numTxt = numTxt.Substring(decPos);
+                //    numTxt = string.Format("{0}{1}", numTxtWhole, numTxt);
+                //}
+                //else
+                //    numTxt = numTxtWhole;
 
-                numTxt = formatText(numTxt);
+                //numTxt = formatText(numTxt);
 
-                if (ctrlTxt.Length > 0 && ctrlTxt.Last() == '.')
+                if (!numTxt.Contains(".") && ctrlTxt.Last() == '.')
                     numTxt = numTxt + '.';
             }
 
@@ -315,7 +320,24 @@ namespace UDTAppControlLibrary.Controls
                 numTxt = formatText(numTxt);
             }
 
-            return numTxt;
+            return formatText(numTxt); 
+        }
+
+        private string addCommas(string text)
+        {
+            if(type != FormatType.Interger)
+            {
+                text = text.Replace(",", "");
+                int offset = text.IndexOf(".");
+                if(offset < 0) offset = text.Length;
+                offset -= 3;
+                while(offset > 0)
+                {
+                    text = text.Insert(offset, ",");
+                    offset -= 3;
+                }
+            }
+            return text;
         }
 
         public string formatText(string ctrlText)
@@ -330,10 +352,22 @@ namespace UDTAppControlLibrary.Controls
                 displayText = prompt;
                 return displayText;
             }
+            else if (string.IsNullOrEmpty(unFormatText(ctrlText)))
+            {
+                displayText = prompt;
+                return displayText;
+            }
             else
             {
-                foreach (FormatChar fmtChar in formatChars)
-                    displayText = insertFmtChar(fmtChar, displayText);
+                foreach (FormatString fmtStr in formatChars)
+                {
+                    displayText = removeFmtChar(fmtStr, displayText);
+                }
+                displayText = addCommas(displayText);
+                foreach (FormatString fmtStr in formatChars)
+                {
+                    displayText = insertFmtChar(fmtStr, displayText);
+                }
                 return displayText;
             }
 
@@ -342,24 +376,59 @@ namespace UDTAppControlLibrary.Controls
         public string unFormatText(string text)
         {
             text = text.Replace(",", "");
-            foreach (FormatChar fmtChar in formatChars)
+            foreach (FormatString fmtChar in formatChars)
                 text = removeFmtChar(fmtChar, text);
             return text;
         }
 
-        public bool acceptChar(int postion, char c, string context)
+        public bool acceptChar(int postion, char c, TextBox src)
         {
             bool haveDecPt = true;
-            if (type != FormatType.Interger)
-                haveDecPt = context.Contains(".");
+            bool promptVisable = src.Text == prompt;
+            if (type != FormatType.Interger && !promptVisable)
+            { 
+                haveDecPt = src.Text.Contains(".");
+                if (c == '.' && haveDecPt)
+                {
+                    // move decimal pt to new postion
+                    int caretTmp = src.CaretIndex;
+                    src.Text = src.Text.Replace(".", "");
+                    src.Text = src.Text.Insert(caretTmp, ".");
+                    src.CaretIndex = caretTmp;
+                    return false;
+                }
+            }
 
-            if (postion == 0)
+            if(promptVisable)
+            {
+                return (Char.IsDigit(c) || c == '+' || c == '-' || (c == '.'));
+            }
+            else if (postion == 0)
             {
                 return (Char.IsDigit(c) || c == '+' || c == '-' || (c == '.' && !haveDecPt));
             }
             else
             {
                 return (Char.IsDigit(c) || (c == '.' && !haveDecPt));
+            }
+        }
+
+        public void previewKeyDown(TextBox src, KeyEventArgs arg)
+        {
+            if (src.Text != prompt)
+                return;
+
+            if (arg.Key == Key.Space)
+            {
+                arg.Handled = true;
+            }
+            if (arg.Key == Key.Back)
+            {
+                arg.Handled = true;
+            }
+            if (arg.Key == Key.Delete)
+            {
+                arg.Handled = true;
             }
         }
 
@@ -483,7 +552,7 @@ namespace UDTAppControlLibrary.Controls
 
             numberTxt = unFormatText(numberTxt);
 
-            if(type == FormatType.Decimal)
+            if (type == FormatType.Decimal || type == FormatType.Currency || type == FormatType.Percent)
             {
                 Decimal num;
                 if (Decimal.TryParse(numberTxt, out num))
@@ -497,6 +566,11 @@ namespace UDTAppControlLibrary.Controls
                 else
                 {
                     number = numberMax;
+                }
+                if (type == FormatType.Percent)
+                { 
+                    Decimal? decNum = ToDecimal(number) / 100;
+                    number = ChangeType(decNum);
                 }
             }
 
@@ -525,47 +599,53 @@ namespace UDTAppControlLibrary.Controls
 
         private FormatType type = FormatType.Interger;
         public string prompt = "";
-        private List<FormatChar> formatChars = new List<FormatChar>();
+        private List<FormatString> formatChars = new List<FormatString>();
 
-        private string insertFmtChar(FormatChar formatChar, string text)
+        private string insertFmtChar(FormatString formatStr, string text)
         {
-            int charPos;
-            if (formatChar.offset > 0)
-            {
-                charPos = formatChar.offset - 1;
-            }
+            //int charPos;
+            //if (formatChar.offset > 0)
+            //{
+            //    charPos = formatChar.offset - 1;
+            //}
+            //else
+            //{
+            //    charPos = text.Length + (formatChar.offset);
+            //}
+            //if(charPos < text.Length)
+            //{
+            //    if (text[charPos] != formatChar.fromatChar[0])
+            //    {
+            //        text = text.Insert(charPos, formatChar.fromatChar);
+            //    }
+            //}
+            if (formatStr.offset > 0)
+                text = formatStr.fromatChars + text;
             else
-            {
-                charPos = text.Length + (formatChar.offset);
-            }
-            if(charPos < text.Length)
-            {
-                if (text[charPos] != formatChar.fromatChar[0])
-                {
-                    text = text.Insert(charPos, formatChar.fromatChar);
-                }
-            }
+                text = text + formatStr.fromatChars;
             return text;
         }
 
-        private string removeFmtChar(FormatChar formatChar, string text)
+        private string removeFmtChar(FormatString formatString, string text)
         {
-            int charPos;
-            if (formatChar.offset > 0)
-            {
-                charPos = formatChar.offset - 1;
-            }
-            else
-            {
-                charPos = text.Length + (formatChar.offset);
-            }
-            if (charPos < text.Length)
-            {
-                if (text[charPos] == formatChar.fromatChar[0])
-                {
-                    text = text.Remove(charPos, 1);
-                }
-            }
+            //int charPos;
+            //if (formatChar.offset > 0)
+            //{
+            //    charPos = formatChar.offset - 1;
+            //}
+            //else
+            //{
+            //    charPos = text.Length + (formatChar.offset);
+            //}
+            //if (charPos < text.Length)
+            //{
+            //    if (text[charPos] == formatChar.fromatChar[0])
+            //    {
+            //        text = text.Remove(charPos, 1);
+            //    }
+            //}
+            foreach(char c in formatString.fromatChars)
+                text = text.Replace(c.ToString(), "");
             return text;
         }
 

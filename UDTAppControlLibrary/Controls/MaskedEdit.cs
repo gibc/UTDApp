@@ -240,12 +240,19 @@ namespace UDTAppControlLibrary.Controls
 
         public MaskedNumberBox()
         {
+            PreviewKeyDown += new KeyEventHandler(previewKeyDownEvent);
             TextChanged += new TextChangedEventHandler(textChanged);
             PreviewTextInput += new TextCompositionEventHandler(previewTextInput);
             maskedNumberProvider = new MaskedNumberProvider<Int32?>(FormatType.Interger, Int32.MaxValue, Int32.MinValue);
         }
 
         private MaskedNumberProvider<Int32?> maskedNumberProvider;
+
+        private void previewKeyDownEvent(object src, KeyEventArgs arg)
+        {
+            maskedNumberProvider.fromatProvider.previewKeyDown(this, arg);
+            base.OnPreviewKeyDown(arg);
+        }
 
         private void previewTextInput(object src, TextCompositionEventArgs arg)
         {
@@ -262,6 +269,24 @@ namespace UDTAppControlLibrary.Controls
 
     public class MaskedDecimalBox : TextBox
     {
+        public static readonly DependencyProperty TextFormatProperty =
+            DependencyProperty.Register("TextFormat", typeof(FormatType), typeof(MaskedDecimalBox),
+            new UIPropertyMetadata(new PropertyChangedCallback(OnMaskTextFormatPropertyChange)),
+            null);
+
+        static void OnMaskTextFormatPropertyChange(DependencyObject src, DependencyPropertyChangedEventArgs args)
+        {
+            MaskedDecimalBox maskedDecimal = src as MaskedDecimalBox;
+            FormatType newType = (FormatType)args.NewValue;
+            maskedDecimal.maskedDecimalProvider = new MaskedNumberProvider<Decimal?>(newType, Decimal.MaxValue, Decimal.MinValue);
+        }
+
+        public FormatType TextFormat
+        {
+            get { return (FormatType)GetValue(TextFormatProperty); }
+            set { SetValue(TextFormatProperty, value); }
+        }
+
         public static readonly DependencyProperty MaskedDecimalProperty =
             DependencyProperty.Register("MaskedDecimal", typeof(Decimal?), typeof(MaskedDecimalBox),
             new UIPropertyMetadata(new PropertyChangedCallback(OnMaskDecimalPropertyChange)),
@@ -276,16 +301,26 @@ namespace UDTAppControlLibrary.Controls
         {
             MaskedDecimalBox maskedDecimal = src as MaskedDecimalBox;
             Decimal? newVal = (Decimal?)args.NewValue;
-            //if (newVal != null)
+            Decimal? oldVal = (Decimal?)args.OldValue;
+            if (maskedDecimal.maskedDecimalProvider == null)
+            {
+                maskedDecimal.maskedDecimalProvider =
+                    new MaskedNumberProvider<Decimal?>(maskedDecimal.TextFormat, Decimal.MaxValue, Decimal.MinValue);
+            }
+            if (maskedDecimal.maskedDecimalProvider != null && newVal != oldVal)
+            { 
                 maskedDecimal.maskedDecimalProvider.displayText =
                     maskedDecimal.maskedDecimalProvider.fromatProvider.formatNumber(newVal, maskedDecimal.Text);
-            //else
-            //    maskedDecimal.maskedDecimalProvider.displayText =
-            //        maskedDecimal.maskedDecimalProvider.prompt;
 
-            int caretTmp = maskedDecimal.CaretIndex;
-            maskedDecimal.Text = maskedDecimal.maskedDecimalProvider.displayText;
-            maskedDecimal.CaretIndex = caretTmp;
+                int caretTmp = maskedDecimal.CaretIndex;
+                if (maskedDecimal.Text.Length != maskedDecimal.maskedDecimalProvider.displayText.Length)
+                {
+                    caretTmp +=
+                        maskedDecimal.maskedDecimalProvider.displayText.Length - maskedDecimal.Text.Length;
+                }
+                maskedDecimal.Text = maskedDecimal.maskedDecimalProvider.displayText;
+                maskedDecimal.CaretIndex = caretTmp;
+            }
         }
 
         public Decimal? MaskedDecimal
@@ -302,23 +337,54 @@ namespace UDTAppControlLibrary.Controls
 
         public MaskedDecimalBox()
         {
+            PreviewKeyDown += new KeyEventHandler(previewKeyDownEvent);
             TextChanged += new TextChangedEventHandler(textChanged);
             PreviewTextInput += new TextCompositionEventHandler(previewTextInput);
-            maskedDecimalProvider = new MaskedNumberProvider<Decimal?>(FormatType.Decimal, Decimal.MaxValue, Decimal.MinValue);
+            //SelectionChanged += new RoutedEventHandler(selChange);
+            //maskedDecimalProvider = new MaskedNumberProvider<Decimal?>(FormatType.Decimal, Decimal.MaxValue, Decimal.MinValue);
         }
 
-        private MaskedNumberProvider<Decimal?> maskedDecimalProvider;
+        private MaskedNumberProvider<Decimal?> maskedDecimalProvider = null;
+
+        //private bool InSelChange = false;
+        //private void selChange(object src, RoutedEventArgs arg)
+        //{
+        //    if (!InSelChange)
+        //    {
+        //        InSelChange = true;
+        //        TextBox textBox = src as TextBox;
+        //        textBox.CaretIndex = 0;
+        //        InSelChange = false;
+        //    }
+        //}
+
+        private void previewKeyDownEvent(object src, KeyEventArgs arg)
+        {
+            maskedDecimalProvider.fromatProvider.previewKeyDown(this, arg);
+            base.OnPreviewKeyDown(arg);
+        }
 
         private void previewTextInput(object src, TextCompositionEventArgs arg)
         {
+            InTextChangeEvent = true;
             maskedDecimalProvider.previewText(this, arg);
+            InTextChangeEvent = false;
+        }
+
+        private bool InTextChangeEvent = false;
+        protected override void OnTextChanged(TextChangedEventArgs e)
+        {
+            if (!InTextChangeEvent)
+                base.OnTextChanged(e);
         }
 
         private void textChanged(object src, TextChangedEventArgs arg)
         {
+            InTextChangeEvent = true;
             maskedDecimalProvider.textChanged(this, arg);
             if (maskedDecimalProvider.numberComplete)
                 MaskedDecimal = maskedDecimalProvider.fromatProvider.parseNumber(maskedDecimalProvider.displayText);
+            InTextChangeEvent = false;
         }
     }
 
