@@ -45,6 +45,8 @@ namespace UDTAppControlLibrary.Controls
     ///     <MyNamespace:MaskedEdit/>
     ///
     /// </summary>
+    // MaskedTextBox : bindTextBox : TextBox : BindableBase
+    //
     public class MaskedTextBox : TextBox
     {
         public static readonly DependencyProperty MaskedTextProperty =
@@ -267,8 +269,18 @@ namespace UDTAppControlLibrary.Controls
         }
     }
 
-    public class MaskedDecimalBox : TextBox
+    public class MaskedDecimalBox : TextBox, INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private void NotifyPropertyChanged(String info)
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(info));
+            }
+        }
+
         public static readonly DependencyProperty TextFormatProperty =
             DependencyProperty.Register("TextFormat", typeof(FormatType), typeof(MaskedDecimalBox),
             new UIPropertyMetadata(new PropertyChangedCallback(OnMaskTextFormatPropertyChange)),
@@ -312,12 +324,17 @@ namespace UDTAppControlLibrary.Controls
                 maskedDecimal.maskedDecimalProvider.displayText =
                     maskedDecimal.maskedDecimalProvider.fromatProvider.formatNumber(newVal, maskedDecimal.Text);
 
-                int caretTmp = maskedDecimal.CaretIndex;
-                if (maskedDecimal.Text.Length != maskedDecimal.maskedDecimalProvider.displayText.Length)
-                {
-                    caretTmp +=
-                        maskedDecimal.maskedDecimalProvider.displayText.Length - maskedDecimal.Text.Length;
-                }
+                //int caretTmp = maskedDecimal.CaretIndex;
+                //if (maskedDecimal.Text.Length != maskedDecimal.maskedDecimalProvider.displayText.Length)
+                //{
+                //    caretTmp +=
+                //        maskedDecimal.maskedDecimalProvider.displayText.Length - maskedDecimal.Text.Length;
+                //}
+                int caretTmp = maskedDecimal.maskedDecimalProvider.fromatProvider.getCaretPos
+                           (maskedDecimal.CaretIndex, 
+                           maskedDecimal.Text.Length,
+                           maskedDecimal.maskedDecimalProvider.displayText.Length);
+
                 maskedDecimal.Text = maskedDecimal.maskedDecimalProvider.displayText;
                 maskedDecimal.CaretIndex = caretTmp;
             }
@@ -340,23 +357,32 @@ namespace UDTAppControlLibrary.Controls
             PreviewKeyDown += new KeyEventHandler(previewKeyDownEvent);
             TextChanged += new TextChangedEventHandler(textChanged);
             PreviewTextInput += new TextCompositionEventHandler(previewTextInput);
-            //SelectionChanged += new RoutedEventHandler(selChange);
+            SelectionChanged += new RoutedEventHandler(selChange);
+            headFormat = "@";
             //maskedDecimalProvider = new MaskedNumberProvider<Decimal?>(FormatType.Decimal, Decimal.MaxValue, Decimal.MinValue);
+        }
+
+
+        public string headFormat
+        {
+            get { return "$"; }
+            set { NotifyPropertyChanged("headFormat"); }
         }
 
         private MaskedNumberProvider<Decimal?> maskedDecimalProvider = null;
 
-        //private bool InSelChange = false;
-        //private void selChange(object src, RoutedEventArgs arg)
-        //{
-        //    if (!InSelChange)
-        //    {
-        //        InSelChange = true;
-        //        TextBox textBox = src as TextBox;
-        //        textBox.CaretIndex = 0;
-        //        InSelChange = false;
-        //    }
-        //}
+        private bool InSelChange = false;
+        private void selChange(object src, RoutedEventArgs arg)
+        {
+            if (!InSelChange)
+            {
+                InSelChange = true;
+                TextBox textBox = src as TextBox;
+                SelectionStart =
+                    maskedDecimalProvider.fromatProvider.adjustCaret(SelectionStart, textBox.Text);
+                InSelChange = false;
+            }
+        }
 
         private void previewKeyDownEvent(object src, KeyEventArgs arg)
         {

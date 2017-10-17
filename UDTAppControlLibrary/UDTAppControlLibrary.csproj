@@ -63,6 +63,8 @@
   <ItemGroup>
     <Compile Include="Controls\MaskedEdit.cs" />
     <Compile Include="Controls\MaskedNumberProvider.cs" />
+    <Compile Include="Controls\NumberBox.cs" />
+    <Compile Include="Controls\NumberText.cs" />
     <Compile Include="Controls\UDTButtons.xaml.cs">
       <DependentUpon>UDTButtons.xaml</DependentUpon>
     </Compile>

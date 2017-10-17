@@ -10,6 +10,16 @@ namespace CustomControlTest.ViewModel
 {
     public class MainViewModel : ValidatableBindableBase
     {
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private void NotifyPropertyChanged(String info)
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(info));
+            }
+        }
+
         public MainViewModel()
         {
             mask = "00/00/0000";
@@ -23,6 +33,7 @@ namespace CustomControlTest.ViewModel
             set 
             { 
                 SetProperty(ref _maskedText, value);
+                NotifyPropertyChanged("maskedText");
             }
         }
 
@@ -33,6 +44,7 @@ namespace CustomControlTest.ViewModel
             set 
             { 
                 SetProperty(ref _mask, value);
+                NotifyPropertyChanged("mask");
             }
         }
 
@@ -43,6 +55,7 @@ namespace CustomControlTest.ViewModel
             set
             {
                 SetProperty(ref _maskNumber, value);
+                NotifyPropertyChanged("maskNumber");
             }
         }
 
@@ -53,6 +66,7 @@ namespace CustomControlTest.ViewModel
             set
             {
                 SetProperty(ref _maskDecimal, value);
+                NotifyPropertyChanged("maskDecimal");
             }
         }
     }

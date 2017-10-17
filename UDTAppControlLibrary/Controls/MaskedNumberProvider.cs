@@ -111,7 +111,8 @@ namespace UDTAppControlLibrary.Controls
         public void setDisplayText(string ctrlText)
         {
             numberComplete = false;
-            displayText = fromatProvider.formatText(ctrlText);
+            //displayText = fromatProvider.formatText(ctrlText);
+            displayText = ctrlText;
             numberComplete = fromatProvider.canParse(displayText);
 
         }
@@ -204,9 +205,9 @@ namespace UDTAppControlLibrary.Controls
             }
             else if (src.Text == fromatProvider.prompt)
             {
-                arg.Handled = true;
-                src.Text = arg.Text;
-                src.CaretIndex = 1;
+                //arg.Handled = true;
+                src.Text = "";
+                //src.CaretIndex = 1;
             }
         }
 
@@ -226,6 +227,13 @@ namespace UDTAppControlLibrary.Controls
             {
                 caretTmp = caretTmp + (displayText.Length - lengthTmp);
             }
+
+            //if (fromatProvider.caretOverride != null)
+            //{
+            //    caretTmp = (int)fromatProvider.caretOverride;
+            //    fromatProvider.caretOverride = null;
+            //}
+
             src.Text = displayText;
             src.CaretIndex = caretTmp;
         }
@@ -262,7 +270,6 @@ namespace UDTAppControlLibrary.Controls
             {
                 prompt = "Enter %";
                 formatChars.Add(new FormatString(" %", -2));
-                //formatChars.Add(new FormatChar("%", -1));
             }
             if (type == FormatType.Interger)
             {
@@ -274,6 +281,65 @@ namespace UDTAppControlLibrary.Controls
             }
         }
 
+        private int fromatPerpendLength 
+        {
+            get
+            {
+                int len = 0;
+                foreach(FormatString str in formatChars)
+                {
+                    if (str.offset > 0)
+                        len += str.fromatChars.Length;
+                }
+                return len;
+            }
+        }
+
+        private int fromatAppendLength
+        {
+            get
+            {
+                int len = 0;
+                foreach(FormatString str in formatChars)
+                {
+                    if (str.offset < 0)
+                        len += str.fromatChars.Length;
+                }
+                return len;
+            }
+        }
+
+        public int? caretOverride = null;
+        public int adjustCaret(int caretPos, string text)
+        {
+            int textLength = text.Length;
+            if (caretPos < fromatPerpendLength)
+                caretPos = fromatPerpendLength;
+            if (caretPos > textLength - fromatAppendLength)
+                caretPos = textLength - fromatAppendLength;
+            if (caretPos > textLength)
+                caretPos = textLength;
+            if (caretPos < 0)
+                caretPos = 0;
+
+
+            return caretPos;
+        }
+
+        public int getCaretPos(int curPos, int oldTextLength, int newTextLenght)
+        {
+            int caretPos = 0;
+            if (caretOverride != null)
+            {
+                caretPos = fromatPerpendLength + (int)caretOverride;
+                caretOverride = null;
+            }
+            else
+            {
+                caretPos = curPos + (newTextLenght - oldTextLength);
+            }
+            return caretPos;
+        }
 
         public string formatNumber(T number, string ctrlTxt)
         {
@@ -282,7 +348,7 @@ namespace UDTAppControlLibrary.Controls
 
             else if (type == FormatType.Currency)
             {
-                numTxt = string.Format("{0:c}", number);
+                numTxt = string.Format("{0:n2}", number);
                 //numTxt = formatText(numTxt);
             }
             else if (type == FormatType.Percent)
@@ -317,7 +383,7 @@ namespace UDTAppControlLibrary.Controls
             else if(type == FormatType.Interger)
             {
                 numTxt = string.Format("{0:n0}", number);
-                numTxt = formatText(numTxt);
+                //numTxt = formatText(numTxt);
             }
 
             return formatText(numTxt); 
@@ -340,7 +406,7 @@ namespace UDTAppControlLibrary.Controls
             return text;
         }
 
-        public string formatText(string ctrlText)
+        private string formatText(string ctrlText)
         {
             string displayText = ctrlText;
             if (ctrlText == prompt)
@@ -368,6 +434,8 @@ namespace UDTAppControlLibrary.Controls
                 {
                     displayText = insertFmtChar(fmtStr, displayText);
                 }
+                //if (type != FormatType.Interger && !displayText.Contains("."))
+                //    displayText = displayText + ".";
                 return displayText;
             }
 
@@ -386,37 +454,65 @@ namespace UDTAppControlLibrary.Controls
             bool haveDecPt = true;
             bool promptVisable = src.Text == prompt;
             if (type != FormatType.Interger && !promptVisable)
-            { 
+            {
                 haveDecPt = src.Text.Contains(".");
                 if (c == '.' && haveDecPt)
                 {
                     // move decimal pt to new postion
                     int caretTmp = src.CaretIndex;
                     src.Text = src.Text.Replace(".", "");
-                    src.Text = src.Text.Insert(caretTmp, ".");
-                    src.CaretIndex = caretTmp;
-                    return false;
+                    //src.Text = src.Text.Insert(caretTmp, ".");
+                    src.CaretIndex = caretTmp+1;
+                    return true;
                 }
             }
 
             if(promptVisable)
             {
-                return (Char.IsDigit(c) || c == '+' || c == '-' || (c == '.'));
+                //return (Char.IsDigit(c) || c == '+' || c == '-' || (c == '.'));
+                if ((Char.IsDigit(c) || c == '+' || c == '-' || (c == '.')))
+                {
+                    if(Char.IsDigit(c)) caretOverride = 1;
+                    return true;
+                }
+                return false;
             }
             else if (postion == 0)
             {
-                return (Char.IsDigit(c) || c == '+' || c == '-' || (c == '.' && !haveDecPt));
+                //return (Char.IsDigit(c) || c == '+' || c == '-' || (c == '.' && !haveDecPt));
+                return (Char.IsDigit(c) || c == '+' || c == '-');
             }
             else
             {
-                return (Char.IsDigit(c) || (c == '.' && !haveDecPt));
+                //return (Char.IsDigit(c) || (c == '.' && !haveDecPt));
+                return (Char.IsDigit(c) || c == '.');
             }
         }
 
         public void previewKeyDown(TextBox src, KeyEventArgs arg)
         {
             if (src.Text != prompt)
+            {
+                if (arg.Key == Key.Back)
+                {
+                    if (src.SelectionStart > 0 && src.Text[src.SelectionStart - 1] == '.')
+                    { 
+                        src.SelectionStart = src.SelectionStart - 1;
+                        arg.Handled = true;
+                    }
+                }
+                if (arg.Key == Key.Delete)
+                {
+                    if (src.SelectionStart < src.Text.Length && src.Text[src.SelectionStart] == '.')
+                    {
+                        if (src.SelectionStart < src.Text.Length-1)
+                            src.SelectionStart = src.SelectionStart + 1;
+                        arg.Handled = true;
+                    }
+                }
+
                 return;
+            }
 
             if (arg.Key == Key.Space)
             {
@@ -603,47 +699,19 @@ namespace UDTAppControlLibrary.Controls
 
         private string insertFmtChar(FormatString formatStr, string text)
         {
-            //int charPos;
-            //if (formatChar.offset > 0)
-            //{
-            //    charPos = formatChar.offset - 1;
-            //}
-            //else
-            //{
-            //    charPos = text.Length + (formatChar.offset);
-            //}
-            //if(charPos < text.Length)
-            //{
-            //    if (text[charPos] != formatChar.fromatChar[0])
-            //    {
-            //        text = text.Insert(charPos, formatChar.fromatChar);
-            //    }
-            //}
             if (formatStr.offset > 0)
+            {
                 text = formatStr.fromatChars + text;
+            }
             else
+            { 
                 text = text + formatStr.fromatChars;
+            }
             return text;
         }
 
         private string removeFmtChar(FormatString formatString, string text)
         {
-            //int charPos;
-            //if (formatChar.offset > 0)
-            //{
-            //    charPos = formatChar.offset - 1;
-            //}
-            //else
-            //{
-            //    charPos = text.Length + (formatChar.offset);
-            //}
-            //if (charPos < text.Length)
-            //{
-            //    if (text[charPos] == formatChar.fromatChar[0])
-            //    {
-            //        text = text.Remove(charPos, 1);
-            //    }
-            //}
             foreach(char c in formatString.fromatChars)
                 text = text.Replace(c.ToString(), "");
             return text;
