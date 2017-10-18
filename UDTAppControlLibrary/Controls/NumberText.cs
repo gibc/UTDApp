@@ -121,6 +121,21 @@ namespace UDTAppControlLibrary.Controls
             }
         }
 
+        public void limitDecimaDigits(int maxDecmialDigits)
+        {
+            int offset = numberString.IndexOf(".");
+            if(offset >= 0)
+            {
+                int strLen = numberString.Length-1;
+                int digitCount = strLen - (offset);
+                while (digitCount > maxDecmialDigits)
+                {
+                    deleteChar(digitCount + offset);
+                    digitCount--;
+                }
+            }
+        }
+
         public void addCommas()
         {
             removeCommas();

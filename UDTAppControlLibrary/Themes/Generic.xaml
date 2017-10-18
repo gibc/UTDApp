@@ -75,10 +75,10 @@
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="auto"  />
                             </Grid.RowDefinitions>
-                            <TextBlock HorizontalAlignment="Right" Grid.Column="0" Grid.Row="0" x:Name="preFormat" Text="Pre"/>
+                            <TextBlock HorizontalAlignment="Right" Grid.Column="0" Grid.Row="0" x:Name="preFormat" />
                             <!--<ScrollViewer Width="auto" HorizontalAlignment="Center" Grid.Column="1" Margin="0" x:Name="PART_ContentHost"/>-->
                             <TextBox TextWrapping="NoWrap"  Width="auto" HorizontalAlignment="Center" Grid.Column="1"  Grid.Row="0" Margin="0" x:Name="textBox"/>
-                            <TextBlock HorizontalAlignment="Left" Grid.Column="2"  Grid.Row="0" x:Name="postFormat" Text="Post" />
+                            <TextBlock HorizontalAlignment="Left" Grid.Column="2"  Grid.Row="0" x:Name="postFormat" />
                         </Grid>
                     </Border>
 

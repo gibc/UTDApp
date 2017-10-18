@@ -253,6 +253,13 @@ namespace UDTAppControlLibrary.Controls
 
     }
 
+    public class NumberSymbol
+    {
+        public NumberSymbol(string _pre, string _post) { pre = _pre; post = _post; }
+        public string pre = "";
+        public string post = "";
+    }
+
     public enum FormatType { Percent=1, Currency, Interger, Decimal, Date };
     public class NumberFromatProvider<T>
     {
@@ -263,22 +270,41 @@ namespace UDTAppControlLibrary.Controls
             numberMin = minNumber;
             if (type == FormatType.Currency)
             {
-                prompt = "Enter $ Amount";
-                formatChars.Add(new FormatString("$", 1));
+                prompt = "Enter Amount";
+                //formatChars.Add(new FormatString("$", 1));
+                positiveNumberSymbol = new NumberSymbol("$", "");
+                negativeNumberSymbol = new NumberSymbol("$(", ")");
             }
             if (type == FormatType.Percent)
             {
-                prompt = "Enter %";
-                formatChars.Add(new FormatString(" %", -2));
+                prompt = "Enter Percent";
+                //formatChars.Add(new FormatString(" %", -2));
+                positiveNumberSymbol = new NumberSymbol("", " %");
+                negativeNumberSymbol = new NumberSymbol("", " %");
             }
             if (type == FormatType.Interger)
             {
                 prompt = "Enter Number.";
+                positiveNumberSymbol = new NumberSymbol("", "");
+                negativeNumberSymbol = new NumberSymbol("", "");
             } 
             if (type == FormatType.Decimal)
             {
                 prompt = "Enter Decimal.";
+                positiveNumberSymbol = new NumberSymbol("", "");
+                negativeNumberSymbol = new NumberSymbol("", "");
             }
+        }
+
+        public NumberSymbol positiveNumberSymbol
+        {
+            get;
+            set;
+        }
+        public NumberSymbol negativeNumberSymbol
+        {
+            get;
+            set;
         }
 
         private int fromatPerpendLength 
@@ -643,7 +669,8 @@ namespace UDTAppControlLibrary.Controls
         {
             T number = default(T);
 
-            if (string.IsNullOrEmpty(numberTxt) || numberTxt == prompt || numberTxt == ".")
+            if (string.IsNullOrEmpty(numberTxt) || numberTxt == prompt || numberTxt == "."
+                || numberTxt == "-" || numberTxt == "+")
                 return number; 
 
             numberTxt = unFormatText(numberTxt);
@@ -693,7 +720,7 @@ namespace UDTAppControlLibrary.Controls
 
         }
 
-        private FormatType type = FormatType.Interger;
+        public FormatType type = FormatType.Interger;
         public string prompt = "";
         private List<FormatString> formatChars = new List<FormatString>();
 
