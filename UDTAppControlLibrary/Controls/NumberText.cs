@@ -22,13 +22,23 @@ namespace UDTAppControlLibrary.Controls
         public void insertChar(char c, int offset)
         {
             numberString = numberString.Insert(offset, Char.ToString(c));
-            if (offset < selectionStart) selectionStart++;
+            if (offset < selectionStart) 
+                selectionStart++;
         }
 
         public void deleteChar()
         {
-            numberString = numberString.Remove(selectionStart, 1);
+            if (selectionStart < numberString.Length)
+                numberString = numberString.Remove(selectionStart, 1);
         }
+
+        public void deleteChar(int offset)
+        {
+            numberString = numberString.Remove(offset, 1);
+            if (offset < selectionStart)
+                selectionStart--;
+        }
+
         public void insertString(string str)
         {
             numberString = numberString.Insert(selectionStart, str);
@@ -104,8 +114,8 @@ namespace UDTAppControlLibrary.Controls
         {
             get 
             {
-                if (selectionStart > 0)
-                    return numberString[selectionStart];
+                if (selectionStart > 1)
+                    return numberString[selectionStart-1];
                 else
                     return null;
             }
@@ -113,15 +123,30 @@ namespace UDTAppControlLibrary.Controls
 
         public void addCommas()
         {
-            numberString = numberString.Replace(",", "");
+            removeCommas();
             int offset = numberString.IndexOf(".");
             if (offset < 0) offset = numberString.Length;
             offset -= 3;
-            while (offset > 0)
+            int endOffset = 0;
+            if (numberString[0] == '-' || numberString[0] == '+')
+                endOffset = 1;
+            while (offset > endOffset)
             {
                 insertChar(',', offset);
                 offset -= 3;
             }           
         }
+
+        private void removeCommas()
+        {
+            int offset = numberString.Length-1;
+            while (offset >= 0)
+            {
+                if (numberString[offset] == ',')
+                    deleteChar(offset);
+                offset -= 1;
+            }
+        }
+
     }
 }

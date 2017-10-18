@@ -253,7 +253,7 @@ namespace UDTAppControlLibrary.Controls
 
     }
 
-    public enum FormatType { Currency, Percent, Interger, Decimal, Date}
+    public enum FormatType { Percent=1, Currency, Interger, Decimal, Date };
     public class NumberFromatProvider<T>
     {
         public NumberFromatProvider(FormatType fmtType, T maxNumber, T minNumber)
@@ -643,7 +643,7 @@ namespace UDTAppControlLibrary.Controls
         {
             T number = default(T);
 
-            if (string.IsNullOrEmpty(numberTxt) || numberTxt == prompt)
+            if (string.IsNullOrEmpty(numberTxt) || numberTxt == prompt || numberTxt == ".")
                 return number; 
 
             numberTxt = unFormatText(numberTxt);

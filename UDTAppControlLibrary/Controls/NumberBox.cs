@@ -11,6 +11,24 @@ namespace UDTAppControlLibrary.Controls
 {
     public class NumberBox : ContentControl
     {
+        public static readonly DependencyProperty TextFormatProperty =
+             DependencyProperty.Register("TextFormat", typeof(FormatType), typeof(NumberBox),
+             new UIPropertyMetadata(new PropertyChangedCallback(OnMaskTextFormatPropertyChange)),
+             null);
+
+        static void OnMaskTextFormatPropertyChange(DependencyObject src, DependencyPropertyChangedEventArgs args)
+        {
+            NumberBox maskedDecimal = src as NumberBox;
+            FormatType newType = (FormatType)args.NewValue;
+            maskedDecimal.numberProvider = new MaskedNumberProvider<Decimal?>(newType, Decimal.MaxValue, Decimal.MinValue);
+        }
+
+        public FormatType TextFormat
+        {
+            get { return (FormatType)GetValue(TextFormatProperty); }
+            set { SetValue(TextFormatProperty, value); }
+        }
+
         static NumberBox()
         {
             DefaultStyleKeyProperty.OverrideMetadata(typeof(NumberBox), new FrameworkPropertyMetadata(typeof(NumberBox)));
@@ -21,6 +39,7 @@ namespace UDTAppControlLibrary.Controls
         private TextBox txtBox;
         private NumberText numberText = new NumberText();
         private MaskedNumberProvider<Decimal?> numberProvider = new MaskedNumberProvider<Decimal?>(FormatType.Decimal, Decimal.MaxValue, Decimal.MinValue);
+        //private MaskedNumberProvider<Decimal?> numberProvider = null;
         public override void OnApplyTemplate()
         {
             PreFormatBox = Template.FindName("preFormat", this) as TextBlock;
@@ -30,11 +49,18 @@ namespace UDTAppControlLibrary.Controls
             txtBox.PreviewKeyDown += new KeyEventHandler(previewKeyDownEvent);
             txtBox.PreviewTextInput += new TextCompositionEventHandler(previewTextInput);
             txtBox.SelectionChanged += new RoutedEventHandler(selectionChange);
- 
+
             numberText.setPrompt(numberProvider.fromatProvider.prompt);
             updateTextBox();
 
             base.OnApplyTemplate();
+        }
+
+        private Decimal? _parsedNumber = null;
+        private Decimal? parsedNumber
+        {
+            get { return _parsedNumber; }
+            set { _parsedNumber = value; }
         }
 
         private void previewKeyDownEvent(object src, KeyEventArgs arg)
@@ -68,9 +94,11 @@ namespace UDTAppControlLibrary.Controls
                     {
                         numberText.deleteString();
                     }
-                    else if (numberText.currentChar == '.')
+                    else if (numberText.currentChar == '.' || numberText.currentChar == ',')
                     {
                         numberText.selectionStart = numberText.selectionStart + 1;
+                        txtBox.SelectionStart = numberText.selectionStart;
+                        return;
                     }
                     else numberText.deleteChar();
                 }
@@ -78,6 +106,9 @@ namespace UDTAppControlLibrary.Controls
 
            
             base.OnPreviewKeyDown(arg);
+
+            if (numberText.numberString == "" || numberText.numberString == ".")
+                numberText.setPrompt(numberProvider.fromatProvider.prompt);
 
             updateTextBox();
         }
@@ -97,13 +128,9 @@ namespace UDTAppControlLibrary.Controls
                 if(c == '.') 
                 {
                     int ptOffset = numberText.numberString.IndexOf(c);
-                    if(ptOffset > 0)
+                    if(ptOffset >= 0)
                     {
-                        numberText.numberString.Replace(".", "");
-                        if(ptOffset < numberText.selectionStart)
-                        {
-                            numberText.selectionStart = numberText.selectionStart - 1;
-                        }
+                        numberText.deleteChar(ptOffset);
                     }
                     numberText.insertChar(c);
                 }
@@ -126,10 +153,12 @@ namespace UDTAppControlLibrary.Controls
             if (txtBox.Text != numberText.numberString)
             {
                 txtBox.Text = numberText.numberString;
+                parsedNumber = numberProvider.fromatProvider.parseNumber(numberText.numberString);
             }
-            txtBox.CaretIndex = numberText.selectionStart;
             txtBox.SelectionLength = numberText.selectionLength;
+            txtBox.SelectionStart = numberText.selectionStart;
             txtBox.SelectionChanged += new RoutedEventHandler(selectionChange);
+
         }
 
         private void selectionChange(object src, RoutedEventArgs arg)
