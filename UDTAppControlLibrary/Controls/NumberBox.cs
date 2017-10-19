@@ -20,7 +20,12 @@ namespace UDTAppControlLibrary.Controls
         {
             NumberBox maskedDecimal = src as NumberBox;
             FormatType newType = (FormatType)args.NewValue;
-            maskedDecimal.numberProvider = new MaskedNumberProvider<Decimal?>(newType, Decimal.MaxValue, Decimal.MinValue);
+            if (newType == FormatType.Decimal)
+                maskedDecimal.fromatProvider = new DcimalFromatProvider(Decimal.MaxValue, Decimal.MinValue);
+            else if (newType == FormatType.Currency)
+                maskedDecimal.fromatProvider = new CurrencyFromatProvider(Decimal.MaxValue, Decimal.MinValue);
+            else if (newType == FormatType.Percent)
+                maskedDecimal.fromatProvider = new PercentFromatProvider(Decimal.MaxValue, Decimal.MinValue);
         }
 
         public FormatType TextFormat
@@ -38,7 +43,7 @@ namespace UDTAppControlLibrary.Controls
         private TextBlock PostFormatBox;
         private TextBox txtBox;
         private NumberText numberText = new NumberText();
-        private MaskedNumberProvider<Decimal?> numberProvider = new MaskedNumberProvider<Decimal?>(FormatType.Decimal, Decimal.MaxValue, Decimal.MinValue);
+        private DcimalFromatProvider fromatProvider = new DcimalFromatProvider(Decimal.MaxValue, Decimal.MinValue) as DcimalFromatProvider;
         public override void OnApplyTemplate()
         {
             PreFormatBox = Template.FindName("preFormat", this) as TextBlock;
@@ -49,10 +54,10 @@ namespace UDTAppControlLibrary.Controls
             txtBox.PreviewTextInput += new TextCompositionEventHandler(previewTextInput);
             txtBox.SelectionChanged += new RoutedEventHandler(selectionChange);
 
-            PreFormatBox.Text = numberProvider.fromatProvider.positiveNumberSymbol.pre;
-            PostFormatBox.Text = numberProvider.fromatProvider.positiveNumberSymbol.post;
+            PreFormatBox.Text = fromatProvider.positiveNumberSymbol.pre;
+            PostFormatBox.Text = fromatProvider.positiveNumberSymbol.post;
 
-            numberText.setPrompt(numberProvider.fromatProvider.prompt);
+            numberText.setPrompt(fromatProvider.prompt);
             updateTextBox();
 
             base.OnApplyTemplate();
@@ -67,31 +72,31 @@ namespace UDTAppControlLibrary.Controls
 
                 if (value == null)
                 {
-                    PreFormatBox.Text = numberProvider.fromatProvider.positiveNumberSymbol.pre;
-                    PostFormatBox.Text = numberProvider.fromatProvider.positiveNumberSymbol.post;
+                    PreFormatBox.Text = fromatProvider.positiveNumberSymbol.pre;
+                    PostFormatBox.Text = fromatProvider.positiveNumberSymbol.post;
                 }
                 else if (_parsedNumber == null)
                 {
                     if(value >= 0)
-                    { 
-                        PreFormatBox.Text = numberProvider.fromatProvider.positiveNumberSymbol.pre;
-                        PostFormatBox.Text = numberProvider.fromatProvider.positiveNumberSymbol.post;
+                    {
+                        PreFormatBox.Text = fromatProvider.positiveNumberSymbol.pre;
+                        PostFormatBox.Text = fromatProvider.positiveNumberSymbol.post;
                     }
                     else
                     {
-                        PreFormatBox.Text = numberProvider.fromatProvider.negativeNumberSymbol.pre;
-                        PostFormatBox.Text = numberProvider.fromatProvider.negativeNumberSymbol.post;
+                        PreFormatBox.Text = fromatProvider.negativeNumberSymbol.pre;
+                        PostFormatBox.Text = fromatProvider.negativeNumberSymbol.post;
                     }
                 }
                 else if (value < 0 && _parsedNumber >= 0)
                 {
-                    PreFormatBox.Text = numberProvider.fromatProvider.negativeNumberSymbol.pre;
-                    PostFormatBox.Text = numberProvider.fromatProvider.negativeNumberSymbol.post;
+                    PreFormatBox.Text = fromatProvider.negativeNumberSymbol.pre;
+                    PostFormatBox.Text = fromatProvider.negativeNumberSymbol.post;
                 }
                 else if (value >= 0 && _parsedNumber < 0)
                 {
-                    PreFormatBox.Text = numberProvider.fromatProvider.positiveNumberSymbol.pre;
-                    PostFormatBox.Text = numberProvider.fromatProvider.positiveNumberSymbol.post;
+                    PreFormatBox.Text = fromatProvider.positiveNumberSymbol.pre;
+                    PostFormatBox.Text = fromatProvider.positiveNumberSymbol.post;
                 }
 
                 _parsedNumber = value; 
@@ -100,32 +105,31 @@ namespace UDTAppControlLibrary.Controls
 
         private void previewKeyDownEvent(object src, KeyEventArgs arg)
         {
-
+            arg.Handled = arg.Key == Key.Delete || arg.Key == Key.Back;
             if (!numberText.promptVisble)
             {
                 if (arg.Key == Key.Back)
                 {
-                    arg.Handled = true;
                     if (numberText.previousChar == '.')
                     {
                         numberText.selectionStart = numberText.selectionStart - 1;
                     }
                     else
                     {
-                        if(numberText.selectionStart > 0)
-                        { 
+                        if (numberText.selectionStart > 0)
+                        {
                             numberText.selectionStart = numberText.selectionStart - 1;
-                            numberText.deleteChar(); 
+                            numberText.deleteChar();
                         }
                     }
                 }
 
                 if (arg.Key == Key.Delete)
                 {
-                    arg.Handled = true;
-                    if(numberText.selectionLength > 0)
+                    if (numberText.selectionLength > 0)
                     {
-                        numberText.deleteString();
+                        if (!deleteSelectionWithPt())
+                            numberText.deleteString();
                     }
                     else if (numberText.currentChar == '.' || numberText.currentChar == ',')
                     {
@@ -141,23 +145,18 @@ namespace UDTAppControlLibrary.Controls
             {
                 if (numberText.numberString == "" || numberText.numberString == "." ||
                     numberText.numberString == "-" || numberText.numberString == "+")
-                    numberText.setPrompt(numberProvider.fromatProvider.prompt);
+                    numberText.setPrompt(fromatProvider.prompt);
 
                 updateTextBox();
             }
-
-           
+     
             base.OnPreviewKeyDown(arg);
 
-            //if (numberText.numberString == "" || numberText.numberString == ".")
-            //    numberText.setPrompt(numberProvider.fromatProvider.prompt);
-
-            //updateTextBox();
         }
 
         private bool replacePromptText(TextCompositionEventArgs arg, char c)
         {
-            if (numberProvider.fromatProvider.type == FormatType.Currency)
+            if (fromatProvider.type == FormatType.Currency)
             {
                 numberText.insertString(".00");
                 numberText.selectionStart = 0;
@@ -173,7 +172,7 @@ namespace UDTAppControlLibrary.Controls
 
         private bool isMaxDecimalDigits(TextCompositionEventArgs arg)
         {
-            if (numberProvider.fromatProvider.type == FormatType.Currency)
+            if (fromatProvider.type == FormatType.Currency)
             {
                 int ptOffset = numberText.numberString.IndexOf('.');
                 if (numberText.selectionStart > ptOffset + 2)
@@ -181,6 +180,35 @@ namespace UDTAppControlLibrary.Controls
                     arg.Handled = true;
                     return true;
                 }
+            }
+            return false;
+        }
+
+        private bool allowDecimalInsert(TextCompositionEventArgs arg)
+        {
+            if(fromatProvider.type == FormatType.Currency)
+            { 
+                arg.Handled = true;
+                updateTextBox();
+                return false;
+            }
+            return true;
+        }
+
+        private bool deleteSelectionWithPt()
+        {
+            if(fromatProvider.type == FormatType.Currency)
+            {
+                int offset = numberText.numberString.IndexOf('.');
+                if (offset >= numberText.selectionStart && 
+                    offset <= numberText.selectionStart + numberText.selectionLength)
+                {
+                    numberText.deleteString();
+                    numberText.insertChar('.');
+                    numberText.selectionStart--;
+                    return true;
+                }
+                else return false;
             }
             return false;
         }
@@ -195,45 +223,34 @@ namespace UDTAppControlLibrary.Controls
                 {
                     numberText.clear();
                     if (replacePromptText(arg, c)) return;
-                    //if (numberProvider.fromatProvider.type == FormatType.Currency)
-                    //{
-                    //    numberText.insertString(".00");
-                    //    numberText.selectionStart = 0;
-                    
-                    //    if (c == '+' || c == '-') numberText.insertChar(c);
-                    //    if (Char.IsDigit(c)) numberText.insertChar(c);
-                    //    arg.Handled = true;
-                    //    updateTextBox(); 
-                    //    return;
-                    //}
                 }
 
-                //if (numberProvider.fromatProvider.type == FormatType.Currency)
-                //{
-                //    int ptOffset = numberText.numberString.IndexOf('.');
-                //    if (numberText.selectionStart > ptOffset + 2)
-                //    { 
-                //        arg.Handled = true;
-                //        return;
-                //    }
-                //}
+                if (numberText.selectionLength > 0)
+                {
+                    if (!deleteSelectionWithPt()) 
+                    {
+                        numberText.deleteString();
+                    }
+                }
 
                 if (isMaxDecimalDigits(arg)) return;
 
                 if(Char.IsDigit(c)) numberText.insertChar(c);
 
-                if(c == '.' && numberProvider.fromatProvider.type != FormatType.Currency) 
+                if(c == '+' || c == '-' && numberText.selectionStart == 0)
                 {
-                    int ptOffset = numberText.numberString.IndexOf(c);
-                    if(ptOffset >= 0)
-                    {
-                        numberText.deleteChar(ptOffset);
-                    }
                     numberText.insertChar(c);
                 }
 
-                if(c == '+' || c == '-' && numberText.selectionStart == 0)
+                if (!allowDecimalInsert(arg)) return;
+
+                if (c == '.')
                 {
+                    int ptOffset = numberText.numberString.IndexOf(c);
+                    if (ptOffset >= 0)
+                    {
+                        numberText.deleteChar(ptOffset);
+                    }
                     numberText.insertChar(c);
                 }
             }
@@ -250,13 +267,13 @@ namespace UDTAppControlLibrary.Controls
             if (!numberText.promptVisble)
             { 
                 numberText.addCommas();
-                if (numberProvider.fromatProvider.type == FormatType.Currency)
+                if (fromatProvider.type == FormatType.Currency)
                     numberText.limitDecimaDigits(2);
             }
             if (txtBox.Text != numberText.numberString)
             {
                 txtBox.Text = numberText.numberString;
-                parsedNumber = numberProvider.fromatProvider.parseNumber(numberText.numberString);
+                parsedNumber = fromatProvider.parseNumber(numberText.numberString);
             }
             txtBox.SelectionLength = numberText.selectionLength;
             txtBox.SelectionStart = numberText.selectionStart;
