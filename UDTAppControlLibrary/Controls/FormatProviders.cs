@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 
 namespace UDTAppControlLibrary.Controls
 {
@@ -42,6 +43,11 @@ namespace UDTAppControlLibrary.Controls
             basePovider.positiveNumberSymbol = new NumberSymbol("", " %");
             basePovider.negativeNumberSymbol = new NumberSymbol("", " %");
         }
+
+        public override dynamic parseNumber(string numberTxt)
+        {
+            return base.parseNumber(numberTxt) / 100;
+        }
     }
 
     public class CurrencyFromatProvider : DcimalFromatProvider
@@ -53,6 +59,62 @@ namespace UDTAppControlLibrary.Controls
             basePovider.positiveNumberSymbol = new NumberSymbol("$", "");
             basePovider.negativeNumberSymbol = new NumberSymbol("${", ")");
         }
+
+        override public void insertDecimal(NumberText numberText, char c)
+        { }
+
+        override public void deleteSelection(NumberText numberText)
+        {
+            int offset = numberText.numberString.IndexOf('.');
+            if (offset >= numberText.selectionStart &&
+                offset <= numberText.selectionStart + numberText.selectionLength)
+            {
+                numberText.deleteString();
+                numberText.insertChar('.');
+                numberText.selectionStart--;
+            }
+        }
+
+        override public void insertDigit(NumberText numberText, char c)
+        {
+            if (!isMaxDecimalDigits(numberText))
+                numberText.deleteChar(numberText.numberString.Length - 1);
+
+            numberText.insertChar(c);
+        }
+
+        override public void replacePromptText(NumberText numberText, TextCompositionEventArgs arg, char c)
+        {
+            numberText.clear();
+            numberText.insertString(".00");
+            numberText.selectionStart = 0;
+
+            if (c == '+' || c == '-') numberText.insertChar(c);
+            if (Char.IsDigit(c)) numberText.insertChar(c);
+            arg.Handled = true;
+        }
+
+        override public void fromatNumberText(NumberText numberText)
+        {
+            if (!numberText.promptVisble)
+            {
+                numberText.addCommas();
+                numberText.limitDecimaDigits(2);
+            }
+        }
+
+
+        private bool isMaxDecimalDigits(NumberText numberText)
+        {
+            int ptOffset = numberText.numberString.IndexOf('.');
+            if (numberText.selectionStart > ptOffset + 2)
+            {
+                return true;
+            }
+            return false;
+        }
+
+ 
     }
 
 
@@ -71,7 +133,7 @@ namespace UDTAppControlLibrary.Controls
 
         protected NumberProviderBase<Decimal?> basePovider = new NumberProviderBase<Decimal?>();
 
-        public FormatType type = FormatType.Decimal;
+        protected FormatType type = FormatType.Decimal;
 
         public string prompt{ get{ return basePovider.prompt;}}
 
@@ -99,7 +161,45 @@ namespace UDTAppControlLibrary.Controls
             return number;
         }
 
-        virtual public Decimal? parseNumber(string numberTxt)
+        virtual public void deleteSelection(NumberText numberText)
+        {
+            numberText.deleteString();
+        }
+
+        virtual public void insertDecimal(NumberText numberText, char c)
+        {
+            int ptOffset = numberText.numberString.IndexOf(c);
+            if (ptOffset >= 0)
+            {
+                numberText.deleteChar(ptOffset);
+            }
+            numberText.insertChar(c);
+        }
+
+        virtual public void insertDigit(NumberText numberText, char c)
+        {
+            numberText.insertChar(c);
+        }
+
+        virtual public void insertSign(NumberText numberText, char c)
+        {
+            numberText.insertChar(c);
+        }
+
+        virtual public void replacePromptText(NumberText numberText, TextCompositionEventArgs arg, char c)
+        {
+            numberText.clear();
+        }
+
+        virtual public void fromatNumberText(NumberText numberText)
+        {
+            if (!numberText.promptVisble)
+            {
+                numberText.addCommas();
+            }
+        }
+
+        virtual public dynamic parseNumber(string numberTxt)
         {
             Decimal? number = default(Decimal?);
 

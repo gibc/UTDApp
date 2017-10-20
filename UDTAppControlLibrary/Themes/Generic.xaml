@@ -53,7 +53,7 @@
         </Setter>
     </Style>
 
-    <Style TargetType = "{x:Type local:NumberBox}"
+    <Style TargetType = "{x:Type local:DecimalBox}"
       BasedOn = "{StaticResource {x:Type ContentControl}}">
         <Setter Property="Template">
             <Setter.Value>
