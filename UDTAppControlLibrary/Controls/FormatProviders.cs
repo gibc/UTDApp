@@ -7,41 +7,13 @@ using System.Windows.Input;
 
 namespace UDTAppControlLibrary.Controls
 {
-    public class FormatProviderBase
-    {
-        public FormatProviderBase() { }
-    }
-
-    public class NumberProviderBase<T> : FormatProviderBase
-    {
-        public NumberProviderBase() { }
-
-        public FormatType type = FormatType.Decimal;
-        public string prompt = "";
-
-        public T numberMax;
-        public T numberMin;
-
-        public NumberSymbol positiveNumberSymbol
-        {
-            get;
-            set;
-        }
-        public NumberSymbol negativeNumberSymbol
-        {
-            get;
-            set;
-        }
-
-    }
-
     public class PercentFromatProvider : DcimalFromatProvider
     {
         public PercentFromatProvider(Decimal maxNumber, Decimal minNumber) : base(maxNumber, minNumber)  
         {
-            basePovider.prompt = "Enter Percent.";
-            basePovider.positiveNumberSymbol = new NumberSymbol("", " %");
-            basePovider.negativeNumberSymbol = new NumberSymbol("", " %");
+            prompt = "Enter Percent.";
+            positiveNumberSymbol = new NumberSymbol("", " %");
+            negativeNumberSymbol = new NumberSymbol("", " %");
         }
 
         public override dynamic parseNumber(string numberTxt)
@@ -50,14 +22,57 @@ namespace UDTAppControlLibrary.Controls
         }
     }
 
+    public class NumberFromatProvider : DcimalFromatProvider
+    {
+        public NumberFromatProvider(Int32 maxNumber, Int32 minNumber)
+            : base(maxNumber, minNumber)
+        {
+            prompt = "Enter Number.";
+            positiveNumberSymbol = new NumberSymbol("", "");
+            negativeNumberSymbol = new NumberSymbol("", "");
+        }
+
+        public override dynamic parseNumber(string numberTxt)
+        {
+            Int32? number = default(Int32?);
+
+            if (emptyNumberText(numberTxt))
+                return number;
+
+            numberTxt = unFormatText(numberTxt);
+
+            Int32 num;
+            if (Int32.TryParse(numberTxt, out num))
+            {
+                number = num;
+            }
+            else if (numberTxt[0] == '-')
+            {
+                number = (Int32)numberMin ;
+            }
+            else
+            {
+                number = (Int32)numberMax;
+            }
+
+            return checkRange(number);
+        }
+
+        public override void insertDecimal(NumberText numberText, char c)
+        {
+            //base.insertDecimal(numberText, c);
+        }
+
+    }
+
     public class CurrencyFromatProvider : DcimalFromatProvider
     {
         public CurrencyFromatProvider(Decimal maxNumber, Decimal minNumber)
             : base(maxNumber, minNumber)
         {
-            basePovider.prompt = "Enter Amount.";
-            basePovider.positiveNumberSymbol = new NumberSymbol("$", "");
-            basePovider.negativeNumberSymbol = new NumberSymbol("${", ")");
+            prompt = "Enter Amount.";
+            positiveNumberSymbol = new NumberSymbol("$", "");
+            negativeNumberSymbol = new NumberSymbol("${", ")");
         }
 
         override public void insertDecimal(NumberText numberText, char c)
@@ -73,6 +88,7 @@ namespace UDTAppControlLibrary.Controls
                 numberText.insertChar('.');
                 numberText.selectionStart--;
             }
+            else numberText.deleteString();
         }
 
         override public void insertDigit(NumberText numberText, char c)
@@ -103,7 +119,6 @@ namespace UDTAppControlLibrary.Controls
             }
         }
 
-
         private bool isMaxDecimalDigits(NumberText numberText)
         {
             int ptOffset = numberText.numberString.IndexOf('.');
@@ -114,43 +129,48 @@ namespace UDTAppControlLibrary.Controls
             return false;
         }
 
- 
     }
-
 
     public class DcimalFromatProvider 
     {
         public DcimalFromatProvider(Decimal maxNumber, Decimal minNumber)
         {
-            basePovider.numberMax = maxNumber;
-            basePovider.numberMin = minNumber;
+            numberMax = maxNumber;
+            numberMin = minNumber;
 
-            basePovider.prompt = "Enter Decimal.";
-            basePovider.positiveNumberSymbol = new NumberSymbol("", "");
-            basePovider.negativeNumberSymbol = new NumberSymbol("", "");
+            prompt = "Enter Decimal.";
+            positiveNumberSymbol = new NumberSymbol("", "");
+            negativeNumberSymbol = new NumberSymbol("", "");
             
         }
 
-        protected NumberProviderBase<Decimal?> basePovider = new NumberProviderBase<Decimal?>();
+        //protected FormatType type = FormatType.Decimal;
 
-        protected FormatType type = FormatType.Decimal;
+        //public string prompt{ get{ return basePovider.prompt;}}
 
-        public string prompt{ get{ return basePovider.prompt;}}
+        //public Decimal? numberMax { get { return basePovider.numberMax; } }
+        //public Decimal? numberMin { get { return basePovider.numberMin; } }
 
-        public Decimal? numberMax { get { return basePovider.numberMax; } }
-        public Decimal? numberMin { get { return basePovider.numberMin; } }
+        //public NumberSymbol positiveNumberSymbol { get { return basePovider.positiveNumberSymbol; } }
 
-        public NumberSymbol positiveNumberSymbol { get { return basePovider.positiveNumberSymbol; } }
+        //public NumberSymbol negativeNumberSymbol { get { return basePovider.negativeNumberSymbol; } }
 
-        public NumberSymbol negativeNumberSymbol { get { return basePovider.negativeNumberSymbol; } }
+        public string prompt;
 
-        private string unFormatText(string text)
+        public Decimal? numberMax; 
+        public Decimal? numberMin; 
+
+        public NumberSymbol positiveNumberSymbol;
+
+        public NumberSymbol negativeNumberSymbol; 
+
+        protected string unFormatText(string text)
         {
             text = text.Replace(",", "");
             return text;
         }
 
-        private Decimal? checkRange(Decimal? number)
+        protected dynamic checkRange(dynamic number)
         {
 
             if (number > numberMax)
@@ -199,12 +219,17 @@ namespace UDTAppControlLibrary.Controls
             }
         }
 
+        virtual protected bool emptyNumberText(string numberTxt)
+        {
+            return (string.IsNullOrEmpty(numberTxt) || numberTxt == prompt || numberTxt == "."
+                || numberTxt == "-" || numberTxt == "+");
+        }
+
         virtual public dynamic parseNumber(string numberTxt)
         {
             Decimal? number = default(Decimal?);
 
-            if (string.IsNullOrEmpty(numberTxt) || numberTxt == prompt || numberTxt == "."
-                || numberTxt == "-" || numberTxt == "+")
+            if (emptyNumberText(numberTxt))
                 return number;
 
             numberTxt = unFormatText(numberTxt);
@@ -224,7 +249,6 @@ namespace UDTAppControlLibrary.Controls
             }
 
             return checkRange(number);
-
         }
 
     }
