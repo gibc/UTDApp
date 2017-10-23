@@ -96,6 +96,7 @@
 
     <Style BasedOn="{StaticResource BaseStyle}" TargetType="{x:Type local:NumberBox}"  />
     <Style BasedOn="{StaticResource BaseStyle}" TargetType="{x:Type local:DecimalBox}"  />
+    <Style BasedOn="{StaticResource BaseStyle}" TargetType="{x:Type local:DateBox}"  />
 
 
 

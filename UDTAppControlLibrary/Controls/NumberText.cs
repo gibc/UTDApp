@@ -19,6 +19,12 @@ namespace UDTAppControlLibrary.Controls
             selectionStart++;
         }
 
+        public void repalceChar(char c, int offset)
+        {
+            deleteChar(offset);
+            insertChar(c, offset);
+        }
+
         public void insertChar(char c, int offset)
         {
             numberString = numberString.Insert(offset, Char.ToString(c));
@@ -118,6 +124,57 @@ namespace UDTAppControlLibrary.Controls
                     return numberString[selectionStart-1];
                 else
                     return null;
+            }
+        }
+
+        public Int32? day
+        {
+            get
+            {
+                if (promptVisble) return null;
+                string dayText = numberString.Split('/')[1];
+                if (dayText.Any(Char.IsWhiteSpace)) return null;
+                Int32 day;
+                if (Int32.TryParse(dayText.ToString(), out day))
+                    return day;
+                else
+                    return null;
+            }
+        }
+
+        public Int32? year
+        {
+            get
+            {
+                if (promptVisble) return null;
+                string yearText = numberString.Split('/')[2];
+                if (yearText.Any(Char.IsWhiteSpace)) return null;
+                Int32 year;
+                if (Int32.TryParse(yearText.ToString(), out year))
+                    return year;
+                else
+                    return null;
+            }
+        }
+
+
+        public Int32? month
+        {
+            get
+            {
+                if (promptVisble) return null;
+                string monthText = numberString.Split('/')[0];
+                if (!monthText.Any(Char.IsWhiteSpace))
+                {
+                    Int32 month;
+                    if (Int32.TryParse(monthText.ToString(), out month))
+                    {
+                        if (month > 0 && month <= 12)
+                            return month;
+                        else return null;
+                    }
+                }
+                return null;
             }
         }
 

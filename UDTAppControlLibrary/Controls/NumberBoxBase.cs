@@ -43,9 +43,9 @@ namespace UDTAppControlLibrary.Controls
         virtual protected void setParsedNumber(dynamic value)
         { }
 
-        private void previewKeyDownEvent(object src, KeyEventArgs arg)
+        virtual protected void previewKeyDownEvent(object src, KeyEventArgs arg)
         {
-            arg.Handled = arg.Key == Key.Delete || arg.Key == Key.Back;
+            arg.Handled = arg.Key == Key.Delete || arg.Key == Key.Back || arg.Key == Key.Space;
             if (!numberText.promptVisble)
             {
                 if (arg.Key == Key.Back)
@@ -93,7 +93,7 @@ namespace UDTAppControlLibrary.Controls
 
         }
 
-        private void previewTextInput(object src, TextCompositionEventArgs arg)
+        virtual protected void previewTextInput(object src, TextCompositionEventArgs arg)
         {
             char c = arg.Text[0];
             if ((Char.IsDigit(c) || c == '+' || c == '-' || c == '.'))
@@ -129,7 +129,7 @@ namespace UDTAppControlLibrary.Controls
 
         }
 
-        private void updateTextBox()
+        protected void updateTextBox()
         {
             txtBox.SelectionChanged -= new RoutedEventHandler(selectionChange);
             fromatProvider.fromatNumberText(numberText);

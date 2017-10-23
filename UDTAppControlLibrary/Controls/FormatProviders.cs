@@ -7,6 +7,132 @@ using System.Windows.Input;
 
 namespace UDTAppControlLibrary.Controls
 {
+    public class DateTimeProvider : DcimalFromatProvider
+    {
+        public DateTimeProvider(DateTime maxNumber, DateTime minNumber)
+            : base(maxNumber, minNumber)
+        {
+            prompt = "Enter a Date.";
+            positiveNumberSymbol = new NumberSymbol("", "");
+            negativeNumberSymbol = new NumberSymbol("", "");
+        }
+
+        public override void fromatNumberText(NumberText numberText)
+        {
+            if (!numberText.promptVisble)
+            {
+                // TBD: add date seperators
+                //numberText.addCommas();
+            }
+        }
+
+        public override void replacePromptText(NumberText numberText, TextCompositionEventArgs arg, char c)
+        {
+            numberText.clear();
+            numberText.insertString("  /  /    ");
+            numberText.selectionStart = 0;
+
+            if (Char.IsDigit(c)) insertDigit(numberText, c);
+            arg.Handled = true;
+        }
+
+        public override void deleteSelection(NumberText numberText)
+        {
+            int offset = numberText.selectionStart;
+            while(offset < numberText.selectionStart + numberText.selectionLength)
+            {
+                if(numberText.numberString[offset] != '/')
+                {
+                    numberText.repalceChar(' ', offset);
+                }
+                offset++;
+            }
+            numberText.selectionLength = 0;
+        }
+
+        private void monthDigit (char c, int offset, NumberText numberText)
+        {
+            int val = c - '0';
+            string txt = numberText.numberString.Split('/')[0];
+
+            if(val > 2)
+            {               
+                numberText.repalceChar('0', 0);                
+                numberText.repalceChar(c, 1);
+                numberText.selectionStart = 3;
+                return;
+            }
+
+            if (offset == 0 && val == 0)
+            {
+                numberText.repalceChar(c, 0);
+                if (txt[1] == '0') 
+                    numberText.repalceChar(' ', 1);
+                numberText.selectionStart = 1;
+            }
+            if (offset == 0 && val == 1)
+            {
+                numberText.repalceChar(c, 0);
+                if (txt[1] != ' ' && txt[1] - '0' > 2)
+                    numberText.repalceChar(' ', 1);
+                numberText.selectionStart = 1;
+            }
+
+            if (offset == 1)
+            {
+                if (val == 0 && txt[0] != '0')
+                {
+                    numberText.repalceChar(c, 1);
+                    numberText.selectionStart = 3;
+                }
+                if (val == 1 || val == 2)
+                {
+                    numberText.repalceChar(c, 1);
+                    if (txt[0] == ' ')
+                        numberText.repalceChar('0', 0);
+                    numberText.selectionStart = 3;
+                }
+            }
+            // check if entry complete
+            if(numberText.month != null)
+            {
+                numberText.selectionStart = 3;
+            }
+        }
+
+
+        public override void insertDigit(NumberText numberText, char c)
+        {
+            // TBD: 1 - 12, 1 - 31 etc
+            int digitVal = c - '0';
+            if (numberText.selectionStart >= 0 && numberText.selectionStart < 2)
+            {
+                monthDigit(c, numberText.selectionStart, numberText);
+            }
+            else if (numberText.selectionStart >= 3 && numberText.selectionStart < 5)
+            { }
+            else if (numberText.selectionStart >= 6)
+            { }
+
+        }
+
+        public override void insertDateSperator(NumberText numberText)
+        {
+            // TBD: move to next section if currect section is defined
+            numberText.insertChar('/');
+        }
+
+
+        public override dynamic parseNumber(string numberTxt)
+        {
+            // TBD
+            //return base.parseNumber(numberTxt) / 100;
+            DateTime date;
+            DateTime.TryParse("1/1/2001", out date);
+            return date;
+        }
+    }
+
     public class PercentFromatProvider : DcimalFromatProvider
     {
         public PercentFromatProvider(Decimal maxNumber, Decimal minNumber) : base(maxNumber, minNumber)  
@@ -133,7 +259,7 @@ namespace UDTAppControlLibrary.Controls
 
     public class DcimalFromatProvider 
     {
-        public DcimalFromatProvider(Decimal maxNumber, Decimal minNumber)
+        public DcimalFromatProvider(dynamic maxNumber, dynamic minNumber)
         {
             numberMax = maxNumber;
             numberMin = minNumber;
@@ -144,21 +270,10 @@ namespace UDTAppControlLibrary.Controls
             
         }
 
-        //protected FormatType type = FormatType.Decimal;
-
-        //public string prompt{ get{ return basePovider.prompt;}}
-
-        //public Decimal? numberMax { get { return basePovider.numberMax; } }
-        //public Decimal? numberMin { get { return basePovider.numberMin; } }
-
-        //public NumberSymbol positiveNumberSymbol { get { return basePovider.positiveNumberSymbol; } }
-
-        //public NumberSymbol negativeNumberSymbol { get { return basePovider.negativeNumberSymbol; } }
-
         public string prompt;
 
-        public Decimal? numberMax; 
-        public Decimal? numberMin; 
+        public dynamic numberMax;
+        public dynamic numberMin; 
 
         public NumberSymbol positiveNumberSymbol;
 
@@ -205,6 +320,11 @@ namespace UDTAppControlLibrary.Controls
         {
             numberText.insertChar(c);
         }
+
+        virtual public void insertDateSperator(NumberText numberText)
+        {           
+        }
+
 
         virtual public void replacePromptText(NumberText numberText, TextCompositionEventArgs arg, char c)
         {
