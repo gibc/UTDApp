@@ -17,14 +17,14 @@ namespace UDTAppControlLibrary.Controls
             negativeNumberSymbol = new NumberSymbol("", "");
         }
 
-        public override void fromatNumberText(NumberText numberText)
-        {
-            if (!numberText.promptVisble)
-            {
-                // TBD: add date seperators
-                //numberText.addCommas();
-            }
-        }
+        //public override void fromatNumberText(NumberText numberText)
+        //{
+        //    if (!numberText.promptVisble)
+        //    {
+        //        // TBD: add date seperators
+        //        //numberText.addCommas();
+        //    }
+        //}
 
         public override void replacePromptText(NumberText numberText, TextCompositionEventArgs arg, char c)
         {
@@ -59,7 +59,7 @@ namespace UDTAppControlLibrary.Controls
             {
                 numberText.repalceChar('0', 0);
                 numberText.repalceChar(c, 1);
-                numberText.selectionStart = 3;
+                numberText.selectionStart = numberText.dayIndex;
                 return;
             }
 
@@ -86,7 +86,6 @@ namespace UDTAppControlLibrary.Controls
                     if (txt[0] == '0')
                     {
                         numberText.repalceChar(' ', numberText.selectionStart - 1);
-                        //numberText.selectionStart--;
                     }
                     else if (txt[0] == ' ')
                     {
@@ -102,10 +101,31 @@ namespace UDTAppControlLibrary.Controls
             }
         }
 
+        private void adjustDay(NumberText numberText)
+        {
+            if(numberText.month != null)
+            {
+                string maxDays = numberText.daysInMonth;
+                StringBuilder dayText = new  StringBuilder(numberText.dayTxt);
+                if ((dayText[0] - '0') > (maxDays[0] - '0'))
+                {
+                    dayText[0] = ' ';
+                    numberText.selectionStart = numberText.dayIndex;
+                }
+                if (dayText[0] == maxDays[0] && (dayText[1] - '0') > (maxDays[1] - '0'))
+                {
+                    dayText[1] = ' ';
+                    numberText.selectionStart = numberText.dayIndex+1;
+                }
+                numberText.dayTxt = dayText.ToString();
+            }
+        }
+
         private void dayDigit (char c, int offset, NumberText numberText)
         {
             int val = c - '0';
             string txt = numberText.numberString.Split('/')[1];
+            string maxDays = numberText.daysInMonth;
 
             if (offset == 0 && val == 0)
             {
@@ -114,14 +134,17 @@ namespace UDTAppControlLibrary.Controls
                     numberText.repalceChar(' ', numberText.selectionStart+1);
                 numberText.selectionStart++;
             }
+
             if (offset == 0 && val > 0 && val <= 3)
             {
-                if (!(numberText.month == 2 && val == 3))
+                if (val <= maxDays[0] - '0')
                 {
                     numberText.repalceChar(c, numberText.selectionStart);
-                    // 1 or 2 ok, if 3 check next pos
-                    if(val == 3 && txt[1] - '0' > 1)
-                        numberText.repalceChar(' ', numberText.selectionStart + 1);
+                    // if setting largest allow 10s place the check max allowed 1s place
+                    // and adj if needed
+                    if((val == maxDays[0]- '0') && (txt[1] - '0') > (maxDays[1] - '0'))
+                        numberText.repalceChar(maxDays[1], numberText.selectionStart + 1);
+
                     numberText.selectionStart++;
                 }
             }
@@ -138,11 +161,20 @@ namespace UDTAppControlLibrary.Controls
                 }
                 if (val > 0)
                 {
-                    numberText.repalceChar(c, numberText.selectionStart);
-                    if (val > 1 && txt[0] == '3')
+                    if((maxDays[0] - '0') == (txt[0] - '0'))
                     {
-                        numberText.repalceChar(' ', numberText.selectionStart - 1);
+                        if(val <= maxDays[1] -'0')
+                        {
+                            numberText.repalceChar(c, numberText.selectionStart);
+                        }
+                        else
+                        {
+                            numberText.repalceChar(c, numberText.selectionStart);
+                            numberText.repalceChar(' ', numberText.selectionStart - 1);
+                        }
                     }
+                    else
+                        numberText.repalceChar(c, numberText.selectionStart);
                 }
             }
        }
@@ -160,37 +192,98 @@ namespace UDTAppControlLibrary.Controls
         public override void insertDigit(NumberText numberText, char c)
         {
             int digitVal = c - '0';
-            if (numberText.selectionStart >= 0 && numberText.selectionStart < 2)
+            if (numberText.selectionStart >= numberText.monthIndex
+                && numberText.selectionStart < numberText.monthIndex+2)
             {
                 monthDigit(c, numberText.selectionStart, numberText);
                 if (numberText.month != null)
-                    numberText.selectionStart = 3;
+                {
+                    numberText.selectionStart = numberText.dayIndex;
+                    adjustDay(numberText);
+                }
                 if (numberText.day != null)
-                    numberText.selectionStart = 6;
+                    numberText.selectionStart = numberText.monthIndex;
             }
-            else if (numberText.selectionStart >= 3 && numberText.selectionStart < 5)
+            else if (numberText.selectionStart >= numberText.dayIndex
+                && numberText.selectionStart < numberText.dayIndex+2)
             {
                 dayDigit(c, numberText.selectionStart - 3, numberText);
                 if (numberText.day != null)
-                    numberText.selectionStart = 6;
+                    numberText.selectionStart = numberText.yearIndex;
             }
-            else if (numberText.selectionStart >= 6)
+            else if (numberText.selectionStart >= numberText.yearIndex)
             {
                 yearDigit(c, numberText.selectionStart - 6, numberText);
-                //if (numberText.month != null)
-                //    numberText.selectionStart = 3;
-                //if (numberText.day != null)
-                //    numberText.selectionStart = 6;
                 if (numberText.year != null)
-                    numberText.selectionStart = 10;
+                { 
+                    numberText.selectionStart = numberText.yearIndex+4;
+                    adjustDay(numberText);
+                }
             }
 
         }
 
         public override void insertDateSperator(NumberText numberText)
         {
-            // TBD: move to next section if currect section is defined
-            numberText.insertChar('/');
+            char c = ' ';
+            int offset = numberText.selectionStart;
+            if (offset >= numberText.monthIndex && offset <= numberText.monthIndex + 1)
+            {
+                string moTxt = numberText.monthTxt;
+                if (!moTxt.All(Char.IsWhiteSpace))
+                {
+                    if (!Char.IsWhiteSpace(moTxt[0])) c = moTxt[0]; 
+                    if (!Char.IsWhiteSpace(moTxt[1])) c = moTxt[1];
+                    numberText.repalceChar('0', numberText.monthIndex);
+                    numberText.repalceChar(c, numberText.monthIndex+1);
+                    numberText.selectionStart = numberText.dayIndex;
+                }
+            }
+            if (offset >= numberText.dayIndex && offset <= numberText.dayIndex + 1)
+            {
+                string dayTxt = numberText.dayTxt;
+                if (!dayTxt.All(Char.IsWhiteSpace))
+                {
+                    if (!Char.IsWhiteSpace(dayTxt[0])) c = dayTxt[0];
+                    if (!Char.IsWhiteSpace(dayTxt[1])) c = dayTxt[1];
+                    numberText.repalceChar('0', numberText.dayIndex);
+                    numberText.repalceChar(c, numberText.dayIndex + 1);
+                    numberText.selectionStart = numberText.yearIndex;
+                }
+
+            }
+            if (offset >= numberText.yearIndex && offset <= numberText.yearIndex + 3)
+            {
+                char a = ' ';
+                char b = ' ';
+                string yearTxt = numberText.yearTxt;
+                if (!yearTxt.Substring(0, 2).All(Char.IsWhiteSpace) && 
+                    yearTxt.Substring(2,2).All(Char.IsWhiteSpace))
+                {
+                    if (!Char.IsWhiteSpace(yearTxt[0])) a = yearTxt[0];
+                    if (!Char.IsWhiteSpace(yearTxt[1])) b = yearTxt[1];
+                    numberText.repalceChar('2', numberText.yearIndex);
+                    numberText.repalceChar('0', numberText.yearIndex + 1);
+                    if(a == ' ')
+                    {
+                        numberText.repalceChar('0', numberText.yearIndex + 2);
+                        numberText.repalceChar(b, numberText.yearIndex + 3);
+                    }
+                    if (b == ' ')
+                    {
+                        numberText.repalceChar('0', numberText.yearIndex + 2);
+                        numberText.repalceChar(a, numberText.yearIndex + 3);
+                    }
+                    else
+                    { 
+                        numberText.repalceChar(a, numberText.yearIndex + 2);
+                        numberText.repalceChar(b, numberText.yearIndex + 3);
+                    }
+                    numberText.selectionStart = numberText.yearIndex+4;
+                }
+                if (!yearTxt.Any(Char.IsWhiteSpace))
+                    numberText.selectionStart = numberText.yearIndex + 4;
+            }
         }
 
         public override dynamic parseNumber(string numberTxt)

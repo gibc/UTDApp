@@ -127,6 +127,23 @@ namespace UDTAppControlLibrary.Controls
             }
         }
 
+        public string dayTxt
+        {
+            get { return numberString.Substring(dayIndex, 2); }
+            set 
+            {
+                if (value != numberString.Substring(dayIndex, 2))
+                {
+                    numberString = numberString.Remove(dayIndex, 2);
+                    numberString = numberString.Insert(dayIndex, value);
+                }
+            }
+        }
+
+        public Int32 dayIndex { get { return 3; } }
+        public Int32 monthIndex { get { return 0; } }
+        public Int32 yearIndex { get { return 6; } }
+
         public Int32? day
         {
             get
@@ -162,6 +179,29 @@ namespace UDTAppControlLibrary.Controls
             }
         }
 
+        public string yearTxt
+        {
+            get { return numberString.Substring(yearIndex, 4); }
+            set
+            {
+                if (value != numberString.Substring(yearIndex, 4))
+                {
+                    numberString = numberString.Remove(yearIndex, 4);
+                    numberString = numberString.Insert(yearIndex, value);
+                }
+            }
+        }
+
+
+        public string monthTxt
+        {
+            get { return numberString.Substring(monthIndex, 2); }
+            set
+            {
+                numberString.Remove(monthIndex, 2);
+                numberString.Insert(monthIndex, value);
+            }
+        }
 
         public Int32? month
         {
@@ -179,6 +219,33 @@ namespace UDTAppControlLibrary.Controls
                     }
                 }
                 return null;
+            }
+        }
+
+        public string daysInMonth
+        {
+            get
+            {
+                string maxDays = "31";
+                int? mo = month;
+                if(mo != null)
+                {
+                    if(mo == 9 || mo == 4 || mo == 6|| mo == 11)
+                    {
+                        maxDays = "30";
+                    }
+                    if(mo == 2)
+                    {
+                        maxDays = "28"; 
+                        if(year != null)
+                        { 
+                            if ((year % 4 == 0) && (year % 100 != 0)
+                                || (year % 400 == 0))
+                                maxDays = "29";
+                        }
+                    }
+                }
+                return maxDays;
             }
         }
 

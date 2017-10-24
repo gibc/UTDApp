@@ -90,6 +90,12 @@ namespace UDTAppControlLibrary.Controls
                     updateTextBox();
                 }
 
+                if(arg.Key == Key.Space)
+                {
+                    fromatProvider.insertDateSperator(numberText);
+                    updateTextBox();
+                }
+
                 if (numberText.numberString == "  /  /    ")
                 { 
                     numberText.setPrompt(fromatProvider.prompt);
@@ -101,7 +107,7 @@ namespace UDTAppControlLibrary.Controls
         protected override void previewTextInput(object src, TextCompositionEventArgs arg)
         {
             char c = arg.Text[0];
-            if ((Char.IsDigit(c) || c == '/'))
+            if ((Char.IsDigit(c) || c == '/' || c == '-'))
             {
                 if (numberText.promptVisble)
                 {
@@ -120,7 +126,7 @@ namespace UDTAppControlLibrary.Controls
                 fromatProvider.deleteSelection(numberText);
 
                 if (Char.IsDigit(c)) fromatProvider.insertDigit(numberText, c);
-                if (c == '/') fromatProvider.insertDateSperator(numberText);
+                if (c == '/' || c == '-') fromatProvider.insertDateSperator(numberText);
 
            }
 
