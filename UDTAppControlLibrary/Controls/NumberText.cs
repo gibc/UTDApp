@@ -133,12 +133,16 @@ namespace UDTAppControlLibrary.Controls
             {
                 if (promptVisble) return null;
                 string dayText = numberString.Split('/')[1];
-                if (dayText.Any(Char.IsWhiteSpace)) return null;
-                Int32 day;
-                if (Int32.TryParse(dayText.ToString(), out day))
-                    return day;
-                else
-                    return null;
+                if (!dayText.Any(Char.IsWhiteSpace))
+                { 
+                    Int32 day;
+                    if (Int32.TryParse(dayText, out day))
+                    {
+                        if(day < 31)
+                            return day;
+                    }
+                }
+                return null;
             }
         }
 
@@ -148,12 +152,13 @@ namespace UDTAppControlLibrary.Controls
             {
                 if (promptVisble) return null;
                 string yearText = numberString.Split('/')[2];
-                if (yearText.Any(Char.IsWhiteSpace)) return null;
-                Int32 year;
-                if (Int32.TryParse(yearText.ToString(), out year))
-                    return year;
-                else
-                    return null;
+                if (!yearText.Any(Char.IsWhiteSpace))
+                { 
+                    Int32 year;
+                    if (Int32.TryParse(yearText, out year))
+                        return year;
+                }
+                return null;
             }
         }
 
@@ -167,11 +172,10 @@ namespace UDTAppControlLibrary.Controls
                 if (!monthText.Any(Char.IsWhiteSpace))
                 {
                     Int32 month;
-                    if (Int32.TryParse(monthText.ToString(), out month))
+                    if (Int32.TryParse(monthText, out month))
                     {
                         if (month > 0 && month <= 12)
                             return month;
-                        else return null;
                     }
                 }
                 return null;

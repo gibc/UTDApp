@@ -55,9 +55,9 @@ namespace UDTAppControlLibrary.Controls
             int val = c - '0';
             string txt = numberText.numberString.Split('/')[0];
 
-            if(val > 2)
-            {               
-                numberText.repalceChar('0', 0);                
+            if (val > 2)
+            {
+                numberText.repalceChar('0', 0);
                 numberText.repalceChar(c, 1);
                 numberText.selectionStart = 3;
                 return;
@@ -65,54 +65,125 @@ namespace UDTAppControlLibrary.Controls
 
             if (offset == 0 && val == 0)
             {
-                numberText.repalceChar(c, 0);
-                if (txt[1] == '0') 
-                    numberText.repalceChar(' ', 1);
-                numberText.selectionStart = 1;
+                numberText.repalceChar(c, numberText.selectionStart);
+                if (txt[1] == '0')
+                    numberText.repalceChar(' ', numberText.selectionStart+1);
+                numberText.selectionStart++;
             }
-            if (offset == 0 && val == 1)
+            else if (offset == 0 && val == 1)
             {
-                numberText.repalceChar(c, 0);
+                numberText.repalceChar(c, numberText.selectionStart);
                 if (txt[1] != ' ' && txt[1] - '0' > 2)
-                    numberText.repalceChar(' ', 1);
-                numberText.selectionStart = 1;
+                    numberText.repalceChar(' ', numberText.selectionStart+1);
+                numberText.selectionStart++;
             }
 
             if (offset == 1)
             {
-                if (val == 0 && txt[0] != '0')
+                if (val == 0)
                 {
-                    numberText.repalceChar(c, 1);
-                    numberText.selectionStart = 3;
+                    numberText.repalceChar(c, numberText.selectionStart);
+                    if (txt[0] == '0')
+                    {
+                        numberText.repalceChar(' ', numberText.selectionStart - 1);
+                        //numberText.selectionStart--;
+                    }
+                    else if (txt[0] == ' ')
+                    {
+                        numberText.repalceChar('0', numberText.selectionStart - 1);
+                    }
                 }
                 if (val == 1 || val == 2)
                 {
-                    numberText.repalceChar(c, 1);
+                    numberText.repalceChar(c, numberText.selectionStart);
                     if (txt[0] == ' ')
-                        numberText.repalceChar('0', 0);
-                    numberText.selectionStart = 3;
+                        numberText.repalceChar('0', numberText.selectionStart - 1);
                 }
-            }
-            // check if entry complete
-            if(numberText.month != null)
-            {
-                numberText.selectionStart = 3;
             }
         }
 
+        private void dayDigit (char c, int offset, NumberText numberText)
+        {
+            int val = c - '0';
+            string txt = numberText.numberString.Split('/')[1];
+
+            if (offset == 0 && val == 0)
+            {
+                numberText.repalceChar(c, numberText.selectionStart);
+                if (txt[1] == '0')
+                    numberText.repalceChar(' ', numberText.selectionStart+1);
+                numberText.selectionStart++;
+            }
+            if (offset == 0 && val > 0 && val <= 3)
+            {
+                if (!(numberText.month == 2 && val == 3))
+                {
+                    numberText.repalceChar(c, numberText.selectionStart);
+                    // 1 or 2 ok, if 3 check next pos
+                    if(val == 3 && txt[1] - '0' > 1)
+                        numberText.repalceChar(' ', numberText.selectionStart + 1);
+                    numberText.selectionStart++;
+                }
+            }
+
+            if (offset == 1)
+            {
+                if (val == 0 )
+                {
+                    numberText.repalceChar(c, numberText.selectionStart);
+                    if(txt[0] == '0')
+                    { 
+                        numberText.repalceChar(' ', numberText.selectionStart-1);
+                    }
+                }
+                if (val > 0)
+                {
+                    numberText.repalceChar(c, numberText.selectionStart);
+                    if (val > 1 && txt[0] == '3')
+                    {
+                        numberText.repalceChar(' ', numberText.selectionStart - 1);
+                    }
+                }
+            }
+       }
+
+        private void yearDigit (char c, int offset, NumberText numberText)
+        {
+            if(offset < 4)
+            { 
+                numberText.repalceChar(c, numberText.selectionStart);
+                if (numberText.selectionStart < 10)
+                    numberText.selectionStart++;
+            }
+        }
 
         public override void insertDigit(NumberText numberText, char c)
         {
-            // TBD: 1 - 12, 1 - 31 etc
             int digitVal = c - '0';
             if (numberText.selectionStart >= 0 && numberText.selectionStart < 2)
             {
                 monthDigit(c, numberText.selectionStart, numberText);
+                if (numberText.month != null)
+                    numberText.selectionStart = 3;
+                if (numberText.day != null)
+                    numberText.selectionStart = 6;
             }
             else if (numberText.selectionStart >= 3 && numberText.selectionStart < 5)
-            { }
+            {
+                dayDigit(c, numberText.selectionStart - 3, numberText);
+                if (numberText.day != null)
+                    numberText.selectionStart = 6;
+            }
             else if (numberText.selectionStart >= 6)
-            { }
+            {
+                yearDigit(c, numberText.selectionStart - 6, numberText);
+                //if (numberText.month != null)
+                //    numberText.selectionStart = 3;
+                //if (numberText.day != null)
+                //    numberText.selectionStart = 6;
+                if (numberText.year != null)
+                    numberText.selectionStart = 10;
+            }
 
         }
 
@@ -122,14 +193,12 @@ namespace UDTAppControlLibrary.Controls
             numberText.insertChar('/');
         }
 
-
         public override dynamic parseNumber(string numberTxt)
         {
-            // TBD
-            //return base.parseNumber(numberTxt) / 100;
             DateTime date;
-            DateTime.TryParse("1/1/2001", out date);
-            return date;
+            if(DateTime.TryParse(numberTxt, out date))
+                return date;
+            return null;
         }
     }
 

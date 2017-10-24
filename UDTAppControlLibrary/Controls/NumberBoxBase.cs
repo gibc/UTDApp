@@ -129,7 +129,7 @@ namespace UDTAppControlLibrary.Controls
 
         }
 
-        protected void updateTextBox()
+        virtual protected void updateTextBox()
         {
             txtBox.SelectionChanged -= new RoutedEventHandler(selectionChange);
             fromatProvider.fromatNumberText(numberText);
@@ -143,7 +143,7 @@ namespace UDTAppControlLibrary.Controls
             txtBox.SelectionChanged += new RoutedEventHandler(selectionChange);
         }
 
-        private void selectionChange(object src, RoutedEventArgs arg)
+        protected void selectionChange(object src, RoutedEventArgs arg)
         {
             numberText.selectionStart = txtBox.SelectionStart;
             numberText.selectionLength = txtBox.SelectionLength;

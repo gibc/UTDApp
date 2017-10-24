@@ -29,6 +29,24 @@ namespace UDTAppControlLibrary.Controls
             parsedNumber = value;
         }
 
+        protected override void updateTextBox()
+        {
+            txtBox.SelectionChanged -= new RoutedEventHandler(selectionChange);
+            if (txtBox.Text != numberText.numberString)
+            {
+                txtBox.Text = numberText.numberString;
+                if (numberText.month != null &&
+                    numberText.day != null &&
+                    numberText.year != null)
+                    setParsedNumber(fromatProvider.parseNumber(numberText.numberString));
+                else
+                    setParsedNumber(null);
+            }
+            txtBox.SelectionLength = numberText.selectionLength;
+            txtBox.SelectionStart = numberText.selectionStart;
+            txtBox.SelectionChanged += new RoutedEventHandler(selectionChange);
+        }
+
         protected override void previewKeyDownEvent(object src, KeyEventArgs arg)
         {
             arg.Handled = arg.Key == Key.Delete || arg.Key == Key.Back || arg.Key == Key.Space;
@@ -69,6 +87,12 @@ namespace UDTAppControlLibrary.Controls
                         if (numberText.selectionStart < 9)
                             numberText.selectionStart = numberText.selectionStart + 1;
                     }
+                    updateTextBox();
+                }
+
+                if (numberText.numberString == "  /  /    ")
+                { 
+                    numberText.setPrompt(fromatProvider.prompt);
                     updateTextBox();
                 }
             }
