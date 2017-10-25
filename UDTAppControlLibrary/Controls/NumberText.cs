@@ -198,8 +198,8 @@ namespace UDTAppControlLibrary.Controls
             get { return numberString.Substring(monthIndex, 2); }
             set
             {
-                numberString.Remove(monthIndex, 2);
-                numberString.Insert(monthIndex, value);
+                numberString = numberString.Remove(monthIndex, 2);
+                numberString = numberString.Insert(monthIndex, value);
             }
         }
 

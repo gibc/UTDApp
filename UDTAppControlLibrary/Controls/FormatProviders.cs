@@ -26,14 +26,22 @@ namespace UDTAppControlLibrary.Controls
         //    }
         //}
 
-        public override void replacePromptText(NumberText numberText, TextCompositionEventArgs arg, char c)
+
+        public override void replacePromptText(NumberText numberText, TextCompositionEventArgs arg, char c, dynamic extra = null)
         {
             numberText.clear();
-            numberText.insertString("  /  /    ");
+            DateTimeFormat fmt = (DateTimeFormat)extra;
+            if (fmt == DateTimeFormat.Date_Only)
+                numberText.insertString("  /  /    ");
+            if (fmt == DateTimeFormat.Date_12_HourTime)
+                numberText.insertString("  /  /    " + "\n" + DateTime.Now.ToString("hh:mm:tt"));
+            if (fmt == DateTimeFormat.Date_24_HourTime)
+                numberText.insertString("  /  /    " + "\n" + DateTime.Now.ToString("HH:mm:tt"));
+
             numberText.selectionStart = 0;
 
             if (Char.IsDigit(c)) insertDigit(numberText, c);
-            arg.Handled = true;
+            if(arg != null) arg.Handled = true;
         }
 
         public override void deleteSelection(NumberText numberText)
@@ -230,34 +238,48 @@ namespace UDTAppControlLibrary.Controls
             if (offset >= numberText.monthIndex && offset <= numberText.monthIndex + 1)
             {
                 string moTxt = numberText.monthTxt;
-                if (!moTxt.All(Char.IsWhiteSpace))
+                if (moTxt.All(Char.IsWhiteSpace))
+                {
+                    DateTime now = DateTime.Now;
+                    numberText.monthTxt = now.Month.ToString();
+                }
+                else if (moTxt.Any(Char.IsWhiteSpace))
                 {
                     if (!Char.IsWhiteSpace(moTxt[0])) c = moTxt[0]; 
                     if (!Char.IsWhiteSpace(moTxt[1])) c = moTxt[1];
                     numberText.repalceChar('0', numberText.monthIndex);
                     numberText.repalceChar(c, numberText.monthIndex+1);
-                    numberText.selectionStart = numberText.dayIndex;
                 }
+                numberText.selectionStart = numberText.dayIndex;
             }
             if (offset >= numberText.dayIndex && offset <= numberText.dayIndex + 1)
             {
                 string dayTxt = numberText.dayTxt;
-                if (!dayTxt.All(Char.IsWhiteSpace))
+                if (dayTxt.All(Char.IsWhiteSpace))
+                {
+                    DateTime now = DateTime.Now;
+                    numberText.dayTxt = now.Day.ToString();
+                }
+                else if (dayTxt.Any(Char.IsWhiteSpace))
                 {
                     if (!Char.IsWhiteSpace(dayTxt[0])) c = dayTxt[0];
                     if (!Char.IsWhiteSpace(dayTxt[1])) c = dayTxt[1];
                     numberText.repalceChar('0', numberText.dayIndex);
                     numberText.repalceChar(c, numberText.dayIndex + 1);
-                    numberText.selectionStart = numberText.yearIndex;
                 }
-
+                numberText.selectionStart = numberText.yearIndex;
             }
             if (offset >= numberText.yearIndex && offset <= numberText.yearIndex + 3)
             {
                 char a = ' ';
                 char b = ' ';
                 string yearTxt = numberText.yearTxt;
-                if (!yearTxt.Substring(0, 2).All(Char.IsWhiteSpace) && 
+                if (yearTxt.All(Char.IsWhiteSpace))
+                {
+                    DateTime now = DateTime.Now;
+                    numberText.yearTxt = now.Year.ToString();
+                }
+                else if (!yearTxt.Substring(0, 2).All(Char.IsWhiteSpace) && 
                     yearTxt.Substring(2,2).All(Char.IsWhiteSpace))
                 {
                     if (!Char.IsWhiteSpace(yearTxt[0])) a = yearTxt[0];
@@ -279,9 +301,8 @@ namespace UDTAppControlLibrary.Controls
                         numberText.repalceChar(a, numberText.yearIndex + 2);
                         numberText.repalceChar(b, numberText.yearIndex + 3);
                     }
-                    numberText.selectionStart = numberText.yearIndex+4;
                 }
-                if (!yearTxt.Any(Char.IsWhiteSpace))
+                //if (!yearTxt.Any(Char.IsWhiteSpace))
                     numberText.selectionStart = numberText.yearIndex + 4;
             }
         }
@@ -387,7 +408,7 @@ namespace UDTAppControlLibrary.Controls
             numberText.insertChar(c);
         }
 
-        override public void replacePromptText(NumberText numberText, TextCompositionEventArgs arg, char c)
+        override public void replacePromptText(NumberText numberText, TextCompositionEventArgs arg, char c, dynamic extra = null)
         {
             numberText.clear();
             numberText.insertString(".00");
@@ -488,7 +509,7 @@ namespace UDTAppControlLibrary.Controls
         }
 
 
-        virtual public void replacePromptText(NumberText numberText, TextCompositionEventArgs arg, char c)
+        virtual public void replacePromptText(NumberText numberText, TextCompositionEventArgs arg, char c, dynamic extra = null)
         {
             numberText.clear();
         }

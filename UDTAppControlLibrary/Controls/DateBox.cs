@@ -9,8 +9,32 @@ using System.Windows.Input;
 
 namespace UDTAppControlLibrary.Controls
 {
+    public enum DateTimeFormat { Date_Only = 1, Date_12_HourTime, Date_24_HourTime};
+
     public class DateBox : NumberBoxBase
     {
+        public static readonly DependencyProperty DateTimeFormatProperty =
+         DependencyProperty.Register("DateTimeFormat", typeof(DateTimeFormat), typeof(DateBox),
+         new UIPropertyMetadata(new PropertyChangedCallback(DateTimeFormatPropertyChange)),
+         null);
+
+        static void DateTimeFormatPropertyChange(DependencyObject src, DependencyPropertyChangedEventArgs args)
+        {
+            //DecimalBox maskedDecimal = src as DecimalBox;
+            //FormatType newType = (FormatType)args.NewValue;
+            //if (newType == FormatType.Decimal)
+            //    maskedDecimal.fromatProvider = new DcimalFromatProvider(Decimal.MaxValue, Decimal.MinValue);
+            //else if (newType == FormatType.Currency)
+            //    maskedDecimal.fromatProvider = new CurrencyFromatProvider(Decimal.MaxValue, Decimal.MinValue);
+            //else if (newType == FormatType.Percent)
+            //    maskedDecimal.fromatProvider = new PercentFromatProvider(Decimal.MaxValue, Decimal.MinValue);
+        }
+
+        public DateTimeFormat DateFormat
+        {
+            get { return (DateTimeFormat)GetValue(DateTimeFormatProperty); }
+            set { SetValue(DateTimeFormatProperty, value); }
+        }
 
         static DateBox()
         {
@@ -49,7 +73,8 @@ namespace UDTAppControlLibrary.Controls
 
         protected override void previewKeyDownEvent(object src, KeyEventArgs arg)
         {
-            arg.Handled = arg.Key == Key.Delete || arg.Key == Key.Back || arg.Key == Key.Space;
+            arg.Handled = arg.Key == Key.Delete || arg.Key == Key.Back
+                || arg.Key == Key.Space || arg.Key == Key.Return;
             if (!numberText.promptVisble)
             {
                 if (arg.Key == Key.Back)
@@ -90,18 +115,40 @@ namespace UDTAppControlLibrary.Controls
                     updateTextBox();
                 }
 
-                if(arg.Key == Key.Space)
-                {
-                    fromatProvider.insertDateSperator(numberText);
-                    updateTextBox();
-                }
-
                 if (numberText.numberString == "  /  /    ")
                 { 
                     numberText.setPrompt(fromatProvider.prompt);
                     updateTextBox();
                 }
             }
+
+            if (arg.Key == Key.Space)
+            {
+                if (numberText.promptVisble)
+                {
+                    fromatProvider.replacePromptText(numberText, null, ' ', DateFormat);
+                }
+                fromatProvider.insertDateSperator(numberText);
+                updateTextBox();
+            }
+
+            if (arg.Key == Key.Return)
+            {
+                if (numberText.promptVisble)
+                {
+                    fromatProvider.replacePromptText(numberText, null, ' ', DateFormat);
+                }
+                numberText.clear();
+                if (DateFormat == DateTimeFormat.Date_Only)
+                    numberText.insertString(DateTime.Now.ToShortDateString());
+                if (DateFormat == DateTimeFormat.Date_12_HourTime)
+                    numberText.insertString(DateTime.Now.ToShortDateString() + "\n" + DateTime.Now.ToString("hh:mm:tt"));
+                if (DateFormat == DateTimeFormat.Date_24_HourTime)
+                    numberText.insertString(DateTime.Now.ToShortDateString() + "\n" + DateTime.Now.ToString("HH:mm:tt"));
+                updateTextBox();
+            }
+
+
         }
 
         protected override void previewTextInput(object src, TextCompositionEventArgs arg)
@@ -114,7 +161,7 @@ namespace UDTAppControlLibrary.Controls
                     arg.Handled = true;
                     if (Char.IsDigit(c))
                     {
-                        fromatProvider.replacePromptText(numberText, arg, c);
+                        fromatProvider.replacePromptText(numberText, arg, c, DateFormat);
                         if (arg.Handled)
                         {
                             updateTextBox();
