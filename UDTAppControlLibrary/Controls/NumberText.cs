@@ -226,6 +226,93 @@ namespace UDTAppControlLibrary.Controls
             }
         }
 
+        public string hourTxt 
+        {
+
+            get { return numberString.Substring(DateIndex.hour, 2); }
+            set
+            {
+                numberString = numberString.Remove(DateIndex.hour, 2);
+                numberString = numberString.Insert(DateIndex.month, value);
+            }         
+        }
+
+        public Int32? hour 
+        {
+            get
+            {
+                if (promptVisble) return null;
+                if (!hourTxt.Any(Char.IsWhiteSpace))
+                {
+                    Int32 hourVal;
+                    if (Int32.TryParse(hourTxt, out hourVal))
+                    {
+                        if (hourVal >= 0 && hourVal <= 23)
+                            return hourVal;
+                    }
+                }
+                return null;
+            }
+       } 
+
+        public string minuteTxt
+        {
+
+            get { return numberString.Substring(DateIndex.minute, 2); }
+            set
+            {
+                numberString = numberString.Remove(DateIndex.minute, 2);
+                numberString = numberString.Insert(DateIndex.minute, value);
+            }
+        }
+
+        public Int32? minute
+        {
+            get
+            {
+                if (promptVisble) return null;
+                if (!minuteTxt.Any(Char.IsWhiteSpace))
+                {
+                    Int32 minuteVal;
+                    if (Int32.TryParse(minuteTxt, out minuteVal))
+                    {
+                        if (minuteVal >= 0 && minuteVal <= 59)
+                            return minuteVal;
+                    }
+                }
+                return null;
+            }
+        } 
+
+        public string meridiemTxt
+        {
+
+            get { return numberString.Substring(DateIndex.meridiem, 2); }
+            set
+            {
+                numberString = numberString.Remove(DateIndex.meridiem, 2);
+                numberString = numberString.Insert(DateIndex.meridiem, value);
+            }
+        }
+
+        public Int32? meridiem
+        {
+            get
+            {
+                if (promptVisble) return null;
+                if (!meridiemTxt.Any(Char.IsWhiteSpace))
+                {
+                    Int32 meridiemVal = 0;
+                    if (meridiemTxt == "PM")
+                    {
+                        meridiemVal = 1;
+                    }
+                    return meridiemVal;
+                }
+                return null;
+            }
+        } 
+
         public string daysInMonth
         {
             get

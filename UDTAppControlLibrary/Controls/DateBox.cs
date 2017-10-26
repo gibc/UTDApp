@@ -52,15 +52,40 @@ namespace UDTAppControlLibrary.Controls
             parsedNumber = value;
         }
 
+        private bool dateComplete
+        {
+            get 
+            {
+                bool dateComplete = numberText.month != null &&
+                    numberText.day != null &&
+                    numberText.year != null;
+                if(DateFormat == DateTimeFormat.Date_Only)
+                {
+                    return dateComplete;
+                }
+                if (DateFormat == DateTimeFormat.Date_12_HourTime)
+                {
+                    return dateComplete &&
+                    numberText.hour != null &&
+                    numberText.minute != null &&
+                    numberText.meridiem != null;
+                }
+                if (DateFormat == DateTimeFormat.Date_24_HourTime)
+                {
+                    return dateComplete &&
+                    numberText.hour != null &&
+                    numberText.minute != null;
+                }
+                return false;
+            }
+        }
         protected override void updateTextBox()
         {
             txtBox.SelectionChanged -= new RoutedEventHandler(selectionChange);
             if (txtBox.Text != numberText.numberString)
             {
                 txtBox.Text = numberText.numberString;
-                if (numberText.month != null &&
-                    numberText.day != null &&
-                    numberText.year != null)
+                if (dateComplete)
                     setParsedNumber(fromatProvider.parseNumber(numberText.numberString));
                 else
                     setParsedNumber(null);
