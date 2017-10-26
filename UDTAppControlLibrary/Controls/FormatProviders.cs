@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,34 +10,27 @@ namespace UDTAppControlLibrary.Controls
 {
     public class DateTimeProvider : DcimalFromatProvider
     {
-        public DateTimeProvider(DateTime maxNumber, DateTime minNumber)
+        public DateTimeProvider(DateTimeFormat format, DateTime maxNumber, DateTime minNumber)
             : base(maxNumber, minNumber)
         {
+            dateFormat = format;
             prompt = "Enter a Date.";
             positiveNumberSymbol = new NumberSymbol("", "");
             negativeNumberSymbol = new NumberSymbol("", "");
         }
 
-        //public override void fromatNumberText(NumberText numberText)
-        //{
-        //    if (!numberText.promptVisble)
-        //    {
-        //        // TBD: add date seperators
-        //        //numberText.addCommas();
-        //    }
-        //}
 
+        private DateTimeFormat dateFormat;
 
-        public override void replacePromptText(NumberText numberText, TextCompositionEventArgs arg, char c, dynamic extra = null)
+        public override void replacePromptText(NumberText numberText, TextCompositionEventArgs arg, char c)
         {
             numberText.clear();
-            DateTimeFormat fmt = (DateTimeFormat)extra;
-            if (fmt == DateTimeFormat.Date_Only)
+            if (dateFormat == DateTimeFormat.Date_Only)
                 numberText.insertString("  /  /    ");
-            if (fmt == DateTimeFormat.Date_12_HourTime)
+            if (dateFormat == DateTimeFormat.Date_12_HourTime)
                 numberText.insertString("  /  /    " + "\n" + DateTime.Now.ToString("hh:mm:tt"));
-            if (fmt == DateTimeFormat.Date_24_HourTime)
-                numberText.insertString("  /  /    " + "\n" + DateTime.Now.ToString("HH:mm:tt"));
+            if (dateFormat == DateTimeFormat.Date_24_HourTime)
+                numberText.insertString("  /  /    " + "\n" + DateTime.Now.ToString("HH:mm"));
 
             numberText.selectionStart = 0;
 
@@ -49,7 +43,8 @@ namespace UDTAppControlLibrary.Controls
             int offset = numberText.selectionStart;
             while(offset < numberText.selectionStart + numberText.selectionLength)
             {
-                if(numberText.numberString[offset] != '/')
+                if (numberText.numberString[offset] != '/' && numberText.numberString[offset] != ':'
+                    && numberText.numberString[offset] != 'M' && numberText.numberString[offset] != '\n')
                 {
                     numberText.repalceChar(' ', offset);
                 }
@@ -67,7 +62,7 @@ namespace UDTAppControlLibrary.Controls
             {
                 numberText.repalceChar('0', 0);
                 numberText.repalceChar(c, 1);
-                numberText.selectionStart = numberText.dayIndex;
+                numberText.selectionStart = DateIndex.day;// numberText.dayIndex;
                 return;
             }
 
@@ -118,12 +113,12 @@ namespace UDTAppControlLibrary.Controls
                 if ((dayText[0] - '0') > (maxDays[0] - '0'))
                 {
                     dayText[0] = ' ';
-                    numberText.selectionStart = numberText.dayIndex;
+                    numberText.selectionStart = DateIndex.day;// numberText.dayIndex;
                 }
                 if (dayText[0] == maxDays[0] && (dayText[1] - '0') > (maxDays[1] - '0'))
                 {
                     dayText[1] = ' ';
-                    numberText.selectionStart = numberText.dayIndex+1;
+                    numberText.selectionStart = DateIndex.day + 1;
                 }
                 numberText.dayTxt = dayText.ToString();
             }
@@ -197,45 +192,108 @@ namespace UDTAppControlLibrary.Controls
             }
         }
 
+        private void hourDigit(char c, int offset, NumberText numberText)
+        {
+            if (offset == 0)
+            {
+                int maxDigitVal = 2;
+                if (dateFormat == DateTimeFormat.Date_12_HourTime) maxDigitVal = 1;
+                if (c - '0' <= maxDigitVal)
+                { 
+                    numberText.repalceChar(c, numberText.selectionStart);
+                    numberText.selectionStart++;
+                }
+            }
+            else if (offset == 1)
+            {
+                //if (c - '0' <= 2)
+                {
+                    numberText.repalceChar(c, numberText.selectionStart);
+                    numberText.selectionStart = DateIndex.minute;
+                }
+            }
+        }
+
+        private void minuteDigit(char c, int offset, NumberText numberText)
+        {
+            if (offset == 0)
+            {
+                if (c - '0' <= 5)
+                {
+                    numberText.repalceChar(c, numberText.selectionStart);
+                    numberText.selectionStart++;
+                }
+            }
+            else if (offset == 1)
+            {
+                //if (c - '0' <= 2)
+                {
+                    numberText.repalceChar(c, numberText.selectionStart);
+                    numberText.selectionStart = DateIndex.meridiem;
+                }
+            }
+        }
+
         public override void insertDigit(NumberText numberText, char c)
         {
             int digitVal = c - '0';
-            if (numberText.selectionStart >= numberText.monthIndex
-                && numberText.selectionStart < numberText.monthIndex+2)
+            if (numberText.isMonthIndex )
             {
-                monthDigit(c, numberText.selectionStart, numberText);
+                monthDigit(c, numberText.selectionStart-DateIndex.month, numberText);
                 if (numberText.month != null)
                 {
-                    numberText.selectionStart = numberText.dayIndex;
+                    numberText.selectionStart = DateIndex.day;// numberText.dayIndex;
                     adjustDay(numberText);
                 }
-                if (numberText.day != null)
-                    numberText.selectionStart = numberText.monthIndex;
             }
-            else if (numberText.selectionStart >= numberText.dayIndex
-                && numberText.selectionStart < numberText.dayIndex+2)
+            else if (numberText.isDayIndex)
             {
-                dayDigit(c, numberText.selectionStart - 3, numberText);
+                dayDigit(c, numberText.selectionStart - DateIndex.day, numberText);
                 if (numberText.day != null)
-                    numberText.selectionStart = numberText.yearIndex;
+                    numberText.selectionStart = DateIndex.year;// numberText.yearIndex;
             }
-            else if (numberText.selectionStart >= numberText.yearIndex)
+            else if (numberText.isYearIndex)
             {
                 yearDigit(c, numberText.selectionStart - 6, numberText);
                 if (numberText.year != null)
-                { 
-                    numberText.selectionStart = numberText.yearIndex+4;
+                {
+                    numberText.selectionStart = DateIndex.year + 4;// numberText.yearIndex + 4;
                     adjustDay(numberText);
                 }
             }
+            else if(numberText.isHourIndex)
+            {
+                hourDigit(c, numberText.selectionStart - DateIndex.hour, numberText);
+            }
+            else if(numberText.isMinuteIndex)
+            {
+                minuteDigit(c, numberText.selectionStart - DateIndex.minute, numberText);
+            }
 
+        }
+
+        public override void insertLetter(NumberText numberText, char c)
+        {
+            if(numberText.isMeridiemIndex)
+            {
+                if (c == 'a' || c == 'A' )
+                {
+                    numberText.repalceChar('A', DateIndex.meridiem);
+                    numberText.repalceChar('M', DateIndex.meridiem+1);
+                }
+                if (c == 'p' || c == 'P')
+                {
+                    numberText.repalceChar('P', DateIndex.meridiem);
+                    numberText.repalceChar('M', DateIndex.meridiem + 1);
+                }
+
+            }
         }
 
         public override void insertDateSperator(NumberText numberText)
         {
             char c = ' ';
-            int offset = numberText.selectionStart;
-            if (offset >= numberText.monthIndex && offset <= numberText.monthIndex + 1)
+            if (numberText.isMonthIndex)
             {
                 string moTxt = numberText.monthTxt;
                 if (moTxt.All(Char.IsWhiteSpace))
@@ -247,12 +305,12 @@ namespace UDTAppControlLibrary.Controls
                 {
                     if (!Char.IsWhiteSpace(moTxt[0])) c = moTxt[0]; 
                     if (!Char.IsWhiteSpace(moTxt[1])) c = moTxt[1];
-                    numberText.repalceChar('0', numberText.monthIndex);
-                    numberText.repalceChar(c, numberText.monthIndex+1);
+                    numberText.repalceChar('0', DateIndex.month);
+                    numberText.repalceChar(c, DateIndex.month + 1);
                 }
-                numberText.selectionStart = numberText.dayIndex;
+                numberText.selectionStart = DateIndex.day;// numberText.dayIndex;
             }
-            if (offset >= numberText.dayIndex && offset <= numberText.dayIndex + 1)
+            if (numberText.isDayIndex)
             {
                 string dayTxt = numberText.dayTxt;
                 if (dayTxt.All(Char.IsWhiteSpace))
@@ -264,12 +322,12 @@ namespace UDTAppControlLibrary.Controls
                 {
                     if (!Char.IsWhiteSpace(dayTxt[0])) c = dayTxt[0];
                     if (!Char.IsWhiteSpace(dayTxt[1])) c = dayTxt[1];
-                    numberText.repalceChar('0', numberText.dayIndex);
-                    numberText.repalceChar(c, numberText.dayIndex + 1);
+                    numberText.repalceChar('0', DateIndex.day);
+                    numberText.repalceChar(c, DateIndex.day + 1);
                 }
-                numberText.selectionStart = numberText.yearIndex;
+                numberText.selectionStart = DateIndex.year;// numberText.yearIndex;
             }
-            if (offset >= numberText.yearIndex && offset <= numberText.yearIndex + 3)
+            if (numberText.isYearIndex)
             {
                 char a = ' ';
                 char b = ' ';
@@ -284,33 +342,40 @@ namespace UDTAppControlLibrary.Controls
                 {
                     if (!Char.IsWhiteSpace(yearTxt[0])) a = yearTxt[0];
                     if (!Char.IsWhiteSpace(yearTxt[1])) b = yearTxt[1];
-                    numberText.repalceChar('2', numberText.yearIndex);
-                    numberText.repalceChar('0', numberText.yearIndex + 1);
+                    numberText.repalceChar('2', DateIndex.year );
+                    numberText.repalceChar('0', DateIndex.year + 1);
                     if(a == ' ')
                     {
-                        numberText.repalceChar('0', numberText.yearIndex + 2);
-                        numberText.repalceChar(b, numberText.yearIndex + 3);
+                        numberText.repalceChar('0', DateIndex.year + 2);
+                        numberText.repalceChar(b, DateIndex.year + 3);
                     }
                     if (b == ' ')
                     {
-                        numberText.repalceChar('0', numberText.yearIndex + 2);
-                        numberText.repalceChar(a, numberText.yearIndex + 3);
+                        numberText.repalceChar('0', DateIndex.year + 2);
+                        numberText.repalceChar(a, DateIndex.year + 3);
                     }
                     else
-                    { 
-                        numberText.repalceChar(a, numberText.yearIndex + 2);
-                        numberText.repalceChar(b, numberText.yearIndex + 3);
+                    {
+                        numberText.repalceChar(a, DateIndex.year + 2);
+                        numberText.repalceChar(b, DateIndex.year + 3);
                     }
                 }
                 //if (!yearTxt.Any(Char.IsWhiteSpace))
-                    numberText.selectionStart = numberText.yearIndex + 4;
+                numberText.selectionStart = DateIndex.year + 4;
             }
         }
 
         public override dynamic parseNumber(string numberTxt)
         {
+            numberTxt = numberTxt.Replace("\n", ":");
             DateTime date;
-            if(DateTime.TryParse(numberTxt, out date))
+            string fmt = "MM/dd/yyyy";
+            if (dateFormat == DateTimeFormat.Date_12_HourTime)
+                fmt = "MM/dd/yyyy:hh:mm:tt";
+            if (dateFormat == DateTimeFormat.Date_24_HourTime)
+                fmt = "MM/dd/yyyy:HH:mm";
+            if (DateTime.TryParseExact(numberTxt, fmt, CultureInfo.InvariantCulture,
+                DateTimeStyles.None, out date))
                 return date;
             return null;
         }
@@ -408,7 +473,7 @@ namespace UDTAppControlLibrary.Controls
             numberText.insertChar(c);
         }
 
-        override public void replacePromptText(NumberText numberText, TextCompositionEventArgs arg, char c, dynamic extra = null)
+        override public void replacePromptText(NumberText numberText, TextCompositionEventArgs arg, char c)
         {
             numberText.clear();
             numberText.insertString(".00");
@@ -508,8 +573,12 @@ namespace UDTAppControlLibrary.Controls
         {           
         }
 
+        virtual public void insertLetter(NumberText numberText, char c)
+        {
+        }
 
-        virtual public void replacePromptText(NumberText numberText, TextCompositionEventArgs arg, char c, dynamic extra = null)
+
+        virtual public void replacePromptText(NumberText numberText, TextCompositionEventArgs arg, char c)
         {
             numberText.clear();
         }

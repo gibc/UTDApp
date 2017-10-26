@@ -10,7 +10,11 @@ using System.Windows.Input;
 namespace UDTAppControlLibrary.Controls
 {
     public enum DateTimeFormat { Date_Only = 1, Date_12_HourTime, Date_24_HourTime};
-
+    public class DateIndex
+    {
+        public const int month = 0; public const int day = 3; public const int year = 6;
+        public const int hour = 11; public const int minute = 14; public const int meridiem = 17;
+    }
     public class DateBox : NumberBoxBase
     {
         public static readonly DependencyProperty DateTimeFormatProperty =
@@ -20,14 +24,9 @@ namespace UDTAppControlLibrary.Controls
 
         static void DateTimeFormatPropertyChange(DependencyObject src, DependencyPropertyChangedEventArgs args)
         {
-            //DecimalBox maskedDecimal = src as DecimalBox;
-            //FormatType newType = (FormatType)args.NewValue;
-            //if (newType == FormatType.Decimal)
-            //    maskedDecimal.fromatProvider = new DcimalFromatProvider(Decimal.MaxValue, Decimal.MinValue);
-            //else if (newType == FormatType.Currency)
-            //    maskedDecimal.fromatProvider = new CurrencyFromatProvider(Decimal.MaxValue, Decimal.MinValue);
-            //else if (newType == FormatType.Percent)
-            //    maskedDecimal.fromatProvider = new PercentFromatProvider(Decimal.MaxValue, Decimal.MinValue);
+            DateBox dateBox = src as DateBox;
+            DateTimeFormat newType = (DateTimeFormat)args.NewValue;
+            dateBox.fromatProvider = new DateTimeProvider(newType, DateTime.MaxValue, DateTime.MinValue);
         }
 
         public DateTimeFormat DateFormat
@@ -43,7 +42,7 @@ namespace UDTAppControlLibrary.Controls
 
         public DateBox()
         {
-            fromatProvider = new DateTimeProvider(DateTime.MaxValue, DateTime.MinValue);
+            fromatProvider = new DateTimeProvider(DateTimeFormat.Date_Only, DateTime.MaxValue, DateTime.MinValue);
         }
 
         DateTime? parsedNumber = null;
@@ -79,7 +78,8 @@ namespace UDTAppControlLibrary.Controls
             {
                 if (arg.Key == Key.Back)
                 {
-                    if (numberText.previousChar == '/')
+                    if (numberText.previousChar == '/' || numberText.previousChar == ':'
+                        || numberText.previousChar == 'M' || numberText.previousChar == '\n')
                     {
                         numberText.selectionStart = numberText.selectionStart - 1;
                     }
@@ -99,9 +99,10 @@ namespace UDTAppControlLibrary.Controls
                     {
                         fromatProvider.deleteSelection(numberText);
                     }
-                    else if (numberText.currentChar == '/')
+                    else if (numberText.currentChar == '/' || numberText.currentChar == ':'
+                        || numberText.currentChar == 'M' || numberText.currentChar == '\n')
                     {
-                        if (numberText.selectionStart < 9)
+                        if (numberText.selectionStart < DateIndex.meridiem)
                             numberText.selectionStart = numberText.selectionStart + 1;
                         txtBox.SelectionStart = numberText.selectionStart;
                         return;
@@ -109,8 +110,9 @@ namespace UDTAppControlLibrary.Controls
                     else
                     {
                         numberText.repalceChar(' ', numberText.selectionStart);
-                        if (numberText.selectionStart < 9)
+                        if (numberText.selectionStart < DateIndex.meridiem)
                             numberText.selectionStart = numberText.selectionStart + 1;
+                        if (numberText.currentChar == '\n') numberText.selectionStart++;
                     }
                     updateTextBox();
                 }
@@ -126,7 +128,7 @@ namespace UDTAppControlLibrary.Controls
             {
                 if (numberText.promptVisble)
                 {
-                    fromatProvider.replacePromptText(numberText, null, ' ', DateFormat);
+                    fromatProvider.replacePromptText(numberText, null, ' ');
                 }
                 fromatProvider.insertDateSperator(numberText);
                 updateTextBox();
@@ -136,7 +138,7 @@ namespace UDTAppControlLibrary.Controls
             {
                 if (numberText.promptVisble)
                 {
-                    fromatProvider.replacePromptText(numberText, null, ' ', DateFormat);
+                    fromatProvider.replacePromptText(numberText, null, ' ');
                 }
                 numberText.clear();
                 if (DateFormat == DateTimeFormat.Date_Only)
@@ -154,14 +156,15 @@ namespace UDTAppControlLibrary.Controls
         protected override void previewTextInput(object src, TextCompositionEventArgs arg)
         {
             char c = arg.Text[0];
-            if ((Char.IsDigit(c) || c == '/' || c == '-'))
+            if (Char.IsDigit(c) || c == '/' || c == '-' || 
+                c == 'a' || c == 'p' || c == 'A' || c == 'P')
             {
                 if (numberText.promptVisble)
                 {
                     arg.Handled = true;
                     if (Char.IsDigit(c))
                     {
-                        fromatProvider.replacePromptText(numberText, arg, c, DateFormat);
+                        fromatProvider.replacePromptText(numberText, arg, c);
                         if (arg.Handled)
                         {
                             updateTextBox();
@@ -174,6 +177,8 @@ namespace UDTAppControlLibrary.Controls
 
                 if (Char.IsDigit(c)) fromatProvider.insertDigit(numberText, c);
                 if (c == '/' || c == '-') fromatProvider.insertDateSperator(numberText);
+                if (c == 'a' || c == 'p' || c == 'A' || c == 'P') 
+                    fromatProvider.insertLetter(numberText, c);
 
            }
 

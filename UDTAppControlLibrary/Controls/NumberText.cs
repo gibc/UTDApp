@@ -129,20 +129,23 @@ namespace UDTAppControlLibrary.Controls
 
         public string dayTxt
         {
-            get { return numberString.Substring(dayIndex, 2); }
+            get { return numberString.Substring(DateIndex.day, 2); }
             set 
             {
-                if (value != numberString.Substring(dayIndex, 2))
+                if (value != numberString.Substring(DateIndex.day, 2))
                 {
-                    numberString = numberString.Remove(dayIndex, 2);
-                    numberString = numberString.Insert(dayIndex, value);
+                    numberString = numberString.Remove(DateIndex.day, 2);
+                    numberString = numberString.Insert(DateIndex.day, value);
                 }
             }
         }
 
-        public Int32 dayIndex { get { return 3; } }
-        public Int32 monthIndex { get { return 0; } }
-        public Int32 yearIndex { get { return 6; } }
+        public bool isDayIndex { get { return selectionStart >= DateIndex.day && selectionStart < DateIndex.day + 2; } }
+        public bool isMonthIndex { get { return selectionStart >= DateIndex.month && selectionStart < DateIndex.month + 2; } }
+        public bool isYearIndex { get { return selectionStart >= DateIndex.year && selectionStart < DateIndex.year + 4; } }
+        public bool isHourIndex { get { return selectionStart >= DateIndex.hour && selectionStart < DateIndex.hour + 2; } }
+        public bool isMinuteIndex { get { return selectionStart >= DateIndex.minute && selectionStart < DateIndex.minute + 2; } }
+        public bool isMeridiemIndex { get { return selectionStart >= DateIndex.meridiem && selectionStart < DateIndex.meridiem + 2; } }
 
         public Int32? day
         {
@@ -168,7 +171,8 @@ namespace UDTAppControlLibrary.Controls
             get
             {
                 if (promptVisble) return null;
-                string yearText = numberString.Split('/')[2];
+                char[] splitChars = {'/', '\n', ':'};
+                string yearText = numberString.Split(splitChars)[2];
                 if (!yearText.Any(Char.IsWhiteSpace))
                 { 
                     Int32 year;
@@ -181,13 +185,13 @@ namespace UDTAppControlLibrary.Controls
 
         public string yearTxt
         {
-            get { return numberString.Substring(yearIndex, 4); }
+            get { return numberString.Substring(DateIndex.year, 4); }
             set
             {
-                if (value != numberString.Substring(yearIndex, 4))
+                if (value != numberString.Substring(DateIndex.year, 4))
                 {
-                    numberString = numberString.Remove(yearIndex, 4);
-                    numberString = numberString.Insert(yearIndex, value);
+                    numberString = numberString.Remove(DateIndex.year, 4);
+                    numberString = numberString.Insert(DateIndex.year, value);
                 }
             }
         }
@@ -195,11 +199,11 @@ namespace UDTAppControlLibrary.Controls
 
         public string monthTxt
         {
-            get { return numberString.Substring(monthIndex, 2); }
+            get { return numberString.Substring(DateIndex.month, 2); }
             set
             {
-                numberString = numberString.Remove(monthIndex, 2);
-                numberString = numberString.Insert(monthIndex, value);
+                numberString = numberString.Remove(DateIndex.month, 2);
+                numberString = numberString.Insert(DateIndex.month, value);
             }
         }
 
