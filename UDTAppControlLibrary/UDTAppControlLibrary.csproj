@@ -65,7 +65,6 @@
     <Compile Include="Controls\DateTimeProvider.cs" />
     <Compile Include="Controls\DecimalBox.cs" />
     <Compile Include="Controls\DecimalFormatProvider.cs" />
-    <Compile Include="Controls\FormatProviders.cs" />
     <Compile Include="Controls\MaskedEdit.cs" />
     <Compile Include="Controls\MaskedNumberProvider.cs" />
     <Compile Include="Controls\NumberBox.cs" />
