@@ -55,51 +55,57 @@ namespace UDTAppControlLibrary.Controls
 
         private void monthDigit (char c, int offset, NumberText numberText)
         {
-            int val = c - '0';
-            string txt = numberText.numberString.Split('/')[0];
-
-            if (val > 2)
+            if (charVal(c) > 2)
             {
-                numberText.repalceChar('0', 0);
-                numberText.repalceChar(c, 1);
-                numberText.selectionStart = DateIndex.day;// numberText.dayIndex;
+                numberText.repalceChar('0', DateIndex.month);
+                numberText.repalceChar(c, DateIndex.month+1);
+                numberText.selectionStart = DateIndex.day;
                 return;
             }
 
-            if (offset == 0 && val == 0)
+            if (offset == 0)
             {
-                numberText.repalceChar(c, numberText.selectionStart);
-                if (txt[1] == '0')
-                    numberText.repalceChar(' ', numberText.selectionStart+1);
-                numberText.selectionStart++;
-            }
-            else if (offset == 0 && val == 1)
-            {
-                numberText.repalceChar(c, numberText.selectionStart);
-                if (txt[1] != ' ' && txt[1] - '0' > 2)
-                    numberText.repalceChar(' ', numberText.selectionStart+1);
-                numberText.selectionStart++;
+                numberText.repalceChar(c, DateIndex.month);
+                if (charVal(c) == 0)
+                {
+                    if (charVal(numberText.monthTxt[DateIndex.month + 1]) == '0')
+                        numberText.repalceChar(' ', DateIndex.month + 1);
+                }
+
+                if (charVal(c) == 1)
+                {
+                    if (numberText.monthTxt[1] != ' ' && charVal(numberText.monthTxt[1]) > 2)
+                        numberText.repalceChar(' ', DateIndex.month + 1);
+                }
+                numberText.selectionStart = DateIndex.month + 1;
             }
 
             if (offset == 1)
             {
-                if (val == 0)
+                if (charVal(c) >= 3)
                 {
-                    numberText.repalceChar(c, numberText.selectionStart);
-                    if (txt[0] == '0')
+                    numberText.repalceChar(c, DateIndex.month + 1);
+                    numberText.repalceChar('0', DateIndex.month);
+                    numberText.selectionStart = DateIndex.day;
+                }
+
+                else if (charVal(c) == 0)
+                {
+                    numberText.repalceChar(c, DateIndex.month + 1);
+                    numberText.selectionStart = DateIndex.day;
+                    if ( numberText.monthTxt[0] == '0')
                     {
-                        numberText.repalceChar(' ', numberText.selectionStart - 1);
-                    }
-                    else if (txt[0] == ' ')
-                    {
-                        numberText.repalceChar('0', numberText.selectionStart - 1);
+                        numberText.repalceChar(' ', DateIndex.month);
+                        numberText.selectionStart = DateIndex.month;
                     }
                 }
-                if (val == 1 || val == 2)
+
+                if (charVal(c) == 1 || charVal(c) == 2)
                 {
-                    numberText.repalceChar(c, numberText.selectionStart);
-                    if (txt[0] == ' ')
-                        numberText.repalceChar('0', numberText.selectionStart - 1);
+                    numberText.repalceChar(c, DateIndex.month + 1);
+                    numberText.selectionStart = DateIndex.day;
+                    if (numberText.monthTxt[0] == ' ')
+                        numberText.repalceChar('0', DateIndex.month);
                 }
             }
         }
@@ -126,90 +132,148 @@ namespace UDTAppControlLibrary.Controls
 
         private void dayDigit (char c, int offset, NumberText numberText)
         {
-            int val = c - '0';
-            string txt = numberText.numberString.Split('/')[1];
             string maxDays = numberText.daysInMonth;
 
-            if (offset == 0 && val == 0)
+            if (offset == 0 && charVal(c) == 0)
             {
-                numberText.repalceChar(c, numberText.selectionStart);
-                if (txt[1] == '0')
+                numberText.repalceChar(c, DateIndex.day);
+                if (numberText.dayTxt[1] == '0')
                     numberText.repalceChar(' ', numberText.selectionStart+1);
-                numberText.selectionStart++;
+                numberText.selectionStart = DateIndex.day + 1;
             }
 
-            if (offset == 0 && val > 0 && val <= 3)
+            if (offset == 0 && charVal(c) > 0 && charVal(c) <= 3)
             {
-                if (val <= maxDays[0] - '0')
+                if (charVal(c) <= charVal(maxDays[0]))
                 {
-                    numberText.repalceChar(c, numberText.selectionStart);
-                    // if setting largest allow 10s place the check max allowed 1s place
+                    numberText.repalceChar(c, DateIndex.day);
+                    // if setting largest allowed 10s place then check max allowed 1s place
                     // and adj if needed
-                    if((val == maxDays[0]- '0') && (txt[1] - '0') > (maxDays[1] - '0'))
-                        numberText.repalceChar(maxDays[1], numberText.selectionStart + 1);
+                    if (charVal(c) == charVal(maxDays[0]) && charVal(maxDays[1]) > charVal(maxDays[1]))
+                        numberText.repalceChar(maxDays[1], DateIndex.day + 1);
 
-                    numberText.selectionStart++;
+                    numberText.selectionStart = DateIndex.day + 1;
                 }
             }
 
             if (offset == 1)
             {
-                if (val == 0 )
+                numberText.selectionStart = DateIndex.year; 
+                if (charVal(c) == 0)
                 {
-                    numberText.repalceChar(c, numberText.selectionStart);
-                    if(txt[0] == '0')
-                    { 
-                        numberText.repalceChar(' ', numberText.selectionStart-1);
+                    numberText.repalceChar(c, DateIndex.day + 1);
+                    if (numberText.dayTxt[0] == '0')
+                    {
+                        numberText.repalceChar(' ', DateIndex.day);
+                        numberText.selectionStart = DateIndex.day;
                     }
                 }
-                if (val > 0)
+                if (charVal(c) > 0)
                 {
-                    if((maxDays[0] - '0') == (txt[0] - '0'))
+                    // if 1s place is max
+                    if (charVal(maxDays[0]) == charVal(numberText.dayTxt[0]))
                     {
-                        if(val <= maxDays[1] -'0')
+                        // if char val is less than or equal 10s place max
+                        if (charVal(c) <= charVal(maxDays[1]))
                         {
-                            numberText.repalceChar(c, numberText.selectionStart);
+                            numberText.repalceChar(c, DateIndex.day + 1);
                         }
+                        // else if char val is too high
                         else
                         {
-                            numberText.repalceChar(c, numberText.selectionStart);
-                            numberText.repalceChar(' ', numberText.selectionStart - 1);
+                            numberText.repalceChar(c, DateIndex.day + 1);
+                            numberText.repalceChar(' ', DateIndex.day);
+                            numberText.selectionStart = DateIndex.day;
                         }
                     }
+                    // else if 1s place is less than max
                     else
-                        numberText.repalceChar(c, numberText.selectionStart);
+                        numberText.repalceChar(c, DateIndex.day + 1);
                 }
             }
        }
 
         private void yearDigit (char c, int offset, NumberText numberText)
         {
-            if(offset < 4)
+            if(offset < 3)
             { 
-                numberText.repalceChar(c, numberText.selectionStart);
-                if (numberText.selectionStart < 10)
-                    numberText.selectionStart++;
+                numberText.repalceChar(c, DateIndex.year+offset);
+                if(offset < 3)
+                    numberText.selectionStart = DateIndex.year + offset + 1;
+                else
+                {
+                    if(dateFormat != DateTimeFormat.Date_Only)
+                    { 
+                        if(numberText.year != null)
+                            numberText.selectionStart = DateIndex.hour;
+                    }
+                    else
+                        numberText.selectionStart = DateIndex.hour+4;
+                }
             }
         }
 
-        private void hourDigit(char c, int offset, NumberText numberText)
+        private int charVal(char? c) 
+        { 
+            return (char)c - '0'; 
+        }
+
+        private void hourDigit24(char c, int offset, NumberText numberText)
         {
             if (offset == 0)
             {
                 int maxDigitVal = 2;
-                if (dateFormat == DateTimeFormat.Date_12_HourTime) maxDigitVal = 1;
-                if (c - '0' <= maxDigitVal)
+                if (charVal(c) <= maxDigitVal)
+                {
+                    numberText.repalceChar(c, DateIndex.hour);
+                    numberText.selectionStart = DateIndex.hour + 1;
+                }
+            }
+            if (offset == 1)
+            {
+                numberText.repalceChar(c, DateIndex.hour+1);
+                if(numberText.hour != null)
+                    numberText.selectionStart = DateIndex.minute;
+            }
+        }
+
+        private void hourDigit12(char c, int offset, NumberText numberText)
+        {
+            if (offset == 0)
+            {
+                int maxDigitVal = 1;
+                if (charVal(c) <= maxDigitVal)
                 { 
-                    numberText.repalceChar(c, numberText.selectionStart);
+                    numberText.repalceChar(c, DateIndex.hour);
                     numberText.selectionStart++;
+                    if (charVal(c) == 0)
+                    {
+                        if (charVal(numberText.hourTxt[1]) == 0)
+                        {
+                            numberText.repalceChar(' ', DateIndex.hour+1);
+                        }
+                    }
+                }
+                else if (charVal(c) > maxDigitVal)
+                {
+                    numberText.repalceChar('0', DateIndex.hour);
+                    numberText.repalceChar(c, DateIndex.hour);
+                    numberText.selectionStart = DateIndex.minute;
                 }
             }
             else if (offset == 1)
             {
-                //if (c - '0' <= 2)
+                if (charVal(c) == 0 && charVal(numberText.previousChar) == 0)
                 {
-                    numberText.repalceChar(c, numberText.selectionStart);
-                    numberText.selectionStart = DateIndex.minute;
+                    numberText.repalceChar(c, DateIndex.hour + 1);
+                    numberText.repalceChar(' ', DateIndex.hour);
+                    numberText.selectionStart = DateIndex.hour;
+                }
+                else
+                {
+                    numberText.repalceChar(c, DateIndex.hour + 1);
+                    if (numberText.hour != null)
+                        numberText.selectionStart = DateIndex.minute;
                 }
             }
         }
@@ -218,52 +282,53 @@ namespace UDTAppControlLibrary.Controls
         {
             if (offset == 0)
             {
-                if (c - '0' <= 5)
+                if (charVal(c) <= 5)
                 {
                     numberText.repalceChar(c, numberText.selectionStart);
-                    numberText.selectionStart++;
+                    numberText.selectionStart = DateIndex.minute + 1;
                 }
             }
             else if (offset == 1)
             {
-                //if (c - '0' <= 2)
+                numberText.repalceChar(c, DateIndex.minute + 1);
+                if(numberText.minute != null)
                 {
-                    numberText.repalceChar(c, numberText.selectionStart);
-                    numberText.selectionStart = DateIndex.meridiem;
+                    if(dateFormat == DateTimeFormat.Date_12_HourTime)
+                        numberText.selectionStart = DateIndex.meridiem;
+                    else
+                        numberText.selectionStart = DateIndex.minute+1;
                 }
             }
         }
 
         public override void insertDigit(NumberText numberText, char c)
         {
-            int digitVal = c - '0';
             if (numberText.isMonthIndex )
             {
                 monthDigit(c, numberText.selectionStart-DateIndex.month, numberText);
                 if (numberText.month != null)
                 {
-                    numberText.selectionStart = DateIndex.day;// numberText.dayIndex;
                     adjustDay(numberText);
                 }
             }
             else if (numberText.isDayIndex)
             {
                 dayDigit(c, numberText.selectionStart - DateIndex.day, numberText);
-                if (numberText.day != null)
-                    numberText.selectionStart = DateIndex.year;// numberText.yearIndex;
             }
             else if (numberText.isYearIndex)
             {
                 yearDigit(c, numberText.selectionStart - 6, numberText);
                 if (numberText.year != null)
                 {
-                    numberText.selectionStart = DateIndex.year + 4;// numberText.yearIndex + 4;
                     adjustDay(numberText);
                 }
             }
             else if(numberText.isHourIndex)
             {
-                hourDigit(c, numberText.selectionStart - DateIndex.hour, numberText);
+                if (dateFormat == DateTimeFormat.Date_12_HourTime)
+                    hourDigit12(c, numberText.selectionStart - DateIndex.hour, numberText);
+                if (dateFormat == DateTimeFormat.Date_24_HourTime)
+                    hourDigit24(c, numberText.selectionStart - DateIndex.hour, numberText);
             }
             else if(numberText.isMinuteIndex)
             {
@@ -286,7 +351,6 @@ namespace UDTAppControlLibrary.Controls
                     numberText.repalceChar('P', DateIndex.meridiem);
                     numberText.repalceChar('M', DateIndex.meridiem + 1);
                 }
-
             }
         }
 
