@@ -62,13 +62,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controls\DateBox.cs" />
+    <Compile Include="Controls\DateTimeProvider.cs" />
     <Compile Include="Controls\DecimalBox.cs" />
+    <Compile Include="Controls\DecimalFormatProvider.cs" />
     <Compile Include="Controls\FormatProviders.cs" />
     <Compile Include="Controls\MaskedEdit.cs" />
     <Compile Include="Controls\MaskedNumberProvider.cs" />
     <Compile Include="Controls\NumberBox.cs" />
     <Compile Include="Controls\NumberBoxBase.cs" />
+    <Compile Include="Controls\NumberFormatProvider.cs" />
     <Compile Include="Controls\NumberText.cs" />
+    <Compile Include="Controls\PercentFormatProvider.cs" />
     <Compile Include="Controls\UDTButtons.xaml.cs">
       <DependentUpon>UDTButtons.xaml</DependentUpon>
     </Compile>
@@ -78,6 +82,7 @@
     <Compile Include="Controls\UDTDataGrid.xaml.cs">
       <DependentUpon>UDTDataGrid.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\CurrencyFormatProvider.cs" />
     <Compile Include="Validation\SelectionRule.cs" />
     <Page Include="Controls\UDTButtons.xaml">
       <SubType>Designer</SubType>
