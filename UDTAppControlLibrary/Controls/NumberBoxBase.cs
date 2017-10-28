@@ -35,12 +35,17 @@ namespace UDTAppControlLibrary.Controls
             PostFormatBox.Text = fromatProvider.positiveNumberSymbol.post;
 
             numberText.setPrompt(fromatProvider.prompt);
+
+            ApplyTemplateComplete();
             updateTextBox();
 
             base.OnApplyTemplate();
         }
 
         virtual protected void setParsedNumber(dynamic value)
+        { }
+
+        virtual protected void ApplyTemplateComplete()
         { }
 
         virtual protected void previewKeyDownEvent(object src, KeyEventArgs arg)
