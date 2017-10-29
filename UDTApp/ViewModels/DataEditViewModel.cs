@@ -11,6 +11,7 @@ using System.Windows;
 using System.Windows.Controls;
 using UDTApp.Models;
 using UDTApp.ViewModels.DataEntryControls;
+using UDTAppControlLibrary.Controls;
 
 namespace UDTApp.ViewModels
 {
@@ -206,26 +207,26 @@ namespace UDTApp.ViewModels
             if (row[colName] == DBNull.Value)
             {
                 UDTDateEditProps dateEditProps = editProps as UDTDateEditProps;
-                if (dateEditProps.defaultDate == DateDefault.None)
+                if (dateEditProps.defaultDate == DateTimeDefault.None)
                 {
                     dateEntry = null;
                 }
-                else if (dateEditProps.defaultDate == DateDefault.CurrentDay)
+                else if (dateEditProps.defaultDate == DateTimeDefault.CurrentDay)
                 {
                     dateEntry = DateTime.Now;
                 }
-                else if (dateEditProps.defaultDate == DateDefault.CurrentWeek)
+                else if (dateEditProps.defaultDate == DateTimeDefault.CurrentWeek)
                 {
                     DateTime now = DateTime.Now;
                     int pastSunday = 6 - (int)now.DayOfWeek;
                     dateEntry = new DateTime(now.Year, now.Month, now.Day - pastSunday);
                 }
-                else if (dateEditProps.defaultDate == DateDefault.CurrentMonth)
+                else if (dateEditProps.defaultDate == DateTimeDefault.CurrentMonth)
                 {
                     DateTime now = DateTime.Now;
                     dateEntry = new DateTime(now.Year, now.Month, 1);
                 }
-                else if (dateEditProps.defaultDate == DateDefault.CurrentYear)
+                else if (dateEditProps.defaultDate == DateTimeDefault.CurrentYear)
                 {
                     DateTime now = DateTime.Now;
                     dateEntry = new DateTime(now.Year, 1, 1);

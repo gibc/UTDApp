@@ -23,6 +23,7 @@ using System.Windows.Threading;
 using System.Xml.Serialization;
 using UDTApp.ViewModels;
 using UDTApp.ViewModels.DataEntryControls;
+using UDTAppControlLibrary.Controls;
 
 namespace UDTApp.Models
 {
@@ -1273,30 +1274,30 @@ namespace UDTApp.Models
  
     }
 
-    public enum DateDefault { CurrentDay, CurrentWeek, CurrentMonth, CurrentYear, None }
+    //public enum DateDefault { CurrentDay, CurrentWeek, CurrentMonth, CurrentYear, None }
     [XmlInclude(typeof(UDTBaseEditProps))]
-    [XmlInclude(typeof(DateDefault))]
+    [XmlInclude(typeof(DateTimeDefault))]
     public class UDTDateEditProps : UDTBaseEditProps
     {
         private UDTDateEditProps() : base() { }
 
         public UDTDateEditProps(Action editPropChanged) : base(editPropChanged)
-        { 
-            defaultList.Add(DateDefault.CurrentDay);
-            defaultList.Add(DateDefault.CurrentWeek);
-            defaultList.Add(DateDefault.CurrentMonth);
-            defaultList.Add(DateDefault.CurrentYear);
-            defaultList.Add(DateDefault.None);
+        {
+            defaultList.Add(DateTimeDefault.CurrentDay);
+            defaultList.Add(DateTimeDefault.CurrentWeek);
+            defaultList.Add(DateTimeDefault.CurrentMonth);
+            defaultList.Add(DateTimeDefault.CurrentYear);
+            defaultList.Add(DateTimeDefault.None);
         }
 
-        private DateDefault _defaultDate = DateDefault.None;        
-        public DateDefault defaultDate
+        private DateTimeDefault _defaultDate = DateTimeDefault.None;
+        public DateTimeDefault defaultDate
         {
             get { return _defaultDate; }
             set { SetProperty(ref _defaultDate, value); }
         }
-        private List<DateDefault> _defaultList = new List<DateDefault>();
-        public List<DateDefault> defaultList
+        private List<DateTimeDefault> _defaultList = new List<DateTimeDefault>();
+        public List<DateTimeDefault> defaultList
         {
             get { return _defaultList; }
             set { SetProperty(ref _defaultList, value); }
