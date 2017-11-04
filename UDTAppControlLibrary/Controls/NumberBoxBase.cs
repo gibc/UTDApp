@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 
 namespace UDTAppControlLibrary.Controls
@@ -20,6 +21,22 @@ namespace UDTAppControlLibrary.Controls
         protected TextBox txtBox;
         protected NumberText numberText = new NumberText();
         protected DcimalFromatProvider fromatProvider = new DcimalFromatProvider(Decimal.MaxValue, Decimal.MinValue) as DcimalFromatProvider;
+
+        protected void updateSource(DependencyProperty dp)
+        {
+            BindingExpression exp = GetBindingExpression(dp);
+            try
+            {
+                this.Dispatcher.Invoke(() =>
+                {
+                    exp.UpdateSource();
+                });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
         
         public override void OnApplyTemplate()
         {

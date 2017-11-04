@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using UDTAppControlLibrary.Controls.UDTAppControlLibrary.Controls;
 
@@ -12,6 +14,38 @@ namespace UDTAppControlLibrary.Controls
 {
     public enum DateTimeFormat { Date_Only = 1, Date_12_HourTime, Date_24_HourTime};
     public enum DateTimeDefault { CurrentDay = 1, CurrentWeek, CurrentMonth, CurrentYear, None }
+    public static class TimeDefault
+    {
+        static public DateTime? DateTimeValue(DateTimeDefault defaultTime)
+        {
+            DateTime? dateEntry = DateTime.Now;
+            if (defaultTime == DateTimeDefault.CurrentDay)
+            {
+                dateEntry = DateTime.Now;
+            }
+            else if (defaultTime == DateTimeDefault.CurrentWeek)
+            {
+                DateTime now = DateTime.Now;
+                int pastSunday = 6 - (int)now.DayOfWeek;
+                dateEntry = new DateTime(now.Year, now.Month, now.Day - pastSunday);
+            }
+            else if (defaultTime == DateTimeDefault.CurrentMonth)
+            {
+                DateTime now = DateTime.Now;
+                dateEntry = new DateTime(now.Year, now.Month, 1);
+            }
+            else if (defaultTime == DateTimeDefault.CurrentYear)
+            {
+                DateTime now = DateTime.Now;
+                dateEntry = new DateTime(now.Year, 1, 1);
+            }
+            else if (defaultTime == DateTimeDefault.None)
+            {
+                dateEntry = null;
+            }
+            return dateEntry;
+        }
+    }
 
     public class DateIndex
     {
@@ -22,8 +56,24 @@ namespace UDTAppControlLibrary.Controls
     {
         public static readonly DependencyProperty DateTimeValueProperty =
          DependencyProperty.Register("DateTimeValue", typeof(DateTime?), typeof(DateBox),
-         new UIPropertyMetadata(new PropertyChangedCallback(DateTimeValuePropertyChange)),
+         new UIPropertyMetadata
+             (null, new PropertyChangedCallback(DateTimeValuePropertyChange),
+             new CoerceValueCallback(CoerceCurrentReading)),
          null);
+
+        private static object CoerceCurrentReading(DependencyObject d, object value)
+        {
+            DateBox dateBox = (DateBox)d;
+            DateTime? current = (DateTime?)value;
+            if(current == null && dateBox.DateTimeDefault != DateTimeDefault.None)
+            {
+                current = TimeDefault.DateTimeValue(dateBox.DateTimeDefault);
+                //BindingExpression exp = dateBox.GetBindingExpression(DateBox.DateTimeValueProperty);
+                //exp.UpdateSource();
+
+            }
+            return current;
+        }
 
         static void DateTimeValuePropertyChange(DependencyObject src, DependencyPropertyChangedEventArgs args)
         {
@@ -32,11 +82,29 @@ namespace UDTAppControlLibrary.Controls
             if (dateBox.txtBox == null) return;
             if (newDate != dateBox.parsedNumber)
             {
+                BindingExpression exp = dateBox.GetBindingExpression(DateBox.DateTimeValueProperty);
+                var val = dateBox.GetValue(DateBox.DateTimeValueProperty);
+                //dateBox.InvalidateProperty(DateBox.DateTimeValueProperty);
+                val = dateBox.GetValue(DateBox.DateTimeValueProperty);
+
                 if (newDate == null)
                 {
-                    dateBox.numberText.setPrompt(dateBox.fromatProvider.prompt);
-                    dateBox.updateTextBox();
-                    return;
+                    if (dateBox.DateTimeDefault != DateTimeDefault.None)
+                    {
+                        //newDate = TimeDefault.DateTimeValue(dateBox.DateTimeDefault);
+                        //dateBox.parsedNumber = null;
+                        //var dft = dateBox.DateTimeDefault;
+                        //dateBox.DateTimeDefault = DateTimeDefault.None;
+                        //dateBox.DateTimeDefault = dft;
+                        //BindingExpression exp = dateBox.GetBindingExpression(DateBox.DateTimeValueProperty);
+                        return;
+                    }
+                    else
+                    { 
+                        dateBox.numberText.setPrompt(dateBox.fromatProvider.prompt);
+                        dateBox.updateTextBox();
+                        return;
+                    }
                 }
 
                 string numTxt = "";
@@ -59,9 +127,11 @@ namespace UDTAppControlLibrary.Controls
                     numTxt = numTxt.Remove(offset, 1);
                     numTxt = numTxt.Insert(offset, "\n");
                 }
+                dateBox.txtBox.Clear();
                 dateBox.numberText.clear();
                 dateBox.numberText.insertString(numTxt);
                 dateBox.updateTextBox();
+                exp.UpdateSource();
             }
         }
 
@@ -101,27 +171,27 @@ namespace UDTAppControlLibrary.Controls
             if (dateBox.txtBox == null) return;
             if (dateBox.DateTimeDefault != DateTimeDefault.None && dateBox.DateTimeValue == null)
             {
-                DateTime? dateEntry = DateTime.Now;
-                if (dateBox.DateTimeDefault == DateTimeDefault.CurrentDay)
-                {
-                    dateEntry = DateTime.Now;
-                }
-                else if (dateBox.DateTimeDefault == DateTimeDefault.CurrentWeek)
-                {
-                    DateTime now = DateTime.Now;
-                    int pastSunday = 6 - (int)now.DayOfWeek;
-                    dateEntry = new DateTime(now.Year, now.Month, now.Day - pastSunday);
-                }
-                else if (dateBox.DateTimeDefault == DateTimeDefault.CurrentMonth)
-                {
-                    DateTime now = DateTime.Now;
-                    dateEntry = new DateTime(now.Year, now.Month, 1);
-                }
-                else if (dateBox.DateTimeDefault == DateTimeDefault.CurrentYear)
-                {
-                    DateTime now = DateTime.Now;
-                    dateEntry = new DateTime(now.Year, 1, 1);
-                }
+                DateTime? dateEntry = TimeDefault.DateTimeValue(dateBox.DateTimeDefault);
+                //if (dateBox.DateTimeDefault == DateTimeDefault.CurrentDay)
+                //{
+                //    dateEntry = DateTime.Now;
+                //}
+                //else if (dateBox.DateTimeDefault == DateTimeDefault.CurrentWeek)
+                //{
+                //    DateTime now = DateTime.Now;
+                //    int pastSunday = 6 - (int)now.DayOfWeek;
+                //    dateEntry = new DateTime(now.Year, now.Month, now.Day - pastSunday);
+                //}
+                //else if (dateBox.DateTimeDefault == DateTimeDefault.CurrentMonth)
+                //{
+                //    DateTime now = DateTime.Now;
+                //    dateEntry = new DateTime(now.Year, now.Month, 1);
+                //}
+                //else if (dateBox.DateTimeDefault == DateTimeDefault.CurrentYear)
+                //{
+                //    DateTime now = DateTime.Now;
+                //    dateEntry = new DateTime(now.Year, 1, 1);
+                //}
                 dateBox.DateTimeValue = dateEntry;
             }
         }

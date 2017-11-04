@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace UDTAppControlLibrary.Controls
 {
@@ -23,10 +26,16 @@ namespace UDTAppControlLibrary.Controls
             if (decimalBox.txtBox == null) return;
             if (newValue != decimalBox.parsedNumber)
             {
-                if (newValue == null )
+                if (newValue == null && decimalBox.DefaultValue == null)
                 {
                     decimalBox.numberText.setPrompt(decimalBox.fromatProvider.prompt);
                     decimalBox.updateTextBox();
+                    return;
+                }
+                if (newValue == null && decimalBox.DefaultValue != null)
+                {
+                    decimalBox.DecimalValue = decimalBox.DefaultValue;
+                    var t = Task.Run(() => decimalBox.updateSource(DecimalValueProperty));
                     return;
                 }
 
@@ -88,9 +97,10 @@ namespace UDTAppControlLibrary.Controls
             DecimalBox decimalBox = src as DecimalBox;
             Decimal? newValue = (Decimal?)args.NewValue;
             if (decimalBox.txtBox == null) return;
-            if (decimalBox.DecimalValue == null && newValue != null && newValue != decimalBox.parsedNumber)
+            if (decimalBox.DecimalValue == null && newValue != null /*&& newValue != decimalBox.parsedNumber*/)
             {
                 decimalBox.DecimalValue = newValue;
+                var t = Task.Run(() => decimalBox.updateSource(DecimalValueProperty));
             }
        }
 
@@ -116,7 +126,9 @@ namespace UDTAppControlLibrary.Controls
             Decimal? decimalVal = DecimalValue;
             if (decimalVal == null && defalutVal != null && defalutVal != parsedNumber)
             {
-                DecimalValue = defalutVal;
+                //DecimalValue = defalutVal;
+                DefaultValue = null;
+                DefaultValue = defalutVal;
             }
             else if (decimalVal != null && decimalVal != parsedNumber) 
             { 

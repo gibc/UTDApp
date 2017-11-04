@@ -48,26 +48,37 @@ namespace CustomControlTest.ViewModel
             }
         }
 
-        public Int32? _maskNumber = 12345;
-        public Int32? maskNumber
+        public Int32? _numberValue = 54321;
+        public Int32? numberValue
         {
-            get { return _maskNumber; }
+            get { return _numberValue; }
             set
             {
-                SetProperty(ref _maskNumber, value);
-                NotifyPropertyChanged("maskNumber");
+                SetProperty(ref _numberValue, value);
             }
         }
 
-        public Decimal? _maskDecimal = 123.456m;
-        public Decimal? maskDecimal
+        //public Decimal? _decimalValue = 123.456m;
+        public Decimal? _decimalValue = null;
+        public Decimal? decimalValue
         {
-            get { return _maskDecimal; }
+            get { return _decimalValue; }
             set
             {
-                SetProperty(ref _maskDecimal, value);
-                NotifyPropertyChanged("maskDecimal");
+                SetProperty(ref _decimalValue, value);
             }
         }
+
+        //public DateTime? _dateValue = new DateTime(1999, 9, 9);
+        public DateTime? _dateValue = null;
+        public DateTime? dateValue
+        {
+            get { return _dateValue; }
+            set
+            {
+                SetProperty(ref _dateValue, value);
+            }
+        }
+
     }
 }
