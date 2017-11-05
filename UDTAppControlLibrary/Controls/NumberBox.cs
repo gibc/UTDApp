@@ -25,9 +25,18 @@ namespace UDTAppControlLibrary.Controls
             {
                 if (newNumber == null)
                 {
-                    numberBox.numberText.setPrompt(numberBox.fromatProvider.prompt);
-                    numberBox.updateTextBox();
-                    return;
+                    if(numberBox.NumberDefault == null)
+                    { 
+                        numberBox.numberText.setPrompt(numberBox.fromatProvider.prompt);
+                        numberBox.updateTextBox();
+                        return;
+                    }
+                    else
+                    {
+                        numberBox.NumberValue = numberBox.NumberDefault;
+                        Task.Run(() => numberBox.updateSource(NumberValueProperty));
+                        return;
+                    }
                 }
 
                 string numTxt = "";
@@ -58,6 +67,7 @@ namespace UDTAppControlLibrary.Controls
             if (numberBox.NumberDefault != null && numberBox.NumberValue == null)
             {
                 numberBox.NumberValue = numberBox.NumberDefault;
+                Task.Run(() => numberBox.updateSource(NumberValueProperty));
             }
         }
 

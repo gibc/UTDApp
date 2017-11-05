@@ -29,7 +29,8 @@ namespace UDTAppControlLibrary.Controls
             {
                 this.Dispatcher.Invoke(() =>
                 {
-                    exp.UpdateSource();
+                    if (exp != null) exp.UpdateSource();
+                    //exp.UpdateSource();
                 });
             }
             catch (Exception ex)

@@ -25,9 +25,11 @@ namespace UDTAppControlLibrary.Controls
             }
             else if (defaultTime == DateTimeDefault.CurrentWeek)
             {
-                DateTime now = DateTime.Now;
-                int pastSunday = 6 - (int)now.DayOfWeek;
-                dateEntry = new DateTime(now.Year, now.Month, now.Day - pastSunday);
+                //DateTime now = DateTime.Now;
+                //int pastSunday = 6 - (int)now.DayOfWeek;
+                //dateEntry = new DateTime(now.Year, now.Month, now.Day - pastSunday);
+
+                dateEntry = DateTime.Today.AddDays(-(int)DateTime.Today.DayOfWeek);
             }
             else if (defaultTime == DateTimeDefault.CurrentMonth)
             {
@@ -57,23 +59,23 @@ namespace UDTAppControlLibrary.Controls
         public static readonly DependencyProperty DateTimeValueProperty =
          DependencyProperty.Register("DateTimeValue", typeof(DateTime?), typeof(DateBox),
          new UIPropertyMetadata
-             (null, new PropertyChangedCallback(DateTimeValuePropertyChange),
-             new CoerceValueCallback(CoerceCurrentReading)),
+             ((DateTime?)null, new PropertyChangedCallback(DateTimeValuePropertyChange)/*,
+             new CoerceValueCallback(CoerceCurrentReading)*/),
          null);
 
-        private static object CoerceCurrentReading(DependencyObject d, object value)
-        {
-            DateBox dateBox = (DateBox)d;
-            DateTime? current = (DateTime?)value;
-            if(current == null && dateBox.DateTimeDefault != DateTimeDefault.None)
-            {
-                current = TimeDefault.DateTimeValue(dateBox.DateTimeDefault);
-                //BindingExpression exp = dateBox.GetBindingExpression(DateBox.DateTimeValueProperty);
-                //exp.UpdateSource();
+        //private static object CoerceCurrentReading(DependencyObject d, object value)
+        //{
+        //    DateBox dateBox = (DateBox)d;
+        //    DateTime? current = (DateTime?)value;
+        //    if(current == null && dateBox.DateTimeDefault != DateTimeDefault.None)
+        //    {
+        //        current = TimeDefault.DateTimeValue(dateBox.DateTimeDefault);
+        //        //BindingExpression exp = dateBox.GetBindingExpression(DateBox.DateTimeValueProperty);
+        //        //exp.UpdateSource();
 
-            }
-            return current;
-        }
+        //    }
+        //    return current;
+        //}
 
         static void DateTimeValuePropertyChange(DependencyObject src, DependencyPropertyChangedEventArgs args)
         {
@@ -82,21 +84,13 @@ namespace UDTAppControlLibrary.Controls
             if (dateBox.txtBox == null) return;
             if (newDate != dateBox.parsedNumber)
             {
-                BindingExpression exp = dateBox.GetBindingExpression(DateBox.DateTimeValueProperty);
-                var val = dateBox.GetValue(DateBox.DateTimeValueProperty);
-                //dateBox.InvalidateProperty(DateBox.DateTimeValueProperty);
-                val = dateBox.GetValue(DateBox.DateTimeValueProperty);
 
                 if (newDate == null)
                 {
                     if (dateBox.DateTimeDefault != DateTimeDefault.None)
                     {
-                        //newDate = TimeDefault.DateTimeValue(dateBox.DateTimeDefault);
-                        //dateBox.parsedNumber = null;
-                        //var dft = dateBox.DateTimeDefault;
-                        //dateBox.DateTimeDefault = DateTimeDefault.None;
-                        //dateBox.DateTimeDefault = dft;
-                        //BindingExpression exp = dateBox.GetBindingExpression(DateBox.DateTimeValueProperty);
+                        dateBox.DateTimeValue = TimeDefault.DateTimeValue(dateBox.DateTimeDefault);
+                        var t = Task.Run(() => dateBox.updateSource(DateTimeValueProperty));
                         return;
                     }
                     else
@@ -127,11 +121,9 @@ namespace UDTAppControlLibrary.Controls
                     numTxt = numTxt.Remove(offset, 1);
                     numTxt = numTxt.Insert(offset, "\n");
                 }
-                dateBox.txtBox.Clear();
                 dateBox.numberText.clear();
                 dateBox.numberText.insertString(numTxt);
                 dateBox.updateTextBox();
-                exp.UpdateSource();
             }
         }
 
@@ -172,27 +164,8 @@ namespace UDTAppControlLibrary.Controls
             if (dateBox.DateTimeDefault != DateTimeDefault.None && dateBox.DateTimeValue == null)
             {
                 DateTime? dateEntry = TimeDefault.DateTimeValue(dateBox.DateTimeDefault);
-                //if (dateBox.DateTimeDefault == DateTimeDefault.CurrentDay)
-                //{
-                //    dateEntry = DateTime.Now;
-                //}
-                //else if (dateBox.DateTimeDefault == DateTimeDefault.CurrentWeek)
-                //{
-                //    DateTime now = DateTime.Now;
-                //    int pastSunday = 6 - (int)now.DayOfWeek;
-                //    dateEntry = new DateTime(now.Year, now.Month, now.Day - pastSunday);
-                //}
-                //else if (dateBox.DateTimeDefault == DateTimeDefault.CurrentMonth)
-                //{
-                //    DateTime now = DateTime.Now;
-                //    dateEntry = new DateTime(now.Year, now.Month, 1);
-                //}
-                //else if (dateBox.DateTimeDefault == DateTimeDefault.CurrentYear)
-                //{
-                //    DateTime now = DateTime.Now;
-                //    dateEntry = new DateTime(now.Year, 1, 1);
-                //}
                 dateBox.DateTimeValue = dateEntry;
+                Task.Run(() => dateBox.updateSource(DateTimeValueProperty));
             }
         }
 

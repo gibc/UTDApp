@@ -48,7 +48,8 @@ namespace CustomControlTest.ViewModel
             }
         }
 
-        public Int32? _numberValue = 54321;
+        public Int32? _numberValue = null;
+        //public Int32? _numberValue = 54321;
         public Int32? numberValue
         {
             get { return _numberValue; }
@@ -66,6 +67,16 @@ namespace CustomControlTest.ViewModel
             set
             {
                 SetProperty(ref _decimalValue, value);
+            }
+        }
+
+        public Decimal? _decimalDefault = 7.89m;
+        public Decimal? decimalDefault
+        {
+            get { return _decimalDefault; }
+            set
+            {
+                SetProperty(ref _decimalDefault, value);
             }
         }
 
