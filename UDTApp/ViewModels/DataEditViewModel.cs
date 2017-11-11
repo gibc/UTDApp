@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using UDTApp.EditControlViewModels;
 using UDTApp.Models;
 using UDTApp.ViewModels.DataEntryControls;
 using UDTAppControlLibrary.Controls;
@@ -701,8 +702,11 @@ namespace UDTApp.ViewModels
             foreach (UDTBase item in udtData.columnData)
             {
                 // TBD: create editBox type based on item typeName
-                if (item.TypeName == UDTTypeName.Number || item.TypeName == UDTTypeName.Real)
-                    editBoxes.Add(new UDTDataNumberBox(item.Name, item, editBoxValidationChanged));
+                if (item.TypeName == UDTTypeName.Number )
+                    //editBoxes.Add(new UDTDataNumberBox(item.Name, item, editBoxValidationChanged));
+                    editBoxes.Add(new NumberViewModel(item.Name, item, editBoxValidationChanged));
+                else if (item.TypeName == UDTTypeName.Real)
+                    editBoxes.Add(new DecimalViewModel(item.Name, item, editBoxValidationChanged));
                 else if (item.TypeName == UDTTypeName.Date)
                     editBoxes.Add(new UDTDataDateBox(item.Name, item, editBoxValidationChanged));
                 else 

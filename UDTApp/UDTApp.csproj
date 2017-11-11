@@ -85,6 +85,8 @@
     </ApplicationDefinition>
     <Compile Include="Behaviour\AlphaOnlycs.cs" />
     <Compile Include="Behaviour\AutoGeneratingColumnEventToCommandBehaviour.cs" />
+    <Compile Include="EditControlViewModels\DecimalViewModel.cs" />
+    <Compile Include="EditControlViewModels\NumberViewModel.cs" />
     <Compile Include="Models\DataItem.cs" />
     <Compile Include="Models\DataSet.cs" />
     <Compile Include="Models\DataSetList.cs" />
@@ -243,6 +245,7 @@
       <Name>UDTAppControlLibrary</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -9,7 +9,9 @@
              xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" 
              xmlns:s="clr-namespace:System;assembly=mscorlib"
              xmlns:vm="clr-namespace:UDTApp.ViewModels"
+             xmlns:cvm="clr-namespace:UDTApp.EditControlViewModels"
              xmlns:cltLib="clr-namespace:UDTAppControlLibrary.Behaviour;assembly=UDTAppControlLibrary"
+             xmlns:custClts="clr-namespace:UDTAppControlLibrary.Controls;assembly=UDTAppControlLibrary"
              d:DesignHeight="500" d:DesignWidth="500">
 
     <UserControl.Resources>
@@ -98,7 +100,25 @@
                 <ContentControl Content="{Binding numberEntryBox}" Style="{StaticResource editError}"/>
             </WrapPanel>
         </DataTemplate>
-        
+
+        <DataTemplate DataType="{x:Type cvm:NumberViewModel}">
+            <WrapPanel Margin="0,0,0,13" KeyboardNavigation.TabNavigation="Continue" >
+                <Label Content="{Binding colName}" Width="85" Height="25" Focusable="False"
+                       HorizontalContentAlignment="Right" IsTabStop="False" />
+                <custClts:NumberBox NumberValue="{Binding number, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource editError}"/>
+            </WrapPanel>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type cvm:DecimalViewModel}">
+            <WrapPanel Margin="0,0,0,13" KeyboardNavigation.TabNavigation="Continue" >
+                <Label Content="{Binding colName}" Width="85" Height="25" Focusable="False"
+                       HorizontalContentAlignment="Right" IsTabStop="False" />
+                <custClts:DecimalBox DecimalValue="{Binding decimalNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                     TextFormat="Decimal"
+                                     Style="{StaticResource editError}"/>
+            </WrapPanel>
+        </DataTemplate>
+
         <DataTemplate DataType="{x:Type vm:UDTDataTextBox}">
             <WrapPanel Margin="0,0,0,13" KeyboardNavigation.TabNavigation="Continue" >
                 <Label Content="{Binding colName}" Width="85" Height="25" Focusable="False"
