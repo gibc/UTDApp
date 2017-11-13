@@ -1283,23 +1283,29 @@ namespace UDTApp.Models
 
         public UDTDateEditProps(Action editPropChanged) : base(editPropChanged)
         {
-            defaultList.Add(DateTimeDefault.CurrentDay);
-            defaultList.Add(DateTimeDefault.CurrentWeek);
-            defaultList.Add(DateTimeDefault.CurrentMonth);
-            defaultList.Add(DateTimeDefault.CurrentYear);
-            defaultList.Add(DateTimeDefault.None);
+            //List<DateTimeDefault> dfltList = new List<DateTimeDefault>();
+            if (dfltList.Count == 0)
+            { 
+                dfltList.Add(DateTimeDefault.CurrentDay);
+                dfltList.Add(DateTimeDefault.CurrentWeek);
+                dfltList.Add(DateTimeDefault.CurrentMonth);
+                dfltList.Add(DateTimeDefault.CurrentYear);
+                dfltList.Add(DateTimeDefault.None);
+            }
+            //defaultList = dfltList;
         }
-
         private DateTimeDefault _defaultDate = DateTimeDefault.None;
         public DateTimeDefault defaultDate
         {
             get { return _defaultDate; }
             set { SetProperty(ref _defaultDate, value); }
         }
+
+        static private List<DateTimeDefault> dfltList = new List<DateTimeDefault>();
         private List<DateTimeDefault> _defaultList = new List<DateTimeDefault>();
         public List<DateTimeDefault> defaultList
         {
-            get { return _defaultList; }
+            get { return dfltList; }
             set { SetProperty(ref _defaultList, value); }
         }
 

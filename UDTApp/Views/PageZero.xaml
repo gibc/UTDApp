@@ -598,8 +598,9 @@
                 <WrapPanel>
                     <Label HorizontalContentAlignment="Right" Content="Default: " 
                            Width="70"/>
-                    <ComboBox Width="103" HorizontalAlignment="Left" SelectedItem="{Binding defaultDate}"
-                              ItemsSource="{Binding defaultList}"
+                    <ComboBox Width="103" HorizontalAlignment="Left" 
+                              SelectedItem="{Binding defaultDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                              ItemsSource="{Binding defaultList, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                              VerticalAlignment="Center"/>
                 </WrapPanel>
                 <GroupBox Header="Allowed Date Range" BorderBrush="Black" BorderThickness="1">

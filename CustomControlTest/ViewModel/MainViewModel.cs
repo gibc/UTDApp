@@ -6,6 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UDTAppControlLibrary.Controls;
 
 namespace CustomControlTest.ViewModel
 {
@@ -109,6 +110,21 @@ namespace CustomControlTest.ViewModel
                 SetProperty(ref _dateValue, value);
             }
         }
+
+        private DateTimeFormat _dateFormat = DateTimeFormat.Date_Only;
+        public DateTimeFormat dateFormat
+        {
+            get { return _dateFormat; }
+            set { SetProperty(ref _dateFormat, value); }
+        }
+
+        private DateTimeDefault _dateDefault = DateTimeDefault.CurrentYear;
+        public DateTimeDefault dateDefault
+        {
+            get { return _dateDefault; }
+            set { SetProperty(ref _dateDefault, value); }
+        }
+
 
         public static System.ComponentModel.DataAnnotations.ValidationResult CheckNullRequired(string name, ValidationContext context)
         {

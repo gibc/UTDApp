@@ -82,7 +82,8 @@ namespace UDTAppControlLibrary.Controls
             DateBox dateBox = src as DateBox;
             DateTime? newDate = (DateTime?)args.NewValue;
             if (dateBox.txtBox == null) return;
-            if (newDate != dateBox.parsedNumber)
+            if (dateBox.DateFormat == 0) return;
+            if (newDate != dateBox.parsedNumber /*|| (newDate == null && !dateBox.numberText.promptVisble)*/)
             {
 
                 if (newDate == null)
@@ -133,8 +134,8 @@ namespace UDTAppControlLibrary.Controls
             set { SetValue(DateTimeValueProperty, value); }
         }
 
-        public static readonly DependencyProperty DateTimeFormatProperty =
-         DependencyProperty.Register("DateTimeFormat", typeof(DateTimeFormat), typeof(DateBox),
+        public static readonly DependencyProperty DateFormatProperty =
+         DependencyProperty.Register("DateFormat", typeof(DateTimeFormat), typeof(DateBox),
          new UIPropertyMetadata(new PropertyChangedCallback(DateTimeFormatPropertyChange)),
          null);
 
@@ -147,8 +148,8 @@ namespace UDTAppControlLibrary.Controls
 
         public DateTimeFormat DateFormat
         {
-            get { return (DateTimeFormat)GetValue(DateTimeFormatProperty); }
-            set { SetValue(DateTimeFormatProperty, value); }
+            get { return (DateTimeFormat)GetValue(DateFormatProperty); }
+            set { SetValue(DateFormatProperty, value); }
         }
 
         public static readonly DependencyProperty DateTimeDefaultProperty =
@@ -183,13 +184,17 @@ namespace UDTAppControlLibrary.Controls
 
         public DateBox()
         {
-            fromatProvider = new DateTimeProvider(DateTimeFormat.Date_Only, DateTime.MaxValue, DateTime.MinValue);
+            //fromatProvider = new DateTimeProvider(DateTimeFormat.Date_Only, DateTime.MaxValue, DateTime.MinValue);
         }
 
         override protected void ApplyTemplateComplete()
         {
+            //BindingExpression exp = GetBindingExpression(DateBox.DateFormatProperty);
+            //exp.UpdateTarget();
+            //exp.UpdateSource();
             DateTimeDefault defalutVal = DateTimeDefault;
             DateTime? dateVal = DateTimeValue;
+            DateTimeFormat dateFmt = DateFormat;
             if (dateVal == null && defalutVal != DateTimeDefault.None)
             {
                 DateTimeDefault = DateTimeDefault.None;

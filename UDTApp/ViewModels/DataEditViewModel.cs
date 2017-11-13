@@ -708,7 +708,8 @@ namespace UDTApp.ViewModels
                 else if (item.TypeName == UDTTypeName.Real)
                     editBoxes.Add(new DecimalViewModel(item.Name, item, editBoxValidationChanged));
                 else if (item.TypeName == UDTTypeName.Date)
-                    editBoxes.Add(new UDTDataDateBox(item.Name, item, editBoxValidationChanged));
+                    //editBoxes.Add(new UDTDataDateBox(item.Name, item, editBoxValidationChanged));
+                    editBoxes.Add(new DateViewModel(item.Name, item, editBoxValidationChanged));
                 else 
                     editBoxes.Add(new UDTDataTextBox(item.Name, item, editBoxValidationChanged));
             }

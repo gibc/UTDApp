@@ -119,6 +119,18 @@
             </WrapPanel>
         </DataTemplate>
 
+        <DataTemplate DataType="{x:Type cvm:DateViewModel}">
+            <WrapPanel Margin="0,0,0,13" KeyboardNavigation.TabNavigation="Continue" >
+                <Label Content="{Binding colName}" Width="85" Height="25" Focusable="False"
+                       HorizontalContentAlignment="Right" IsTabStop="False" />
+                <custClts:DateBox DateTimeValue="{Binding dateNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                  DateFormat="{Binding dateFormat}"
+                                  DateTimeDefault="{Binding dateDefault, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource editError}"/>
+            </WrapPanel>
+        </DataTemplate>
+
+
         <DataTemplate DataType="{x:Type vm:UDTDataTextBox}">
             <WrapPanel Margin="0,0,0,13" KeyboardNavigation.TabNavigation="Continue" >
                 <Label Content="{Binding colName}" Width="85" Height="25" Focusable="False"
@@ -126,7 +138,6 @@
                 <TextBox Text="{Binding editText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                          IsTabStop="True" Focusable="True"
                          Width="100" Height="25" />
-
             </WrapPanel>
         </DataTemplate>
 

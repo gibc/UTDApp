@@ -85,6 +85,7 @@
     </ApplicationDefinition>
     <Compile Include="Behaviour\AlphaOnlycs.cs" />
     <Compile Include="Behaviour\AutoGeneratingColumnEventToCommandBehaviour.cs" />
+    <Compile Include="EditControlViewModels\DateViewModel.cs" />
     <Compile Include="EditControlViewModels\DecimalViewModel.cs" />
     <Compile Include="EditControlViewModels\NumberViewModel.cs" />
     <Compile Include="Models\DataItem.cs" />
