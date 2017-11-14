@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Media;
 using UDTAppControlLibrary.Controls.UDTAppControlLibrary.Controls;
 
 namespace UDTAppControlLibrary.Controls
@@ -189,9 +190,6 @@ namespace UDTAppControlLibrary.Controls
 
         override protected void ApplyTemplateComplete()
         {
-            //BindingExpression exp = GetBindingExpression(DateBox.DateFormatProperty);
-            //exp.UpdateTarget();
-            //exp.UpdateSource();
             DateTimeDefault defalutVal = DateTimeDefault;
             DateTime? dateVal = DateTimeValue;
             DateTimeFormat dateFmt = DateFormat;
@@ -249,10 +247,26 @@ namespace UDTAppControlLibrary.Controls
             if (txtBox.Text != numberText.numberString)
             {
                 txtBox.Text = numberText.numberString;
-                if (dateComplete)
-                    setParsedNumber(fromatProvider.parseNumber(numberText.numberString));
+
+                if(!dateComplete && !numberText.promptVisble)
+                {
+                    txtBox.Foreground = Brushes.DarkOrange;
+                    txtBox.FontWeight = FontWeights.Bold;
+                }
                 else
+                {
+                    txtBox.FontWeight = FontWeights.Normal;
+                    txtBox.Foreground = Brushes.Black;
+                }
+
+                if (dateComplete)
+                {
+                    setParsedNumber(fromatProvider.parseNumber(numberText.numberString));
+                }
+                else
+                {
                     setParsedNumber(null);
+                }
             }
             txtBox.SelectionLength = numberText.selectionLength;
             txtBox.SelectionStart = numberText.selectionStart;
@@ -300,7 +314,8 @@ namespace UDTAppControlLibrary.Controls
                     {
                         numberText.repalceChar(' ', numberText.selectionStart);
                         if (numberText.selectionStart < DateIndex.meridiem)
-                            numberText.selectionStart = numberText.selectionStart + 1;
+                            //numberText.selectionStart = numberText.selectionStart + 1;
+                            numberText.selectionStart = numberText.selectionStart;
                         if (numberText.currentChar == '\n') numberText.selectionStart++;
                     }
                     updateTextBox();

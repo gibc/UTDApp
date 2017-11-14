@@ -158,7 +158,7 @@ namespace UDTAppControlLibrary.Controls
                     Int32 day;
                     if (Int32.TryParse(dayText, out day))
                     {
-                        if(day < 31)
+                        if(day <= 31)
                             return day;
                     }
                 }

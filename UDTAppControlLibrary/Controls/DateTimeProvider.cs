@@ -71,7 +71,7 @@ using System.Windows.Input;
                     return;
                 }
 
-                if (offset == 0)
+                if (offset == 0 && charVal(c) <= 1)
                 {
                     numberText.repalceChar(c, DateIndex.month);
                     if (charVal(c) == 0)
@@ -157,7 +157,8 @@ using System.Windows.Input;
                         numberText.repalceChar(c, DateIndex.day);
                         // if setting largest allowed 10s place then check max allowed 1s place
                         // and adj if needed
-                        if (charVal(c) == charVal(maxDays[0]) && charVal(maxDays[1]) > charVal(maxDays[1]))
+                        if (charVal(c) == charVal(maxDays[0])
+                            && charVal(numberText.dayTxt[1]) > charVal(maxDays[1]))
                             numberText.repalceChar(maxDays[1], DateIndex.day + 1);
 
                         numberText.selectionStart = DateIndex.day + 1;
@@ -203,7 +204,7 @@ using System.Windows.Input;
 
             private void yearDigit(char c, int offset, NumberText numberText)
             {
-                if (offset < 3)
+                if (offset < 4)
                 {
                     numberText.repalceChar(c, DateIndex.year + offset);
                     if (offset < 3)
