@@ -1238,6 +1238,17 @@ namespace UDTApp.Models
         public UDTNumberPicker minPicker { get; set; }
         public UDTNumberPicker maxPicker { get; set; }
 
+        private DecimalFormatType _decimalFormat = DecimalFormatType.Decimal; 
+        public DecimalFormatType decimalFormat 
+        {
+            get { return _decimalFormat; }
+            set { SetProperty(ref _decimalFormat, value); }
+        }
+        public List<DecimalFormatType> formatList
+        {
+            get { return Enum.GetValues(typeof(DecimalFormatType)).Cast<DecimalFormatType>().ToList();}
+        }
+
         //private void defaultChanged(decimal? newVal)
         //{
         //    if (newVal == null) defaultPicker.number = 0;
@@ -1283,17 +1294,8 @@ namespace UDTApp.Models
 
         public UDTDateEditProps(Action editPropChanged) : base(editPropChanged)
         {
-            //List<DateTimeDefault> dfltList = new List<DateTimeDefault>();
-            if (dfltList.Count == 0)
-            { 
-                dfltList.Add(DateTimeDefault.CurrentDay);
-                dfltList.Add(DateTimeDefault.CurrentWeek);
-                dfltList.Add(DateTimeDefault.CurrentMonth);
-                dfltList.Add(DateTimeDefault.CurrentYear);
-                dfltList.Add(DateTimeDefault.None);
-            }
-            //defaultList = dfltList;
         }
+
         private DateTimeDefault _defaultDate = DateTimeDefault.None;
         public DateTimeDefault defaultDate
         {
@@ -1301,12 +1303,34 @@ namespace UDTApp.Models
             set { SetProperty(ref _defaultDate, value); }
         }
 
-        static private List<DateTimeDefault> dfltList = new List<DateTimeDefault>();
-        private List<DateTimeDefault> _defaultList = new List<DateTimeDefault>();
+
         public List<DateTimeDefault> defaultList
         {
-            get { return dfltList; }
-            set { SetProperty(ref _defaultList, value); }
+            get { return Enum.GetValues(typeof(DateTimeDefault)).Cast<DateTimeDefault>().ToList(); }
+        }
+
+        private DateTimeFormat _dateFormat = DateTimeFormat.Date_Only;
+        public DateTimeFormat dateFormat
+        {
+            get { return _dateFormat; }
+            set { SetProperty(ref _dateFormat, value); }
+        }
+        public List<DateTimeFormat> formatList
+        {
+            get { return Enum.GetValues(typeof(DateTimeFormat)).Cast<DateTimeFormat>().ToList(); }
+        }
+
+        private Boolean _editBoxTool = true;
+        public Boolean editBoxTool
+        {
+            get { return _editBoxTool; }
+            set { SetProperty(ref _editBoxTool, value); }
+        }
+        private Boolean _calandarTool = false;
+        public Boolean calandarTool
+        {
+            get { return _calandarTool; }
+            set { SetProperty(ref _calandarTool, value); }
         }
 
         private bool _dateRangeNotUsed = true;

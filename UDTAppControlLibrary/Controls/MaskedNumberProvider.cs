@@ -260,7 +260,7 @@ namespace UDTAppControlLibrary.Controls
         public string post = "";
     }
 
-    public enum FormatType { Percent=1, Currency, Interger, Decimal, Date };
+    public enum FormatType { Percent = 1, Currency, Interger, Decimal, Date };
     public class NumberFromatProvider<T>
     {
         public NumberFromatProvider(FormatType fmtType, T maxNumber, T minNumber)

@@ -12,6 +12,8 @@ using System.Windows.Threading;
 
 namespace UDTAppControlLibrary.Controls
 {
+    public enum DecimalFormatType { Percent = 1, Currency, Decimal };
+
     public class DecimalBox : NumberBoxBase
     {
         public static readonly DependencyProperty DecimalValueProperty =
@@ -43,15 +45,15 @@ namespace UDTAppControlLibrary.Controls
                 }
 
                 string numTxt = "";
-                if (decimalBox.TextFormat == FormatType.Decimal)
+                if (decimalBox.TextFormat == DecimalFormatType.Decimal)
                 {
                     numTxt = string.Format("{0}", newValue);
                 }
-                else if (decimalBox.TextFormat == FormatType.Currency)
+                else if (decimalBox.TextFormat == DecimalFormatType.Currency)
                 { 
                     numTxt = string.Format("{0:n2}", newValue);
                 }
-                else if (decimalBox.TextFormat == FormatType.Percent)
+                else if (decimalBox.TextFormat == DecimalFormatType.Percent)
                 {
                     numTxt = string.Format("{0:n2}", 100*newValue);
                 }
@@ -68,25 +70,25 @@ namespace UDTAppControlLibrary.Controls
         }
 
         public static readonly DependencyProperty TextFormatProperty =
-             DependencyProperty.Register("TextFormat", typeof(FormatType), typeof(DecimalBox),
+             DependencyProperty.Register("TextFormat", typeof(DecimalFormatType), typeof(DecimalBox),
              new UIPropertyMetadata(new PropertyChangedCallback(OnMaskTextFormatPropertyChange)),
              null);
 
         static void OnMaskTextFormatPropertyChange(DependencyObject src, DependencyPropertyChangedEventArgs args)
         {
             DecimalBox decimalBox = src as DecimalBox;
-            FormatType newType = (FormatType)args.NewValue;
-            if (newType == FormatType.Decimal)
+            DecimalFormatType newType = (DecimalFormatType)args.NewValue;
+            if (newType == DecimalFormatType.Decimal)
                 decimalBox.fromatProvider = new DcimalFromatProvider(Decimal.MaxValue, Decimal.MinValue);
-            else if (newType == FormatType.Currency)
+            else if (newType == DecimalFormatType.Currency)
                 decimalBox.fromatProvider = new CurrencyFromatProvider(Decimal.MaxValue, Decimal.MinValue);
-            else if (newType == FormatType.Percent)
+            else if (newType == DecimalFormatType.Percent)
                 decimalBox.fromatProvider = new PercentFromatProvider(Decimal.MaxValue, Decimal.MinValue);
         }
 
-        public FormatType TextFormat
+        public DecimalFormatType TextFormat
         {
-            get { return (FormatType)GetValue(TextFormatProperty); }
+            get { return (DecimalFormatType)GetValue(TextFormatProperty); }
             set { SetValue(TextFormatProperty, value); }
         }
 

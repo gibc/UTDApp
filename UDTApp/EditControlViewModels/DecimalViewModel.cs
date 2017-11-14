@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UDTApp.Models;
 using UDTApp.ViewModels;
+using UDTAppControlLibrary.Controls;
 
 namespace UDTApp.EditControlViewModels
 {
@@ -16,6 +17,8 @@ namespace UDTApp.EditControlViewModels
             udtItem = item;
             validationChanged = _validationChanged;
             editProps = item.editProps;
+            UDTDecimalEditProps props = item.editProps as UDTDecimalEditProps;
+            fromatType = props.decimalFormat;
             decimal maxNum = Decimal.MaxValue;
             decimal minNum = Decimal.MinValue;
             if (editProps.maxPicker.number != null)
@@ -34,6 +37,13 @@ namespace UDTApp.EditControlViewModels
                 SetProperty(ref _decimalNumber, value); 
                 numberChanged(value);
             }
+        }
+
+        private DecimalFormatType _fromatType = DecimalFormatType.Decimal;
+        public DecimalFormatType fromatType
+        {
+            get { return _fromatType; }
+            set { SetProperty(ref _fromatType, value); }
         }
 
         override protected void setColumn()

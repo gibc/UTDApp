@@ -553,6 +553,14 @@
                     <CheckBox Width="80" HorizontalAlignment="Left" IsChecked="{Binding required}"
                              VerticalAlignment="Center"/>
                 </WrapPanel>
+                <WrapPanel>
+                    <Label HorizontalContentAlignment="Right" Content="Edit Format: " 
+                           Width="80"/>
+                    <ComboBox Width="103" HorizontalAlignment="Left" 
+                              SelectedItem="{Binding decimalFormat}"
+                              ItemsSource="{Binding formatList}"
+                             VerticalAlignment="Center"/>
+                </WrapPanel>
                 <StackPanel>
                     <ContentControl Content="{Binding defaultPicker}" VerticalAlignment="Center"/>
                     <ContentControl Content="{Binding minPicker}" VerticalAlignment="Center"/>
@@ -591,18 +599,35 @@
             <StackPanel>
                 <WrapPanel>
                     <Label HorizontalContentAlignment="Right" Content="Required: " 
-                           Width="70"/>
+                           Width="75"/>
                     <CheckBox Width="80" HorizontalAlignment="Left" IsChecked="{Binding required}"
                              VerticalAlignment="Center"/>
                 </WrapPanel>
                 <WrapPanel>
                     <Label HorizontalContentAlignment="Right" Content="Default: " 
-                           Width="70"/>
+                           Width="75"/>
                     <ComboBox Width="103" HorizontalAlignment="Left" 
                               SelectedItem="{Binding defaultDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                              ItemsSource="{Binding defaultList, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                              ItemsSource="{Binding defaultList}"
                              VerticalAlignment="Center"/>
                 </WrapPanel>
+                <WrapPanel>
+                    <Label HorizontalContentAlignment="Right" Content="Edit Format: " 
+                           Width="75"/>
+                    <ComboBox Width="103" HorizontalAlignment="Left" 
+                              SelectedItem="{Binding dateFormat, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                              ItemsSource="{Binding formatList}"
+                             VerticalAlignment="Center"/>
+                </WrapPanel>
+
+                <GroupBox Header="Edit Tool:" BorderBrush="Black" BorderThickness="1">
+                    <WrapPanel>
+                        <RadioButton GroupName="EditTool" Content="Calandar" IsChecked="{Binding calandarTool}"/>
+                        <RadioButton GroupName="EditTool" Content="Edit Box" IsChecked="{Binding editBoxTool}" 
+                                     Margin="3,0,0,0"/>
+                    </WrapPanel>
+                </GroupBox>
+
                 <GroupBox Header="Allowed Date Range" BorderBrush="Black" BorderThickness="1">
                     <StackPanel>
                         <WrapPanel>

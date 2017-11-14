@@ -19,6 +19,7 @@ namespace UDTApp.EditControlViewModels
             editProps = item.editProps;
             dateEditProps = item.editProps as UDTDateEditProps;
             dateDefault = dateEditProps.defaultDate;
+            dateFormat = dateEditProps.dateFormat;
             //decimal maxNum = Decimal.MaxValue;
             //decimal minNum = Decimal.MinValue;
             //if (editProps.maxPicker.number != null)

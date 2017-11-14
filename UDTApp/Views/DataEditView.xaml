@@ -114,7 +114,7 @@
                 <Label Content="{Binding colName}" Width="85" Height="25" Focusable="False"
                        HorizontalContentAlignment="Right" IsTabStop="False" />
                 <custClts:DecimalBox DecimalValue="{Binding decimalNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                                     TextFormat="Decimal"
+                                     TextFormat="{Binding fromatType}"
                                      Style="{StaticResource editError}"/>
             </WrapPanel>
         </DataTemplate>
