@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Linq;
@@ -889,6 +890,17 @@ namespace UDTApp.ViewModels
             e.AutoGeneratingColumn += new EventHandler<DataGridAutoGeneratingColumnEventArgs>(OnAutoGeneratingColumn);
             e.AutoGenerateColumns = false;
             e.AutoGenerateColumns = true;
+
+            foreach (DataColumn column in gridData.Table.Columns)
+            {
+                if(column.ExtendedProperties.Count > 0)
+                {
+                    string fmtString = (string)column.ExtendedProperties["fmt"];
+                    DataGridColumn gc = e.Columns.First(x => x.Header == column.ColumnName);
+                    DataGridTextColumn tc = gc as DataGridTextColumn;
+                    tc.Binding.StringFormat = fmtString;
+                }
+            }
         }
 
         protected void OnAutoGeneratingColumn(object sender, DataGridAutoGeneratingColumnEventArgs e)
@@ -899,6 +911,9 @@ namespace UDTApp.ViewModels
             }
 
         }
+
+
+
 
         private bool canDelete()
         {

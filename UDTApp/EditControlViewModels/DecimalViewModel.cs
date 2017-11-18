@@ -59,6 +59,7 @@ namespace UDTApp.EditControlViewModels
             else if (udtItem.GetType() == typeof(UDTDecimalItem))
             {
                 Decimal? decVal = (Decimal?)row[colName];
+                //var decVal = row[colName];
                 decimalNumber = decVal;
             }
         }
@@ -66,6 +67,7 @@ namespace UDTApp.EditControlViewModels
 
         private void numberChanged(Decimal? decNum)
         {
+            if (decNum == null) row[colName] = DBNull.Value;
             if (editProps.required && decNum == null)
             {
                 List<string> errLst = new List<string>();
@@ -85,13 +87,7 @@ namespace UDTApp.EditControlViewModels
                 }
                 else
                 {
-                    if (udtItem.TypeName == UDTTypeName.Number)
-                    {
-                        int currentVal = (int)row[colName];
-                        if (currentVal != (int)decNum)
-                            row[colName] = decNum;
-                    }
-                    else if (udtItem.TypeName == UDTTypeName.Real)
+                    if (udtItem.TypeName == UDTTypeName.Real)
                     {
                         Decimal? currentVal = (Decimal?)row[colName];
                         if (currentVal != (Decimal?)decNum)

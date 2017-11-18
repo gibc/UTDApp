@@ -75,6 +75,7 @@ namespace UDTApp.EditControlViewModels
 
         private void numberChanged(DateTime? dateNum)
         {
+            if (dateNum == null) row[colName] = DBNull.Value;
             if (editProps.required && dateNum == null)
             {
                 List<string> errLst = new List<string>();

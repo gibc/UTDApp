@@ -72,6 +72,7 @@ namespace UDTApp.EditControlViewModels
 
         private void numberChanged(Int32? intNum)
         {
+            if (intNum == null) row[colName] = DBNull.Value;
             if (editProps.required && intNum == null)
             {
                 List<string> errLst = new List<string>();
@@ -95,12 +96,6 @@ namespace UDTApp.EditControlViewModels
                     {
                         int currentVal = (int)row[colName];
                         if (currentVal != (int)intNum)
-                            row[colName] = intNum;
-                    }
-                    else if (udtItem.TypeName == UDTTypeName.Real)
-                    {
-                        decimal currentVal = (decimal)row[colName];
-                        if (currentVal != (decimal)intNum)
                             row[colName] = intNum;
                     }
                 }

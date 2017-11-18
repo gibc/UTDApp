@@ -24,7 +24,7 @@ namespace UDTAppControlLibrary.Controls
         override public void deleteSelection(NumberText numberText)
         {
             int offset = numberText.numberString.IndexOf('.');
-            if (offset >= numberText.selectionStart &&
+            if (offset >= numberText.selectionStart && numberText.selectionLength > 0 &&
                 offset <= numberText.selectionStart + numberText.selectionLength)
             {
                 numberText.deleteString();
@@ -36,7 +36,7 @@ namespace UDTAppControlLibrary.Controls
 
         override public void insertDigit(NumberText numberText, char c)
         {
-            if (!isMaxDecimalDigits(numberText))
+            if (isMaxDecimalDigits(numberText))
                 numberText.deleteChar(numberText.numberString.Length - 1);
 
             numberText.insertChar(c);
@@ -65,7 +65,7 @@ namespace UDTAppControlLibrary.Controls
         private bool isMaxDecimalDigits(NumberText numberText)
         {
             int ptOffset = numberText.numberString.IndexOf('.');
-            if (numberText.selectionStart > ptOffset + 2)
+            if ((numberText.numberString.Length-1) - ptOffset > 2)
             {
                 return true;
             }

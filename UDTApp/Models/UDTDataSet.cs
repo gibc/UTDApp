@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using System.Data.SqlTypes;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using UDTApp.ViewModels;
+using UDTAppControlLibrary.Controls;
 
 namespace UDTApp.Models
 {
@@ -342,6 +344,14 @@ namespace UDTApp.Models
                     else if (item.GetType() == typeof(UDTDecimalItem))
                     {
                         col.DataType = typeof(decimal);
+                        UDTDecimalItem decimalItem = item as UDTDecimalItem;
+                        UDTDecimalEditProps props = decimalItem.editProps as UDTDecimalEditProps;
+                        if (props.decimalFormat == DecimalFormatType.Currency)
+                            col.ExtendedProperties.Add("fmt", "{0:c}");
+                        else if (props.decimalFormat == DecimalFormatType.Percent)
+                            col.ExtendedProperties.Add("fmt", "{0:P2}");
+                        else if (props.decimalFormat == DecimalFormatType.Decimal)
+                            col.ExtendedProperties.Add("fmt", "{0}");
                     }
                     else if (item.GetType() == typeof(UDTIntItem))
                     {
