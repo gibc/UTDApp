@@ -891,15 +891,14 @@ namespace UDTApp.ViewModels
             e.AutoGenerateColumns = false;
             e.AutoGenerateColumns = true;
 
-            foreach (DataColumn column in gridData.Table.Columns)
+            IEnumerable<DataColumn> dataCols = gridData.Table.Columns.Cast<DataColumn>();
+            List<DataColumn> colLst = dataCols.Where(x => x.ExtendedProperties.Count > 0).ToList<DataColumn>();
+            foreach (DataColumn column in colLst)
             {
-                if(column.ExtendedProperties.Count > 0)
-                {
-                    string fmtString = (string)column.ExtendedProperties["fmt"];
-                    DataGridColumn gc = e.Columns.First(x => x.Header == column.ColumnName);
-                    DataGridTextColumn tc = gc as DataGridTextColumn;
-                    tc.Binding.StringFormat = fmtString;
-                }
+                string fmtString = (string)column.ExtendedProperties["fmt"];
+                DataGridColumn gc = e.Columns.First(x => x.Header == column.ColumnName);
+                DataGridTextColumn tc = gc as DataGridTextColumn;
+                tc.Binding.StringFormat = fmtString;
             }
         }
 

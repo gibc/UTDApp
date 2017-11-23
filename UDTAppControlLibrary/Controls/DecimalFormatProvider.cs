@@ -39,13 +39,25 @@ namespace UDTAppControlLibrary.Controls
         protected dynamic checkRange(dynamic number)
         {
 
-            if (number > numberMax)
+            if (number >= numberMax)
                 return numberMax;
-            else if (number < numberMin)
+            else if (number <= numberMin)
                 return numberMin;
 
             return number;
         }
+
+        public bool outOfRange(dynamic number)
+        {
+            if (number >= numberMax)
+                return true;
+            else if (number <= numberMin)
+                return true;
+
+            return false;
+
+        }
+
 
         virtual public void deleteSelection(NumberText numberText)
         {

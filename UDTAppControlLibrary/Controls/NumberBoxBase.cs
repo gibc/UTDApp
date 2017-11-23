@@ -5,8 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace UDTAppControlLibrary.Controls
 {
@@ -14,8 +16,11 @@ namespace UDTAppControlLibrary.Controls
     {
         public NumberBoxBase() 
         {
+           selChange = new RoutedEventHandler(selectionChange);
         }
 
+        public TextBlock messageBox;
+        public Popup messagePopup;
         protected TextBlock PreFormatBox;
         protected TextBlock PostFormatBox;
         protected TextBox txtBox;
@@ -47,12 +52,26 @@ namespace UDTAppControlLibrary.Controls
 
             txtBox.PreviewKeyDown += new KeyEventHandler(previewKeyDownEvent);
             txtBox.PreviewTextInput += new TextCompositionEventHandler(previewTextInput);
-            txtBox.SelectionChanged += new RoutedEventHandler(selectionChange);
+            //txtBox.SelectionChanged += new RoutedEventHandler(selectionChange);
+            txtBox.SelectionChanged += selChange;
+            eventCount++;
 
             PreFormatBox.Text = fromatProvider.positiveNumberSymbol.pre;
             PostFormatBox.Text = fromatProvider.positiveNumberSymbol.post;
 
             numberText.setPrompt(fromatProvider.prompt);
+
+            messagePopup = new Popup();
+            messagePopup.VerticalOffset = 18;
+            messagePopup.HorizontalOffset = 5;
+            messagePopup.Placement = PlacementMode.Center;
+            messagePopup.AllowsTransparency = true;
+            messagePopup.PlacementTarget = txtBox;
+
+            messageBox = new TextBlock();
+            messageBox.Background = Brushes.Transparent;
+            messageBox.Foreground = Brushes.DarkOrange;
+            messagePopup.Child = messageBox;
 
             ApplyTemplateComplete();
             updateTextBox();
@@ -152,9 +171,12 @@ namespace UDTAppControlLibrary.Controls
 
         }
 
+        event RoutedEventHandler selChange;
+        int eventCount = 0;
         virtual protected void updateTextBox()
         {
-            txtBox.SelectionChanged -= new RoutedEventHandler(selectionChange);
+            txtBox.SelectionChanged -= selChange;
+            eventCount--;
             fromatProvider.fromatNumberText(numberText);
             if (txtBox.Text != numberText.numberString)
             {
@@ -163,14 +185,22 @@ namespace UDTAppControlLibrary.Controls
             }
             txtBox.SelectionLength = numberText.selectionLength;
             txtBox.SelectionStart = numberText.selectionStart;
-            txtBox.SelectionChanged += new RoutedEventHandler(selectionChange);
+            if (eventCount == 0)
+            { 
+                txtBox.SelectionChanged += selChange;
+                eventCount++;
+            }
+
         }
 
         protected void selectionChange(object src, RoutedEventArgs arg)
         {
+            //if (noSelChange) return;
             numberText.selectionStart = txtBox.SelectionStart;
             numberText.selectionLength = txtBox.SelectionLength;
         }
+
+ 
 
     }
 }

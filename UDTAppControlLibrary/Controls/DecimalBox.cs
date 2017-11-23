@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Threading;
 
 namespace UDTAppControlLibrary.Controls
@@ -26,7 +28,7 @@ namespace UDTAppControlLibrary.Controls
             DecimalBox decimalBox = src as DecimalBox;
             Decimal? newValue = (Decimal?)args.NewValue;
             if (decimalBox.txtBox == null) return;
-            if (newValue != decimalBox.parsedNumber)
+            if (newValue != decimalBox.parsedNumber || decimalBox.fromatProvider.outOfRange(newValue))
             {
                 if(newValue == null)
                 { 
@@ -60,7 +62,9 @@ namespace UDTAppControlLibrary.Controls
                 decimalBox.numberText.clear();
                 decimalBox.numberText.insertString(numTxt);
                 decimalBox.updateTextBox();
+
             }
+
         }
 
         public Decimal? DecimalValue
@@ -174,11 +178,18 @@ namespace UDTAppControlLibrary.Controls
                 PostFormatBox.Text = fromatProvider.positiveNumberSymbol.post;
             }
 
+
+            if (fromatProvider.outOfRange(value))
+            {
+                messageBox.Text = "Out of range";
+                messagePopup.IsOpen = true;
+            }
+            else messagePopup.IsOpen = false;
+
             parsedNumber = value;
             if (parsedNumber != DecimalValue)
                 DecimalValue = parsedNumber;
         }
-
 
     }
 }
