@@ -79,8 +79,8 @@ namespace CustomControlTest.ViewModel
                 SetErrors(() => this.numberValue, new List<string>());
         }
 
-        //public Decimal? _decimalValue = 123.456m;
-        public Decimal? _decimalValue = null;
+        public Decimal? _decimalValue = 123.456m;
+        //public Decimal? _decimalValue = null;
         public Decimal? decimalValue
         {
             get { return _decimalValue; }

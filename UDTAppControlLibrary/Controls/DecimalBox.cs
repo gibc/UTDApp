@@ -28,7 +28,7 @@ namespace UDTAppControlLibrary.Controls
             DecimalBox decimalBox = src as DecimalBox;
             Decimal? newValue = (Decimal?)args.NewValue;
             if (decimalBox.txtBox == null) return;
-            if (newValue != decimalBox.parsedNumber || decimalBox.fromatProvider.outOfRange(newValue))
+            if (newValue != decimalBox.parsedNumber)
             {
                 if(newValue == null)
                 { 
@@ -46,23 +46,23 @@ namespace UDTAppControlLibrary.Controls
                     }
                 }
 
-                string numTxt = "";
-                if (decimalBox.TextFormat == DecimalFormatType.Decimal)
-                {
-                    numTxt = string.Format("{0}", newValue);
-                }
-                else if (decimalBox.TextFormat == DecimalFormatType.Currency)
-                { 
-                    numTxt = string.Format("{0:n2}", newValue);
-                }
-                else if (decimalBox.TextFormat == DecimalFormatType.Percent)
-                {
-                    numTxt = string.Format("{0:n2}", 100*newValue);
-                }
+                //string numTxt = "";
+                //if (decimalBox.TextFormat == DecimalFormatType.Decimal)
+                //{
+                //    numTxt = string.Format("{0}", newValue);
+                //}
+                //else if (decimalBox.TextFormat == DecimalFormatType.Currency)
+                //{ 
+                //    numTxt = string.Format("{0:n2}", newValue);
+                //}
+                //else if (decimalBox.TextFormat == DecimalFormatType.Percent)
+                //{
+                //    numTxt = string.Format("{0:n2}", 100*newValue);
+                //}
+                string numTxt = decimalBox.fromatProvider.getNumberText(newValue);
                 decimalBox.numberText.clear();
                 decimalBox.numberText.insertString(numTxt);
                 decimalBox.updateTextBox();
-
             }
 
         }
@@ -179,9 +179,15 @@ namespace UDTAppControlLibrary.Controls
             }
 
 
-            if (fromatProvider.outOfRange(value))
+            if (fromatProvider.isMax)
             {
-                messageBox.Text = "Out of range";
+                messageBox.Text = "Maximum allowed value.";
+                //messageBox.Text = "value.";
+                messagePopup.IsOpen = true;
+            }
+            else if (fromatProvider.isMin)
+            {
+                messageBox.Text = "Minimum allowed value.";
                 messagePopup.IsOpen = true;
             }
             else messagePopup.IsOpen = false;

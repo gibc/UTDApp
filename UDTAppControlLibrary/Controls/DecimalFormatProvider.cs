@@ -25,10 +25,30 @@ namespace UDTAppControlLibrary.Controls
 
         public dynamic numberMax;
         public dynamic numberMin;
+        public bool isMax = false;
+        public bool isMin = false;
 
         public NumberSymbol positiveNumberSymbol;
 
         public NumberSymbol negativeNumberSymbol;
+
+        public virtual string getNumberText(dynamic number)
+        {
+            //string numTxt = "";
+            //if (fromat == DecimalFormatType.Decimal)
+            //{
+            //    numTxt = string.Format("{0}", number);
+            //}
+            //else if (fromat == DecimalFormatType.Currency)
+            //{
+            //    numTxt = string.Format("{0:n2}", number);
+            //}
+            //else if (fromat == DecimalFormatType.Percent)
+            //{
+            //    numTxt = string.Format("{0:n2}", 100 * number);
+            //}
+            return string.Format("{0}", number);
+        }
 
         protected string unFormatText(string text)
         {
@@ -38,26 +58,19 @@ namespace UDTAppControlLibrary.Controls
 
         protected dynamic checkRange(dynamic number)
         {
-
+            isMax = isMin = false;
             if (number >= numberMax)
+            {
+                isMax = true;
                 return numberMax;
+            }
             else if (number <= numberMin)
+            {
+                isMin = true;
                 return numberMin;
-
+            }
             return number;
         }
-
-        public bool outOfRange(dynamic number)
-        {
-            if (number >= numberMax)
-                return true;
-            else if (number <= numberMin)
-                return true;
-
-            return false;
-
-        }
-
 
         virtual public void deleteSelection(NumberText numberText)
         {
@@ -134,7 +147,6 @@ namespace UDTAppControlLibrary.Controls
             {
                 number = numberMax;
             }
-
             return checkRange(number);
         }
 

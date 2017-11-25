@@ -54,19 +54,23 @@ namespace UDTAppControlLibrary.Controls
             txtBox.PreviewTextInput += new TextCompositionEventHandler(previewTextInput);
             //txtBox.SelectionChanged += new RoutedEventHandler(selectionChange);
             txtBox.SelectionChanged += selChange;
-            eventCount++;
 
             PreFormatBox.Text = fromatProvider.positiveNumberSymbol.pre;
             PostFormatBox.Text = fromatProvider.positiveNumberSymbol.post;
 
             numberText.setPrompt(fromatProvider.prompt);
 
+            //txtBox.TextWrapping = TextWrapping.NoWrap;
+            //txtBox.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
+
             messagePopup = new Popup();
-            messagePopup.VerticalOffset = 18;
-            messagePopup.HorizontalOffset = 5;
-            messagePopup.Placement = PlacementMode.Center;
+            messagePopup.VerticalOffset = 0;
+            messagePopup.HorizontalOffset = 0;
+            messagePopup.Placement = PlacementMode.Top;
             messagePopup.AllowsTransparency = true;
-            messagePopup.PlacementTarget = txtBox;
+
+            Border ctlBdr = Template.FindName("Border", this) as Border;
+            messagePopup.PlacementTarget = ctlBdr;
 
             messageBox = new TextBlock();
             messageBox.Background = Brushes.Transparent;
@@ -172,24 +176,25 @@ namespace UDTAppControlLibrary.Controls
         }
 
         event RoutedEventHandler selChange;
-        int eventCount = 0;
         virtual protected void updateTextBox()
         {
             txtBox.SelectionChanged -= selChange;
-            eventCount--;
             fromatProvider.fromatNumberText(numberText);
             if (txtBox.Text != numberText.numberString)
             {
+                //setParsedNumber( fromatProvider.parseNumber(numberText.numberString) );
+                Decimal? number = fromatProvider.parseNumber(numberText.numberString);
+                if (fromatProvider.isMax || fromatProvider.isMin)
+                {
+                    numberText.clear();
+                    numberText.insertString(fromatProvider.getNumberText(number));
+                }
                 txtBox.Text = numberText.numberString;
-                setParsedNumber( fromatProvider.parseNumber(numberText.numberString) );
+                setParsedNumber(number);
             }
             txtBox.SelectionLength = numberText.selectionLength;
             txtBox.SelectionStart = numberText.selectionStart;
-            if (eventCount == 0)
-            { 
-                txtBox.SelectionChanged += selChange;
-                eventCount++;
-            }
+            txtBox.SelectionChanged += selChange;
 
         }
 

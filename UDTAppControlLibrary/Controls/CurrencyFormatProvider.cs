@@ -18,6 +18,11 @@ namespace UDTAppControlLibrary.Controls
             negativeNumberSymbol = new NumberSymbol("${", ")");
         }
 
+        public override string getNumberText(dynamic number)
+        {
+            return string.Format("{0:n2}", number);
+        }
+
         override public void insertDecimal(NumberText numberText, char c)
         { }
 

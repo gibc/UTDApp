@@ -38,7 +38,6 @@ namespace UDTAppControlLibrary.Controls
             {
                 number = (Int32)numberMax;
             }
-
             return checkRange(number);
         }
 
