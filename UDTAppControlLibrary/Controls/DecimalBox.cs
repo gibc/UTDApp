@@ -46,19 +46,6 @@ namespace UDTAppControlLibrary.Controls
                     }
                 }
 
-                //string numTxt = "";
-                //if (decimalBox.TextFormat == DecimalFormatType.Decimal)
-                //{
-                //    numTxt = string.Format("{0}", newValue);
-                //}
-                //else if (decimalBox.TextFormat == DecimalFormatType.Currency)
-                //{ 
-                //    numTxt = string.Format("{0:n2}", newValue);
-                //}
-                //else if (decimalBox.TextFormat == DecimalFormatType.Percent)
-                //{
-                //    numTxt = string.Format("{0:n2}", 100*newValue);
-                //}
                 string numTxt = decimalBox.fromatProvider.getNumberText(newValue);
                 decimalBox.numberText.clear();
                 decimalBox.numberText.insertString(numTxt);
@@ -83,11 +70,11 @@ namespace UDTAppControlLibrary.Controls
             DecimalBox decimalBox = src as DecimalBox;
             DecimalFormatType newType = (DecimalFormatType)args.NewValue;
             if (newType == DecimalFormatType.Decimal)
-                decimalBox.fromatProvider = new DcimalFromatProvider(Decimal.MaxValue, Decimal.MinValue);
+                decimalBox.fromatProvider = new DcimalFromatProvider(decimalBox.MaxValue, decimalBox.MinValue);
             else if (newType == DecimalFormatType.Currency)
-                decimalBox.fromatProvider = new CurrencyFromatProvider(Decimal.MaxValue, Decimal.MinValue);
+                decimalBox.fromatProvider = new CurrencyFromatProvider(decimalBox.MaxValue, decimalBox.MinValue);
             else if (newType == DecimalFormatType.Percent)
-                decimalBox.fromatProvider = new PercentFromatProvider(Decimal.MaxValue, Decimal.MinValue);
+                decimalBox.fromatProvider = new PercentFromatProvider(decimalBox.MaxValue, decimalBox.MinValue);
         }
 
         public DecimalFormatType TextFormat
@@ -117,6 +104,75 @@ namespace UDTAppControlLibrary.Controls
         {
             get { return (Decimal?)GetValue(DefaultValueProperty); }
             set { SetValue(DefaultValueProperty, value); }
+        }
+
+        public static readonly DependencyProperty MaxValueProperty =
+         DependencyProperty.Register("MaxValue", typeof(Decimal), typeof(DecimalBox),
+         new UIPropertyMetadata(Decimal.MaxValue, 
+             new PropertyChangedCallback(OnMaxValuePropertyChange),
+             new CoerceValueCallback(CoerceMaxValue)));
+
+        static void OnMaxValuePropertyChange(DependencyObject src, DependencyPropertyChangedEventArgs args)
+        {
+            DecimalBox decimalBox = src as DecimalBox;
+            Decimal newValue = (Decimal)args.NewValue;
+            if(decimalBox.fromatProvider != null)
+            {
+                decimalBox.fromatProvider.numberMax = newValue;
+            }
+        }
+
+        public static object CoerceMaxValue(DependencyObject d, object value)
+        {
+            DecimalBox decimalBox = d as DecimalBox;
+            Decimal maxValue = (Decimal)value;
+            if (decimalBox.TextFormat == DecimalFormatType.Percent)
+            {
+                if (maxValue >= Decimal.MaxValue / 100)
+                    maxValue = Decimal.MaxValue / 100;
+            }
+            return maxValue;
+        }
+
+        public Decimal MaxValue
+        {
+            get { return (Decimal)GetValue(MaxValueProperty); }
+            set { SetValue(MaxValueProperty, value); }
+        }
+
+        public static readonly DependencyProperty MinValueProperty =
+         DependencyProperty.Register("MinValue", typeof(Decimal), typeof(DecimalBox),
+         new UIPropertyMetadata(Decimal.MinValue, 
+             new PropertyChangedCallback(OnMinValuePropertyChange),
+             new CoerceValueCallback(CoerceMinValue)));
+
+        static void OnMinValuePropertyChange(DependencyObject src, DependencyPropertyChangedEventArgs args)
+        {
+            DecimalBox decimalBox = src as DecimalBox;
+            Decimal newValue = (Decimal)args.NewValue;
+            if (decimalBox.fromatProvider != null)
+            {
+                decimalBox.fromatProvider.numberMin = newValue;
+            }
+        }
+
+        public static object CoerceMinValue(DependencyObject d, object value)
+        {
+            DecimalBox decimalBox = d as DecimalBox;
+            Decimal minValue = (Decimal)value;
+            if (decimalBox.TextFormat == DecimalFormatType.Percent)
+            {
+                if (minValue <= Decimal.MinValue / 100)
+                    minValue = Decimal.MinValue / 100;
+            }
+            return minValue;
+        }
+
+
+        public Decimal MinValue
+        {
+            get { return (Decimal)GetValue(MinValueProperty); }
+            set { SetValue(MinValueProperty, value); }
         }
 
         static DecimalBox()
@@ -182,7 +238,6 @@ namespace UDTAppControlLibrary.Controls
             if (fromatProvider.isMax)
             {
                 messageBox.Text = "Maximum allowed value.";
-                //messageBox.Text = "value.";
                 messagePopup.IsOpen = true;
             }
             else if (fromatProvider.isMin)

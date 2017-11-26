@@ -125,7 +125,7 @@ namespace UDTAppControlLibrary.Controls
                 || numberTxt == "-" || numberTxt == "+");
         }
 
-        virtual public dynamic parseNumber(string numberTxt)
+        protected dynamic parseNumberTxt(string numberTxt)
         {
             Decimal? number = default(Decimal?);
 
@@ -141,12 +141,18 @@ namespace UDTAppControlLibrary.Controls
             }
             else if (numberTxt[0] == '-')
             {
-                number = numberMin;
+                number = Decimal.MinValue;
             }
             else
             {
-                number = numberMax;
+                number = Decimal.MaxValue; 
             }
+            return number;
+        }
+
+        virtual public dynamic parseNumber(string numberTxt)
+        {
+            Decimal? number = parseNumberTxt(numberTxt);
             return checkRange(number);
         }
 

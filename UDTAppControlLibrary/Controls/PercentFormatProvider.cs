@@ -13,6 +13,17 @@ namespace UDTAppControlLibrary.Controls
         public PercentFromatProvider(Decimal maxNumber, Decimal minNumber)
             : base(maxNumber, minNumber)
         {
+            if (maxNumber >= Decimal.MaxValue / 100m)
+            {
+                Decimal? nullDec = Decimal.MaxValue;
+                numberMax = nullDec / 100m;
+            }
+            if (minNumber <= Decimal.MinValue / 100m)
+            {
+                Decimal? nullDec = Decimal.MinValue;
+                numberMin = nullDec / 100m;
+            }
+
             prompt = "Enter Percent.";
             positiveNumberSymbol = new NumberSymbol("", " %");
             negativeNumberSymbol = new NumberSymbol("", " %");
@@ -25,7 +36,9 @@ namespace UDTAppControlLibrary.Controls
 
         public override dynamic parseNumber(string numberTxt)
         {
-            return base.parseNumber(numberTxt) / 100;
+            Decimal? number = parseNumberTxt(numberTxt);
+            number = number / 100m;
+            return checkRange(number);
         }
     }
 }
