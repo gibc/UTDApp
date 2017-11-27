@@ -39,8 +39,7 @@ namespace UDTAppControlLibrary.Controls
                     }
                 }
 
-                string numTxt = "";
-                numTxt = string.Format("{0}", newNumber);
+                string numTxt = numberBox.fromatProvider.getNumberText(newNumber);
 
                 numberBox.numberText.clear();
                 numberBox.numberText.insertString(numTxt);
@@ -77,7 +76,51 @@ namespace UDTAppControlLibrary.Controls
             set { SetValue(NumberDefaultProperty, value); }
         }
 
+        #region MinMax
+        public static readonly DependencyProperty MaxValueProperty =
+         DependencyProperty.Register("MaxValue", typeof(Int32), typeof(NumberBox),
+         new UIPropertyMetadata(Int32.MaxValue,
+             new PropertyChangedCallback(OnMaxValuePropertyChange),
+             null));
 
+        static void OnMaxValuePropertyChange(DependencyObject src, DependencyPropertyChangedEventArgs args)
+        {
+            NumberBox numberBox = src as NumberBox;
+            Int32 newValue = (Int32)args.NewValue;
+            if (numberBox.fromatProvider != null)
+            {
+                numberBox.fromatProvider.numberMax = newValue;
+            }
+        }
+
+        public Int32 MaxValue
+        {
+            get { return (Int32)GetValue(MaxValueProperty); }
+            set { SetValue(MaxValueProperty, value); }
+        }
+
+        public static readonly DependencyProperty MinValueProperty =
+         DependencyProperty.Register("MinValue", typeof(Int32), typeof(NumberBox),
+         new UIPropertyMetadata(Int32.MinValue,
+             new PropertyChangedCallback(OnMinValuePropertyChange),
+             null));
+
+        static void OnMinValuePropertyChange(DependencyObject src, DependencyPropertyChangedEventArgs args)
+        {
+            NumberBox numberBox = src as NumberBox;
+            Int32 newValue = (Int32)args.NewValue;
+            if (numberBox.fromatProvider != null)
+            {
+                numberBox.fromatProvider.numberMin = newValue;
+            }
+        }
+
+        public Int32 MinValue
+        {
+            get { return (Int32)GetValue(MinValueProperty); }
+            set { SetValue(MinValueProperty, value); }
+        }
+        #endregion
 
         static NumberBox()
         {
@@ -86,7 +129,7 @@ namespace UDTAppControlLibrary.Controls
 
         public NumberBox()
         {
-            fromatProvider = new NumberFromatProvider(Int32.MaxValue, Int32.MinValue);
+            fromatProvider = new NumberFromatProvider(MaxValue, MinValue);
         }
 
         override protected void ApplyTemplateComplete()
@@ -109,6 +152,18 @@ namespace UDTAppControlLibrary.Controls
         Int32? parsedNumber = null;
         override protected void setParsedNumber(dynamic value)
         {
+            if (fromatProvider.isMax)
+            {
+                messageBox.Text = "Maximum allowed value.";
+                messagePopup.IsOpen = true;
+            }
+            else if (fromatProvider.isMin)
+            {
+                messageBox.Text = "Minimum allowed value.";
+                messagePopup.IsOpen = true;
+            }
+            else messagePopup.IsOpen = false;
+
             parsedNumber = value;
             if (parsedNumber != NumberValue)
                 NumberValue = parsedNumber;

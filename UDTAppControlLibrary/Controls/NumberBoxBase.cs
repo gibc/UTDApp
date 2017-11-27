@@ -182,8 +182,7 @@ namespace UDTAppControlLibrary.Controls
             fromatProvider.fromatNumberText(numberText);
             if (txtBox.Text != numberText.numberString)
             {
-                //setParsedNumber( fromatProvider.parseNumber(numberText.numberString) );
-                Decimal? number = fromatProvider.parseNumber(numberText.numberString);
+                dynamic number = fromatProvider.parseNumber(numberText.numberString);
                 if (fromatProvider.isMax || fromatProvider.isMin)
                 {
                     numberText.clear();

@@ -103,26 +103,8 @@ namespace UDTAppControlLibrary.Controls
                     }
                 }
 
-                string numTxt = "";
-                if (dateBox.DateFormat == DateTimeFormat.Date_Only)
-                {
-                    numTxt = string.Format("{0:MM/dd/yyyy}", newDate);
-                }
-                else if (dateBox.DateFormat == DateTimeFormat.Date_12_HourTime)
-                {
-                    numTxt = string.Format("{0:MM/dd/yyyy:hh:mm:tt}", newDate);
-                }
-                else if (dateBox.DateFormat == DateTimeFormat.Date_24_HourTime)
-                {
-                    numTxt = string.Format("{0:MM/dd/yyyy:HH:mm}", newDate);
-                }
+                string numTxt = dateBox.fromatProvider.getNumberText(newDate);
 
-                int offset = numTxt.IndexOf(':');
-                if(offset > 0)
-                { 
-                    numTxt = numTxt.Remove(offset, 1);
-                    numTxt = numTxt.Insert(offset, "\n");
-                }
                 dateBox.numberText.clear();
                 dateBox.numberText.insertString(numTxt);
                 dateBox.updateTextBox();
@@ -144,7 +126,7 @@ namespace UDTAppControlLibrary.Controls
         {
             DateBox dateBox = src as DateBox;
             DateTimeFormat newType = (DateTimeFormat)args.NewValue;
-            dateBox.fromatProvider = new DateTimeProvider(newType, DateTime.MaxValue, DateTime.MinValue);
+            dateBox.fromatProvider = new DateTimeProvider(newType, dateBox.MaxValue, dateBox.MinValue);
         }
 
         public DateTimeFormat DateFormat
@@ -177,6 +159,51 @@ namespace UDTAppControlLibrary.Controls
             set { SetValue(DateTimeDefaultProperty, value); }
         }
 
+        #region MinMax
+        public static readonly DependencyProperty MaxValueProperty =
+         DependencyProperty.Register("MaxValue", typeof(DateTime), typeof(DateBox),
+         new UIPropertyMetadata(DateTime.MaxValue,
+             new PropertyChangedCallback(OnMaxValuePropertyChange),
+             null));
+
+        static void OnMaxValuePropertyChange(DependencyObject src, DependencyPropertyChangedEventArgs args)
+        {
+            DateBox dateBox = src as DateBox;
+            DateTime newValue = (DateTime)args.NewValue;
+            if (dateBox.fromatProvider != null)
+            {
+                dateBox.fromatProvider.numberMax = newValue;
+            }
+        }
+
+        public DateTime MaxValue
+        {
+            get { return (DateTime)GetValue(MaxValueProperty); }
+            set { SetValue(MaxValueProperty, value); }
+        }
+
+        public static readonly DependencyProperty MinValueProperty =
+         DependencyProperty.Register("MinValue", typeof(DateTime), typeof(DateBox),
+         new UIPropertyMetadata(DateTime.MinValue,
+             new PropertyChangedCallback(OnMinValuePropertyChange),
+             null));
+
+        static void OnMinValuePropertyChange(DependencyObject src, DependencyPropertyChangedEventArgs args)
+        {
+            DateBox dateBox = src as DateBox;
+            DateTime newValue = (DateTime)args.NewValue;
+            if (dateBox.fromatProvider != null)
+            {
+                dateBox.fromatProvider.numberMin = newValue;
+            }
+        }
+
+        public DateTime MinValue
+        {
+            get { return (DateTime)GetValue(MinValueProperty); }
+            set { SetValue(MinValueProperty, value); }
+        }
+        #endregion
 
         static DateBox()
         {
@@ -209,6 +236,18 @@ namespace UDTAppControlLibrary.Controls
         DateTime? parsedNumber = null;
         override protected void setParsedNumber(dynamic value)
         {
+            if (fromatProvider.isMax)
+            {
+                messageBox.Text = "Maximum allowed date.";
+                messagePopup.IsOpen = true;
+            }
+            else if (fromatProvider.isMin)
+            {
+                messageBox.Text = "Minimum allowed date.";
+                messagePopup.IsOpen = true;
+            }
+            else messagePopup.IsOpen = false;
+
             parsedNumber = value;
             if (parsedNumber != DateTimeValue)
                 DateTimeValue = parsedNumber;
@@ -261,7 +300,15 @@ namespace UDTAppControlLibrary.Controls
 
                 if (dateComplete)
                 {
-                    setParsedNumber(fromatProvider.parseNumber(numberText.numberString));
+                    //setParsedNumber(fromatProvider.parseNumber(numberText.numberString));
+                    dynamic number = fromatProvider.parseNumber(numberText.numberString);
+                    if (fromatProvider.isMax || fromatProvider.isMin)
+                    {
+                        numberText.clear();
+                        numberText.insertString(fromatProvider.getNumberText(number));
+                    }
+                    txtBox.Text = numberText.numberString;
+                    setParsedNumber(number);
                 }
                 else
                 {

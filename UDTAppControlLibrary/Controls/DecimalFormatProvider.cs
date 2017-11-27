@@ -34,19 +34,6 @@ namespace UDTAppControlLibrary.Controls
 
         public virtual string getNumberText(dynamic number)
         {
-            //string numTxt = "";
-            //if (fromat == DecimalFormatType.Decimal)
-            //{
-            //    numTxt = string.Format("{0}", number);
-            //}
-            //else if (fromat == DecimalFormatType.Currency)
-            //{
-            //    numTxt = string.Format("{0:n2}", number);
-            //}
-            //else if (fromat == DecimalFormatType.Percent)
-            //{
-            //    numTxt = string.Format("{0:n2}", 100 * number);
-            //}
             return string.Format("{0}", number);
         }
 
@@ -125,7 +112,7 @@ namespace UDTAppControlLibrary.Controls
                 || numberTxt == "-" || numberTxt == "+");
         }
 
-        protected dynamic parseNumberTxt(string numberTxt)
+        virtual protected dynamic parseNumberTxt(string numberTxt)
         {
             Decimal? number = default(Decimal?);
 

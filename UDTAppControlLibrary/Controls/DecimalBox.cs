@@ -106,6 +106,7 @@ namespace UDTAppControlLibrary.Controls
             set { SetValue(DefaultValueProperty, value); }
         }
 
+        #region MinMax
         public static readonly DependencyProperty MaxValueProperty =
          DependencyProperty.Register("MaxValue", typeof(Decimal), typeof(DecimalBox),
          new UIPropertyMetadata(Decimal.MaxValue, 
@@ -174,6 +175,7 @@ namespace UDTAppControlLibrary.Controls
             get { return (Decimal)GetValue(MinValueProperty); }
             set { SetValue(MinValueProperty, value); }
         }
+        #endregion
 
         static DecimalBox()
         {

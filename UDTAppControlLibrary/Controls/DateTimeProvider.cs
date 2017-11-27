@@ -30,6 +30,31 @@ using System.Windows.Input;
 
             private DateTimeFormat dateFormat;
 
+            public override string getNumberText(dynamic number)
+            {
+                string numTxt = "";
+                if (dateFormat == DateTimeFormat.Date_Only)
+                {
+                    numTxt = string.Format("{0:MM/dd/yyyy}", number);
+                }
+                else if (dateFormat == DateTimeFormat.Date_12_HourTime)
+                {
+                    numTxt = string.Format("{0:MM/dd/yyyy:hh:mm:tt}", number);
+                }
+                else if (dateFormat == DateTimeFormat.Date_24_HourTime)
+                {
+                    numTxt = string.Format("{0:MM/dd/yyyy:HH:mm}", number);
+                }
+
+                int offset = numTxt.IndexOf(':');
+                if (offset > 0)
+                {
+                    numTxt = numTxt.Remove(offset, 1);
+                    numTxt = numTxt.Insert(offset, "\n");
+                }
+                return numTxt;
+            }
+
             public override void replacePromptText(NumberText numberText, TextCompositionEventArgs arg, char c)
             {
                 numberText.clear();
@@ -449,7 +474,7 @@ using System.Windows.Input;
                     fmt = "MM/dd/yyyy:HH:mm";
                 if (DateTime.TryParseExact(numberTxt, fmt, CultureInfo.InvariantCulture,
                     DateTimeStyles.None, out date))
-                    return date;
+                    return checkRange(date);
                 return null;
             }
         }

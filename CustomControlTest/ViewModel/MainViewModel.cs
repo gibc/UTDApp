@@ -67,6 +67,21 @@ namespace CustomControlTest.ViewModel
             }
         }
 
+        public Int32? _numberDefault = 100;
+        public Int32? numberDefault
+        {
+            get
+            {
+                setError(_numberDefault);
+                return _numberDefault;
+            }
+            set
+            {
+                SetProperty(ref _numberDefault, value);
+                setError(_numberDefault);
+            }
+        }
+
         private void setError(Int32? value)
         {
             if (value == null)
