@@ -20,12 +20,10 @@ namespace UDTApp.EditControlViewModels
             dateEditProps = item.editProps as UDTDateEditProps;
             dateDefault = dateEditProps.defaultDate;
             dateFormat = dateEditProps.dateFormat;
-            //decimal maxNum = Decimal.MaxValue;
-            //decimal minNum = Decimal.MinValue;
-            //if (editProps.maxPicker.number != null)
-            //    maxNum = (Decimal)editProps.maxPicker.number;
-            //if (editProps.minPicker.number != null)
-            //    minNum = (Decimal)editProps.minPicker.number;
+            if (dateEditProps.maxDate != null)
+                maxValue = editProps.maxDate;
+            if (dateEditProps.minDate != null)
+                minValue = editProps.minDate;
         }
 
         // bind to DateBox control in data template
@@ -38,6 +36,20 @@ namespace UDTApp.EditControlViewModels
                 SetProperty(ref _dateNumber, value);
                 numberChanged(value);
             }
+        }
+
+        private DateTime _maxValue = DateTime.MaxValue;
+        public DateTime maxValue
+        {
+            get { return _maxValue; }
+            set { SetProperty(ref _maxValue, value); }
+        }
+
+        private DateTime _minValue = DateTime.MinValue;
+        public DateTime minValue
+        {
+            get { return _minValue; }
+            set { SetProperty(ref _minValue, value); }
         }
 
         private DateTimeDefault _dateDefault = DateTimeDefault.None;

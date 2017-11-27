@@ -19,25 +19,10 @@ namespace UDTApp.EditControlViewModels
             udtItem = item;
             validationChanged = _validationChanged;
             editProps = item.editProps;
-            decimal maxNum = Decimal.MaxValue;
-            decimal minNum = Decimal.MinValue;
             if (editProps.maxPicker.number != null)
-                maxNum = (Decimal)editProps.maxPicker.number;
+                maxValue = (Int32)editProps.maxPicker.number;
             if (editProps.minPicker.number != null)
-                minNum = (Decimal)editProps.minPicker.number;
-            //NumberPickerType pickType = NumberPickerType.Integer;
-            //if (item.TypeName == UDTTypeName.Real)
-            //    pickType = NumberPickerType.Decimal;
-            //numberEntryBox = new UDTNumberEntry
-            //    (item.Name,
-            //    maxNum,
-            //    minNum,
-            //    pickType,
-            //    numberChanged);
-            //numberBox = new NumberBox();
-            //Binding myBinding = new Binding("NumberValue");
-            //myBinding.Source = number;
-            //numberBox.SetBinding(NumberBox.NumberValueProperty, myBinding);
+                minValue = (Int32)editProps.minPicker.number;
         }
 
         // bind to NumberBox control in data template
@@ -50,6 +35,20 @@ namespace UDTApp.EditControlViewModels
                 SetProperty(ref _number, value); 
                 numberChanged(value);
             }
+        }
+
+        private Int32 _maxValue = Int32.MaxValue;
+        public Int32 maxValue
+        {
+            get { return _maxValue; }
+            set { SetProperty(ref _maxValue, value); }
+        }
+
+        private Int32 _minValue = Int32.MinValue;
+        public Int32 minValue
+        {
+            get { return _minValue; }
+            set { SetProperty(ref _minValue, value); }
         }
 
         override protected void setColumn()

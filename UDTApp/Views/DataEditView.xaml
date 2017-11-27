@@ -105,7 +105,8 @@
             <WrapPanel Margin="0,0,0,13" KeyboardNavigation.TabNavigation="Continue" >
                 <Label Content="{Binding colName}" Width="85" Height="25" Focusable="False"
                        HorizontalContentAlignment="Right" IsTabStop="False" />
-                <custClts:NumberBox NumberValue="{Binding number, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource editError}"/>
+                <custClts:NumberBox NumberValue="{Binding number, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                       Style="{StaticResource editError}"  MaxValue="{Binding maxValue}" MinValue="{Binding minValue}"/>
             </WrapPanel>
         </DataTemplate>
 
@@ -114,8 +115,8 @@
                 <Label Content="{Binding colName}" Width="85" Height="25" Focusable="False"
                        HorizontalContentAlignment="Right" IsTabStop="False" />
                 <custClts:DecimalBox DecimalValue="{Binding decimalNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                                     TextFormat="{Binding fromatType}"
-                                     Style="{StaticResource editError}"/>
+                       TextFormat="{Binding fromatType}" MaxValue="{Binding maxValue}" MinValue="{Binding minValue}"
+                       Style="{StaticResource editError}"/>
             </WrapPanel>
         </DataTemplate>
 
@@ -124,9 +125,9 @@
                 <Label Content="{Binding colName}" Width="85" Height="25" Focusable="False"
                        HorizontalContentAlignment="Right" IsTabStop="False" />
                 <custClts:DateBox DateTimeValue="{Binding dateNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                                  DateFormat="{Binding dateFormat}"
-                                  DateTimeDefault="{Binding dateDefault, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                     Style="{StaticResource editError}"/>
+                       DateFormat="{Binding dateFormat}" MaxValue="{Binding maxValue}" MinValue="{Binding minValue}"
+                       DateTimeDefault="{Binding dateDefault, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                       Style="{StaticResource editError}"/>
             </WrapPanel>
         </DataTemplate>
 

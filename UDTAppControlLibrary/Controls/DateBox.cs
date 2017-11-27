@@ -238,12 +238,12 @@ namespace UDTAppControlLibrary.Controls
         {
             if (fromatProvider.isMax)
             {
-                messageBox.Text = "Maximum allowed date.";
+                messageBox.Text = "Maximum date.";
                 messagePopup.IsOpen = true;
             }
             else if (fromatProvider.isMin)
             {
-                messageBox.Text = "Minimum allowed date.";
+                messageBox.Text = "Minimum date.";
                 messagePopup.IsOpen = true;
             }
             else messagePopup.IsOpen = false;

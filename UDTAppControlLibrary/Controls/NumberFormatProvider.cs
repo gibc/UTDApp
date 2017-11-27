@@ -43,26 +43,6 @@ namespace UDTAppControlLibrary.Controls
 
         public override dynamic parseNumber(string numberTxt)
         {
-            //Int32? number = default(Int32?);
-
-            //if (emptyNumberText(numberTxt))
-            //    return number;
-
-            //numberTxt = unFormatText(numberTxt);
-
-            //Int32 num;
-            //if (Int32.TryParse(numberTxt, out num))
-            //{
-            //    number = num;
-            //}
-            //else if (numberTxt[0] == '-')
-            //{
-            //    number = (Int32)numberMin;
-            //}
-            //else
-            //{
-            //    number = (Int32)numberMax;
-            //}
             Int32? number = parseNumberTxt(numberTxt);
             return checkRange(number);
         }

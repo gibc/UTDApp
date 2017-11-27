@@ -154,12 +154,12 @@ namespace UDTAppControlLibrary.Controls
         {
             if (fromatProvider.isMax)
             {
-                messageBox.Text = "Maximum allowed value.";
+                messageBox.Text = "Maximum value.";
                 messagePopup.IsOpen = true;
             }
             else if (fromatProvider.isMin)
             {
-                messageBox.Text = "Minimum allowed value.";
+                messageBox.Text = "Minimum value.";
                 messagePopup.IsOpen = true;
             }
             else messagePopup.IsOpen = false;
