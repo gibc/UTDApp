@@ -1180,30 +1180,59 @@ namespace UDTApp.Models
 
         public UDTIntEditProps(Action editPropChanged) : base(editPropChanged) 
         {
-            defaultPicker = new UDTNumberPicker("Default Value", Int32.MaxValue, Int32.MinValue);
-            minPicker = new UDTNumberPicker("Min Value", Int32.MaxValue, Int32.MinValue, NumberPickerType.Integer, minChanged);
-            maxPicker = new UDTNumberPicker("Max Value", Int32.MaxValue, Int32.MinValue, NumberPickerType.Integer, maxChanged);
+            //defaultPicker = new UDTNumberPicker("Default Value", Int32.MaxValue, Int32.MinValue);
+            //minPicker = new UDTNumberPicker("Min Value", Int32.MaxValue, Int32.MinValue, NumberPickerType.Integer, minChanged);
+            //maxPicker = new UDTNumberPicker("Max Value", Int32.MaxValue, Int32.MinValue, NumberPickerType.Integer, maxChanged);
         }
 
-        public UDTNumberPicker defaultPicker { get; set; }
-        public UDTNumberPicker minPicker { get; set; }
-        public UDTNumberPicker maxPicker { get; set; }
+        //public UDTNumberPicker defaultPicker { get; set; }
+        //public UDTNumberPicker minPicker { get; set; }
+        //public UDTNumberPicker maxPicker { get; set; }
 
-        private void minChanged(decimal? newVal) 
-        { 
-            if(newVal >= maxPicker.number)
-            {
-                maxPicker.number = newVal + 1;
-            }
-        }
-
-        private void maxChanged(decimal? newVal) 
+        private Int32? _defaultValue = null;        
+        public Int32? defaultValue 
         {
-            if (newVal <= minPicker.number)
-            {
-                minPicker.number = newVal - 1;
+            get { return _defaultValue; }
+            set { SetProperty(ref _defaultValue, value); }
+        }
+        private Int32? _minValue = null;
+        public Int32? minValue
+        {
+            get { return _minValue; }
+            set 
+            { 
+                SetProperty(ref _minValue, value);
+                if (maxValue != null && value != null && value >= maxValue)
+                    maxValue = value + 1;
             }
         }
+        private Int32? _maxValue = null;
+        public Int32? maxValue
+        {
+            get { return _maxValue; }
+            set 
+            { 
+                SetProperty(ref _maxValue, value);
+                if (minValue != null && value != null && value <= minValue)
+                    minValue = value - 1;
+            }
+        }
+ 
+        //private void minChanged(decimal? newVal) 
+        //{ 
+        //    //if(newVal >= maxPicker.number)
+        //    //{
+        //    //    maxPicker.number = newVal + 1;
+        //    //}
+        //}
+
+        //private void maxChanged(decimal? newVal) 
+        //{
+        //    //if (newVal <= minPicker.number)
+        //    //{
+        //    //    minPicker.number = newVal - 1;
+        //    //}
+        //}
  
     }
 
@@ -1230,13 +1259,42 @@ namespace UDTApp.Models
 
         public UDTDecimalEditProps(Action editPropChanged) : base(editPropChanged)
         {
-            defaultPicker = new UDTNumberPicker("Default Value", Decimal.MaxValue, Decimal.MinValue, NumberPickerType.Decimal);
-            minPicker = new UDTNumberPicker("Min Value", Decimal.MaxValue, Decimal.MinValue, NumberPickerType.Decimal, minChanged);
-            maxPicker = new UDTNumberPicker("Max Value", Decimal.MaxValue, Decimal.MinValue, NumberPickerType.Decimal, maxChanged);
+            //defaultPicker = new UDTNumberPicker("Default Value", Decimal.MaxValue, Decimal.MinValue, NumberPickerType.Decimal);
+            //minPicker = new UDTNumberPicker("Min Value", Decimal.MaxValue, Decimal.MinValue, NumberPickerType.Decimal, minChanged);
+            //maxPicker = new UDTNumberPicker("Max Value", Decimal.MaxValue, Decimal.MinValue, NumberPickerType.Decimal, maxChanged);
         }
-        public UDTNumberPicker defaultPicker { get; set; }
-        public UDTNumberPicker minPicker { get; set; }
-        public UDTNumberPicker maxPicker { get; set; }
+        //public UDTNumberPicker defaultPicker { get; set; }
+        //public UDTNumberPicker minPicker { get; set; }
+        //public UDTNumberPicker maxPicker { get; set; }
+
+        private Decimal? _defaultValue = null;
+        public Decimal? defaultValue
+        {
+            get { return _defaultValue; }
+            set { SetProperty(ref _defaultValue, value); }
+        }
+        private Decimal? _minValue = null;
+        public Decimal? minValue
+        {
+            get { return _minValue; }
+            set
+            {
+                SetProperty(ref _minValue, value);
+                if (maxValue != null && value != null && value >= maxValue)
+                    maxValue = value + 1;
+            }
+        }
+        private Decimal? _maxValue = null;
+        public Decimal? maxValue
+        {
+            get { return _maxValue; }
+            set
+            {
+                SetProperty(ref _maxValue, value);
+                if (minValue != null && value != null && value <= minValue)
+                    minValue = value - 1;
+            }
+        }
 
         private DecimalFormatType _decimalFormat = DecimalFormatType.Decimal; 
         public DecimalFormatType decimalFormat 
@@ -1253,21 +1311,21 @@ namespace UDTApp.Models
         //{
         //    if (newVal == null) defaultPicker.number = 0;
         //}
-        private void minChanged(decimal? newVal)
-        {
-            if (newVal >= maxPicker.number)
-            {
-                maxPicker.number = newVal + 1;
-            }
-        }
+        //private void minChanged(decimal? newVal)
+        //{
+        //    if (newVal >= maxPicker.number)
+        //    {
+        //        maxPicker.number = newVal + 1;
+        //    }
+        //}
 
-        private void maxChanged(decimal? newVal)
-        {
-            if (newVal <= minPicker.number)
-            {
-                minPicker.number = newVal - 1;
-            }
-        }
+        //private void maxChanged(decimal? newVal)
+        //{
+        //    if (newVal <= minPicker.number)
+        //    {
+        //        minPicker.number = newVal - 1;
+        //    }
+        //}
     }
 
     public class UDTDateItem : UDTBase

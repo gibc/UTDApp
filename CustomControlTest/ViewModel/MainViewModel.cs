@@ -52,7 +52,6 @@ namespace CustomControlTest.ViewModel
 
         public Int32? _numberValue = null;
         //public Int32? _numberValue = 54321;
-        //[CustomValidation(typeof(MainViewModel), "CheckNullRequired")]
         public Int32? numberValue
         {
             get 
@@ -68,6 +67,7 @@ namespace CustomControlTest.ViewModel
         }
 
         public Int32? _numberDefault = 100;
+        //public Int32? _numberDefault = null;
         public Int32? numberDefault
         {
             get

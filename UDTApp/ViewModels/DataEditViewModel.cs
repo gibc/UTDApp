@@ -875,7 +875,6 @@ namespace UDTApp.ViewModels
 
             SelectedItem = SelectedItem;
 
-            // put back?? globalButtonClick(parentId, this);
         }
 
         private Visibility _navBtnVisibility = Visibility.Collapsed;

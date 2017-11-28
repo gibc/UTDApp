@@ -340,6 +340,20 @@ namespace UDTApp.Models
                     else if (item.GetType() == typeof(UDTDateItem))
                     {
                         col.DataType = typeof(DateTime);
+                        UDTDateItem decimalItem = item as UDTDateItem;
+                        UDTDateEditProps props = decimalItem.editProps as UDTDateEditProps;
+                        if (props.dateFormat == DateTimeFormat.Date_12_HourTime)
+                        {
+                            col.ExtendedProperties.Add("fmt", "{0:MM/dd/yyyy:hh:mm:tt}");
+                        }
+                        else if (props.dateFormat == DateTimeFormat.Date_24_HourTime)
+                        {
+                            col.ExtendedProperties.Add("fmt", "{0:MM/dd/yyyy:HH:mm}");
+                        }
+                        else if (props.dateFormat == DateTimeFormat.Date_Only)
+                        {
+                            col.ExtendedProperties.Add("fmt", "{0:MM/dd/yyyy}");
+                        }
                     }
                     else if (item.GetType() == typeof(UDTDecimalItem))
                     {

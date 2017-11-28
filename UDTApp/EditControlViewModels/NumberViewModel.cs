@@ -18,11 +18,14 @@ namespace UDTApp.EditControlViewModels
             colName = _colName;
             udtItem = item;
             validationChanged = _validationChanged;
+            maxValue = Int32.MaxValue;
+            minValue = Int32.MinValue;
             editProps = item.editProps;
-            if (editProps.maxPicker.number != null)
-                maxValue = (Int32)editProps.maxPicker.number;
-            if (editProps.minPicker.number != null)
-                minValue = (Int32)editProps.minPicker.number;
+            UDTIntEditProps props = item.editProps as UDTIntEditProps;
+            if (props.maxValue != null)
+                maxValue = (Int32)props.maxValue;
+            if (props.minValue != null)
+                minValue = (Int32)props.minValue;
         }
 
         // bind to NumberBox control in data template
@@ -55,9 +58,9 @@ namespace UDTApp.EditControlViewModels
         {
             if (row[colName] == DBNull.Value)
             {
-                if (editProps.defaultPicker.number != null)
+                if (editProps.defaultValue != null)
                 {
-                    number = (Int32?)editProps.defaultPicker.number;
+                    number = (Int32?)editProps.defaultValue;
                 }
                 else number = null;
             }

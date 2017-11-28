@@ -19,12 +19,12 @@ namespace UDTApp.EditControlViewModels
             editProps = item.editProps;
             UDTDecimalEditProps props = item.editProps as UDTDecimalEditProps;
             fromatType = props.decimalFormat;
-            //decimal maxNum = Decimal.MaxValue;
-            //decimal minNum = Decimal.MinValue;
-            if (editProps.maxPicker.number != null)
-                maxValue = (Decimal)editProps.maxPicker.number;
-            if (editProps.minPicker.number != null)
-                minValue = (Decimal)editProps.minPicker.number;
+            maxValue = Decimal.MaxValue;
+            minValue = Decimal.MinValue;
+            if (props.maxValue != null)
+                maxValue = (Decimal)props.maxValue;
+            if (props.minValue != null)
+                minValue = (Decimal)props.minValue;
         }
 
         // bind to DecimalBox control in data template
@@ -65,9 +65,9 @@ namespace UDTApp.EditControlViewModels
         {
             if (row[colName] == DBNull.Value)
             {
-                if (editProps.defaultPicker.number != null)
+                if (editProps.defaultValue != null)
                 {
-                    decimalNumber = (Decimal?)editProps.defaultPicker.number;
+                    decimalNumber = (Decimal?)editProps.defaultValue;
                 }
                 else decimalNumber = null;
             }

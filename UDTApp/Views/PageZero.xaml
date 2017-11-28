@@ -11,6 +11,7 @@
              xmlns:vm="clr-namespace:UDTApp.ViewModels"
              xmlns:diag="clr-namespace:System.Diagnostics;assembly=WindowsBase"
              xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" 
+             xmlns:custCtl="clr-namespace:UDTAppControlLibrary.Controls;assembly=UDTAppControlLibrary"
              d:DesignHeight="300" d:DesignWidth="300">
 
     <i:Interaction.Triggers>
@@ -512,9 +513,24 @@
                              VerticalAlignment="Center"/>
                 </WrapPanel>
                 <StackPanel>
-                    <ContentControl Content="{Binding defaultPicker}" VerticalAlignment="Center"/>
-                    <ContentControl Content="{Binding minPicker}" VerticalAlignment="Center"/>
-                    <ContentControl Content="{Binding maxPicker}" VerticalAlignment="Center"/>
+                    <GroupBox Header="Default Value:"  BorderBrush="Black">
+                        <custCtl:NumberBox HorizontalAlignment="Center" Width="150" Height="auto"  
+                        NumberValue="{Binding defaultValue, Mode=TwoWay}" />
+                    </GroupBox>
+
+                    <!--<ContentControl Content="{Binding defaultPicker}" VerticalAlignment="Center"/>-->
+                    <!--<ContentControl Content="{Binding minPicker}" VerticalAlignment="Center"/>
+                    <ContentControl Content="{Binding maxPicker}" VerticalAlignment="Center"/>-->
+                    <GroupBox Header="Min Value:"  BorderBrush="Black">
+                        <custCtl:NumberBox HorizontalAlignment="Center" Width="150" Height="auto"  
+                        NumberValue="{Binding minValue, Mode=TwoWay}" />
+                    </GroupBox>
+                    <GroupBox Header="Max Value:"  BorderBrush="Black">
+                        <custCtl:NumberBox HorizontalAlignment="Center" Width="150" Height="auto"  
+                        NumberValue="{Binding maxValue, Mode=TwoWay}" />
+                    </GroupBox>
+
+
                 </StackPanel>
             </StackPanel>
         </DataTemplate>
@@ -562,9 +578,21 @@
                              VerticalAlignment="Center"/>
                 </WrapPanel>
                 <StackPanel>
-                    <ContentControl Content="{Binding defaultPicker}" VerticalAlignment="Center"/>
-                    <ContentControl Content="{Binding minPicker}" VerticalAlignment="Center"/>
-                    <ContentControl Content="{Binding maxPicker}" VerticalAlignment="Center"/>
+                    <!--<ContentControl Content="{Binding defaultPicker}" VerticalAlignment="Center"/>-->
+                    <GroupBox Header="Default Value:"  BorderBrush="Black">
+                        <custCtl:DecimalBox HorizontalAlignment="Center" Width="150" Height="auto"  
+                        DecimalValue="{Binding defaultValue, Mode=TwoWay}" />
+                    </GroupBox>
+                    <!--<ContentControl Content="{Binding minPicker}" VerticalAlignment="Center"/>
+                    <ContentControl Content="{Binding maxPicker}" VerticalAlignment="Center"/>-->
+                    <GroupBox Header="Min Value:"  BorderBrush="Black">
+                        <custCtl:DecimalBox HorizontalAlignment="Center" Width="150" Height="auto"  
+                        DecimalValue="{Binding minValue, Mode=TwoWay}" />
+                    </GroupBox>
+                    <GroupBox Header="Max Value:"  BorderBrush="Black">
+                        <custCtl:DecimalBox HorizontalAlignment="Center" Width="150" Height="auto"  
+                        DecimalValue="{Binding maxValue, Mode=TwoWay}" />
+                    </GroupBox>
                 </StackPanel>            
             </StackPanel>
         </DataTemplate>
