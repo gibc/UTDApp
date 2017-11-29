@@ -88,6 +88,7 @@
     <Compile Include="EditControlViewModels\DateViewModel.cs" />
     <Compile Include="EditControlViewModels\DecimalViewModel.cs" />
     <Compile Include="EditControlViewModels\NumberViewModel.cs" />
+    <Compile Include="EditControlViewModels\TextViewModel.cs" />
     <Compile Include="Models\DataItem.cs" />
     <Compile Include="Models\DataSet.cs" />
     <Compile Include="Models\DataSetList.cs" />

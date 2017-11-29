@@ -716,8 +716,9 @@ namespace UDTApp.ViewModels
                     else
                         editBoxes.Add(new DateViewModel(item.Name, item, editBoxValidationChanged));
                 }
-                else 
-                    editBoxes.Add(new UDTDataTextBox(item.Name, item, editBoxValidationChanged));
+                else
+                    //editBoxes.Add(new UDTDataTextBox(item.Name, item, editBoxValidationChanged));
+                    editBoxes.Add(new TextViewModel(item.Name, item, editBoxValidationChanged));
             }
 
             childGrids = new List<DataEditGrid>();

@@ -1062,10 +1062,10 @@ namespace UDTApp.Models
 
         public UDTTextEditProps(Action editPropChanged) : base(editPropChanged)
         {
-            minPicker = new UDTNumberPicker("Min Text Length", 254, 0, NumberPickerType.Integer, minChanged);
-            maxPicker = new UDTNumberPicker("Max Text", 255, 1, NumberPickerType.Integer, maxChanged);
-            minPicker.number = 0;
-            maxPicker.number = 255;
+            //minPicker = new UDTNumberPicker("Min Text Length", 254, 0, NumberPickerType.Integer, minChanged);
+            //maxPicker = new UDTNumberPicker("Max Text", 255, 1, NumberPickerType.Integer, maxChanged);
+            //minPicker.number = 0;
+            //maxPicker.number = 255;
         }
 
 
@@ -1079,24 +1079,48 @@ namespace UDTApp.Models
             }
         }
 
-        public UDTNumberPicker minPicker { get; set; }
-        public UDTNumberPicker maxPicker { get; set; }
+        //public UDTNumberPicker minPicker { get; set; }
+        //public UDTNumberPicker maxPicker { get; set; }
 
-        private void minChanged(decimal? newVal)
+        private Int32? _minLength = 2;        
+        public Int32? minLength 
         {
-            if (newVal >= maxPicker.number)
+            get { return _minLength; }
+            set
             {
-                maxPicker.number = newVal + 1;
+                SetProperty(ref _minLength, value);
+                if (maxLength != null && value != null && value >= maxLength)
+                    maxLength = value + 1;
+            }
+        }
+        private Int32? _maxLength = 254;
+        public Int32? maxLength 
+        {
+            get { return _maxLength; }
+            set
+            {
+                SetProperty(ref _maxLength, value);
+                if (minLength != null && value != null && value <= minLength)
+                    minLength = value - 1;
             }
         }
 
-        private void maxChanged(decimal? newVal)
-        {
-            if (newVal <= minPicker.number)
-            {
-                minPicker.number = newVal - 1;
-            }
-        }
+
+        //private void minChanged(decimal? newVal)
+        //{
+        //    if (newVal >= maxPicker.number)
+        //    {
+        //        maxPicker.number = newVal + 1;
+        //    }
+        //}
+
+        //private void maxChanged(decimal? newVal)
+        //{
+        //    if (newVal <= minPicker.number)
+        //    {
+        //        minPicker.number = newVal - 1;
+        //    }
+        //}
 
         //private string _maxLength = "255";
         ////[RegularExpression(@"^[0-9]{1,3}$", ErrorMessage = "error Message ")]

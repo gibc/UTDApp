@@ -446,35 +446,19 @@
                              FontStyle="Normal"/>
                 </WrapPanel>
                 <StackPanel>
-                    <ContentControl Content="{Binding minPicker}" VerticalAlignment="Center"/>
-                    <ContentControl Content="{Binding maxPicker}" VerticalAlignment="Center"/>
+                    <!--<ContentControl Content="{Binding minPicker}" VerticalAlignment="Center"/>
+                    <ContentControl Content="{Binding maxPicker}" VerticalAlignment="Center"/>-->
+                    <GroupBox Header="Min Text Length:"  BorderBrush="Black">
+                        <custCtl:NumberBox HorizontalAlignment="Center" Width="150" Height="auto"  
+                            NumberValue="{Binding minLength, Mode=TwoWay}" MinValue="1" MaxValue="254"
+                            Margin="0,10,0,0"/>
+                    </GroupBox>
+                    <GroupBox Header="Max Text Length:"  BorderBrush="Black">
+                        <custCtl:NumberBox HorizontalAlignment="Center" Width="150" Height="auto"  
+                            NumberValue="{Binding maxLength, Mode=TwoWay}" MinValue="2" MaxValue="255"
+                            Margin="0,10,0,0"/>
+                    </GroupBox>
                 </StackPanel>
-                <!--<WrapPanel>
-                    <Label HorizontalContentAlignment="Right" Content="Required: " 
-                           Width="80"/>
-                    <CheckBox Width="80" HorizontalAlignment="Left" IsChecked="{Binding required}"
-                             VerticalAlignment="Center"/>
-                </WrapPanel>
-                <WrapPanel>
-                    <Label HorizontalContentAlignment="Right" Content="Min Length: " 
-                           Width="80" />
-                    <TextBox Width="auto" MinWidth="20" HorizontalAlignment="Left"
-                             Text="{Binding minLength, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                             VerticalAlignment="Center" HorizontalContentAlignment="Right"  
-                             Validation.ErrorTemplate="{StaticResource editPropErrorTemplate}"/>
-                </WrapPanel>
-                <WrapPanel>
-                    <Label HorizontalContentAlignment="Right" Content="Max Length: " 
-                           Width="80"/>
-                    <TextBox Width="auto"  MinWidth="20" HorizontalAlignment="Left" 
-                             VerticalAlignment="Center" 
-                             Validation.ErrorTemplate="{StaticResource editPropErrorTemplate}">
-                        <TextBox.Text>
-                            <Binding Path="maxLength" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged"
-                                diag:PresentationTraceSources.TraceLevel="High"/>
-                        </TextBox.Text>
-                    </TextBox>
-                </WrapPanel>-->
             </StackPanel>            
         </DataTemplate>
         

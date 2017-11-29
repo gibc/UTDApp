@@ -54,6 +54,9 @@
         
         <Style x:Key="editError" TargetType="ContentControl" 
                BasedOn="{StaticResource editErrorBase}"/>
+        
+        <Style x:Key="editTextError" TargetType="TextBox" 
+               BasedOn="{StaticResource editErrorBase}"/>
 
         <Style x:Key="dateEditError" TargetType="DatePicker" 
                BasedOn="{StaticResource editErrorBase}"/>
@@ -101,6 +104,17 @@
             </WrapPanel>
         </DataTemplate>
 
+        <DataTemplate DataType="{x:Type cvm:TextViewModel}">
+            <WrapPanel Margin="0,0,0,13" KeyboardNavigation.TabNavigation="Continue" >
+                <Label Content="{Binding colName}" Width="85" Height="25" Focusable="False"
+                       HorizontalContentAlignment="Right" IsTabStop="False" />
+                <TextBox Text="{Binding textValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         IsTabStop="True" Focusable="True" TextWrapping="NoWrap" HorizontalScrollBarVisibility="Auto"
+                         VerticalContentAlignment="Top" Padding="0"
+                         Width="100" Height="auto" Style="{StaticResource editTextError}"/>
+            </WrapPanel>
+        </DataTemplate>
+
         <DataTemplate DataType="{x:Type cvm:NumberViewModel}">
             <WrapPanel Margin="0,0,0,13" KeyboardNavigation.TabNavigation="Continue" >
                 <Label Content="{Binding colName}" Width="85" Height="25" Focusable="False"
@@ -130,6 +144,8 @@
                        Style="{StaticResource editError}"/>
             </WrapPanel>
         </DataTemplate>
+        
+
 
 
         <DataTemplate DataType="{x:Type vm:UDTDataTextBox}">
