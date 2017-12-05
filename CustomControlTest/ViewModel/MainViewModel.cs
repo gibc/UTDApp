@@ -67,7 +67,6 @@ namespace CustomControlTest.ViewModel
         }
 
         public Int32? _numberDefault = 100;
-        //public Int32? _numberDefault = null;
         public Int32? numberDefault
         {
             get
