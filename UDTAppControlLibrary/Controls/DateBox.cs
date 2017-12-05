@@ -212,7 +212,7 @@ namespace UDTAppControlLibrary.Controls
 
         public DateBox()
         {
-            //fromatProvider = new DateTimeProvider(DateTimeFormat.Date_Only, DateTime.MaxValue, DateTime.MinValue);
+            fromatProvider = new DateTimeProvider(DateTimeFormat.Date_Only, DateTime.MaxValue, DateTime.MinValue);
         }
 
         override protected void ApplyTemplateComplete()
@@ -285,6 +285,9 @@ namespace UDTAppControlLibrary.Controls
             txtBox.SelectionChanged -= new RoutedEventHandler(selectionChange);
             if (txtBox.Text != numberText.numberString)
             {
+                if (!numberText.promptVisble)
+                    numberText.replaceText(numberText.numberString.Replace(' ', '_')); // take out??
+
                 txtBox.Text = numberText.numberString;
 
                 if(!dateComplete && !numberText.promptVisble)
@@ -298,9 +301,9 @@ namespace UDTAppControlLibrary.Controls
                     txtBox.Foreground = Brushes.Black;
                 }
 
+                fromatProvider.isMax = fromatProvider.isMin = false;
                 if (dateComplete)
                 {
-                    //setParsedNumber(fromatProvider.parseNumber(numberText.numberString));
                     dynamic number = fromatProvider.parseNumber(numberText.numberString);
                     if (fromatProvider.isMax || fromatProvider.isMin)
                     {
@@ -309,6 +312,14 @@ namespace UDTAppControlLibrary.Controls
                     }
                     txtBox.Text = numberText.numberString;
                     setParsedNumber(number);
+                }
+                else if (!numberText.numberString.Any(char.IsDigit))
+                {
+                    numberText.setPrompt(fromatProvider.prompt);
+                    txtBox.FontWeight = FontWeights.Normal;
+                    txtBox.Foreground = Brushes.Black;
+                    txtBox.Text = numberText.numberString;
+                    setParsedNumber(null);
                 }
                 else
                 {

@@ -32,6 +32,11 @@ namespace UDTAppControlLibrary.Controls
                 selectionStart++;
         }
 
+        public void replaceText(string txt)
+        {
+            numberString = txt;
+        }
+
         public void deleteChar()
         {
             if (selectionStart < numberString.Length)

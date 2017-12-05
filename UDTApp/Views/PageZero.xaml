@@ -644,21 +644,13 @@
                     <StackPanel>
                         <WrapPanel>
                             <Label Content="Min: "/>
-                            <DatePicker SelectedDateFormat="Short"  SelectedDate="{Binding minDate, Mode=TwoWay}"
-                              DisplayDateStart="1/01/0001" DisplayDateEnd="12/31/3000" 
-                              FirstDayOfWeek="Sunday"/>
+                            <custCtl:DateBox DateTimeValue="{Binding minDate, Mode=TwoWay}" DateFormat="Date_Only"/>
                        </WrapPanel>
                         <WrapPanel>
                             <Label Content="Max: "/>
-                            <DatePicker SelectedDateFormat="Short" SelectedDate="{Binding maxDate, Mode=TwoWay}"
-                              DisplayDateStart="1/01/0001" DisplayDateEnd="12/31/3000" 
-                              FirstDayOfWeek="Sunday"/>
+                            <custCtl:DateBox DateTimeValue="{Binding maxDate, Mode=TwoWay}" DateFormat="Date_Only"/>
                         </WrapPanel>
-                        <WrapPanel>
-                            <Label Content="Not Used"/>
-                            <CheckBox IsChecked="{Binding dateRangeNotUsed}" VerticalAlignment="Center">
-                            </CheckBox>
-                        </WrapPanel>
+ 
                     </StackPanel>
                     </GroupBox>
             </StackPanel>

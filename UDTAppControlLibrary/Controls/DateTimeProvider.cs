@@ -249,7 +249,8 @@ using System.Windows.Input;
 
             private int charVal(char? c)
             {
-                return (char)c - '0';
+                if (Char.IsDigit((char)c)) return (char)c - '0';
+                else return -1;
             }
 
             private void hourDigit24(char c, int offset, NumberText numberText)
