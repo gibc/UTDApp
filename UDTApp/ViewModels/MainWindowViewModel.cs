@@ -124,8 +124,14 @@ namespace UDTApp.ViewModels
             // save to xml file AND create/update database
             if(UDTXml.UDTXmlData.saveToXml(UDTXml.UDTXmlData.SchemaData))
             {
-                UDTDataSet.udtDataSet.createDatabase(UDTXml.UDTXmlData.SchemaData[0] as UDTData);
-                //Navigate("DataEditView");
+                try 
+                { 
+                    UDTDataSet.udtDataSet.createDatabase(UDTXml.UDTXmlData.SchemaData[0] as UDTData);
+                }
+                catch(Exception ex)
+                {
+                    MessageBox.Show(string.Format("createDatabase failed: {0}", ex.Message));
+                }
             }
         }
 

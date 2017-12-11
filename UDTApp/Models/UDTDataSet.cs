@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using System.Data.SQLite;
 using System.Data.SqlTypes;
 using System.Linq;
 using System.Text;
@@ -417,19 +418,20 @@ namespace UDTApp.Models
 
             DataTable dataTable = dataSet.Tables[dataItem.Name];
             using (SqlConnection conn = new SqlConnection())
+            //using (SQLiteConnection conn = new SQLiteConnection())
             {
                 conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
                 SqlCommand cmd = new SqlCommand();
+                //SQLiteCommand cmd = new SQLiteCommand();
                 SqlDataReader reader;
+                //SQLiteDataReader reader;
 
 
                 // read all records in table on first call and only call
                 string sqlTxt;
                 //if (parentId == -1)
-                    sqlTxt = string.Format("USE [{0}] select * from {1} ", dbName, dataItem.Name);
-                //else
-                //    sqlTxt = string.Format("USE [{0}] select * from {1} where {2} = {3} ", dbName,
-                //        dataItem.Name, parentColName, parentId);
+                sqlTxt = string.Format("USE [{0}] select * from {1} ", dbName, dataItem.Name);
+                //sqlTxt = string.Format("select * from {1} ", dbName, dataItem.Name);
 
                 cmd.CommandText = sqlTxt;
                 cmd.CommandType = CommandType.Text;

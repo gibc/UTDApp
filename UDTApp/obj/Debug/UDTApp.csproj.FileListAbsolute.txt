@@ -95,3 +95,15 @@ C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\obj\Debug\UDTApp.Properties.Resources.r
 C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\obj\Debug\UDTApp.csproj.GenerateResource.Cache
 C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\obj\Debug\UDTApp.exe
 C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\obj\Debug\UDTApp.pdb
+C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\bin\Debug\UDTApp.exe.manifest
+C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\bin\Debug\UDTApp.application
+C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\obj\Debug\UDTApp.exe.manifest
+C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\obj\Debug\UDTApp.application
+C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\bin\Debug\EntityFramework.dll
+C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\bin\Debug\EntityFramework.SqlServer.dll
+C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\bin\Debug\System.Data.SQLite.dll
+C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\bin\Debug\System.Data.SQLite.EF6.dll
+C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\bin\Debug\System.Data.SQLite.Linq.dll
+C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\bin\Debug\EntityFramework.xml
+C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\bin\Debug\EntityFramework.SqlServer.xml
+C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\bin\Debug\System.Data.SQLite.xml
