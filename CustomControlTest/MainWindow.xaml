@@ -1,0 +1,59 @@
+﻿<Window x:Class="CustomControlTest.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:custCtl="clr-namespace:UDTAppControlLibrary.Controls;assembly=UDTAppControlLibrary"
+        xmlns:diag="clr-namespace:System.Diagnostics;assembly=WindowsBase"
+        Title="MainWindow" Height="350" Width="525">
+    
+    <StackPanel>
+        <!--<custCtl:MaskedTextBox Height="30" Width="auto"  HorizontalAlignment="Center"
+                            MaskedText="{Binding maskedText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            Mask="{Binding mask, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+        <TextBlock Background="LightPink" Text="{Binding maskedText}" Height="20" Width="auto" HorizontalAlignment="Center"/>
+        <WrapPanel HorizontalAlignment="Center">
+            <Label Content="Integer: "/>
+            <custCtl:MaskedNumberBox Height="30" Width="auto"  HorizontalAlignment="Center"
+                   MaskedNumber="{Binding maskNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+        </WrapPanel>
+        <WrapPanel HorizontalAlignment="Center">
+            <Label Content="Percent: "/>
+            <custCtl:MaskedDecimalBox Height="30" Width="auto"  HorizontalAlignment="Center"
+                   MaskedDecimal="{Binding maskDecimal, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                   TextFormat="Percent"/>
+        </WrapPanel>
+        <WrapPanel HorizontalAlignment="Center">
+            <Label Content="Currency: "/>
+            <custCtl:MaskedDecimalBox Height="30" Width="auto"  HorizontalAlignment="Center"
+                   MaskedDecimal="{Binding maskDecimal, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                   TextFormat="Currency"/>
+        </WrapPanel>
+        <WrapPanel HorizontalAlignment="Center">
+            <Label Content="Decimal: "/>
+            <custCtl:MaskedDecimalBox Height="30" Width="auto"  HorizontalAlignment="Center"
+                   MaskedDecimal="{Binding maskDecimal, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                   TextFormat="Decimal"/>
+        </WrapPanel>-->
+
+        <!--<custCtl:DecimalBox HorizontalAlignment="Center" Width="150" Height="auto" TextFormat="Decimal" 
+               DecimalValue="{Binding Path=decimalValue, Mode=TwoWay}" 
+               DefaultValue="{Binding decimalDefault}" MaxValue="15000" MinValue="-15000"/>
+        <custCtl:DecimalBox HorizontalAlignment="Center" Width="150" Height="auto" TextFormat="Currency"
+               DefaultValue="{Binding decimalValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+               MaxValue="15000" MinValue="-15000"/>-->
+        <!--<custCtl:DecimalBox HorizontalAlignment="Center" Width="150" Height="auto" TextFormat="Percent"
+               DecimalValue="{Binding decimalValue, Mode=TwoWay}" />-->
+        <!--<custCtl:NumberBox HorizontalAlignment="Center" Width="150" Height="auto"  MaxValue="500" MinValue="-500"
+               NumberValue="{Binding numberValue, Mode=TwoWay}" NumberDefault="{Binding numberDefault}"/>-->
+
+        <custCtl:DateBox HorizontalAlignment="Center" Width="150" Height="auto" 
+               DateFormat="{Binding dateFormat, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+               DateTimeValue="{Binding dateValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"  
+               DateTimeDefault="{Binding dateDefault}" MaxValue="1/1/2018" MinValue="1/1/2016"/>
+        <!--<custCtl:DateBox HorizontalAlignment="Center" Width="150" Height="auto" DateFormat="Date_12_HourTime"
+               DateTimeValue="{Binding dateValue, Mode=TwoWay}"  DateTimeDefault="CurrentYear"/>-->
+        <!--<custCtl:DateBox HorizontalAlignment="Center" Width="150" Height="auto" DateFormat="Date_24_HourTime"
+               DateTimeValue="{Binding dateValue, Mode=TwoWay}" DateTimeDefault="CurrentMonth"/>-->
+
+
+    </StackPanel>
+</Window>
