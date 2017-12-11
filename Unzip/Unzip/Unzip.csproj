@@ -53,6 +53,6 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy "$(TargetPath)" "C:\Users\Gilbert\Documents\Visual Studio 2017\Projects\Metric\Metric\App_Data\Unzip.exe</PostBuildEvent>
+    <PostBuildEvent>copy "$(TargetPath)" "C:\GibPCStuff\UDTApp\UDTAppGetHub\Metric\Metric\App_Data\Unzip.exe</PostBuildEvent>
   </PropertyGroup>
 </Project>
