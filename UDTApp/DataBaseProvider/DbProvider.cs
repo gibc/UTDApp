@@ -85,7 +85,7 @@ namespace UDTApp.DataBaseProvider
                 {
                     //return string.Format("Data Source=c:\\GibPCStuff\\UDTApp\\TestApp\\{0}.db;Version=3;",
                     //    DbName);
-                    string conStr = string.Format("Data Source={0}\\{1}.db;Version=3;",
+                    string conStr = string.Format("Data Source={0}\\{1}.db;Version=3;datetimeformat=CurrentCulture;",
                         dataFolder, DbName);
                     return conStr;
                 }
