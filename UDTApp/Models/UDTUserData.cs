@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Configuration;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Dynamic;
 using System.Linq;
@@ -43,12 +44,14 @@ namespace UDTApp.Models
 
         private void CreateDatabase()
         {
-            using (SqlConnection conn = new SqlConnection())
+            //using (SqlConnection conn = new SqlConnection())
+            using (DbConnection conn = UDTDataSet.dbProvider.Conection)
             {
 
-                conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
-                SqlCommand cmd = new SqlCommand("select count(*) from (select * from sys.databases where name = 'UDTUser') rows");
-
+                //conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
+                conn.ConnectionString = UDTDataSet.dbProvider.ConnectionString;
+                //SqlCommand cmd = new SqlCommand("select count(*) from (select * from sys.databases where name = 'UDTUser') rows");
+                DbCommand cmd = UDTDataSet.dbProvider.GetCommand("select count(*) from (select * from sys.databases where name = 'UDTUser') rows");
                 cmd.Connection = conn;
                 conn.Open();
                 try
@@ -81,9 +84,10 @@ namespace UDTApp.Models
             using (SqlConnection conn = new SqlConnection())
             {
 
-                conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
-
-                SqlCommand cmd = new SqlCommand(sqlTxt);
+                //conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
+                conn.ConnectionString = UDTDataSet.dbProvider.ConnectionString;
+                //SqlCommand cmd = new SqlCommand(sqlTxt);
+                DbCommand cmd = UDTDataSet.dbProvider.GetCommand(sqlTxt);
 
                 cmd.Connection = conn;
                 conn.Open();
@@ -132,9 +136,11 @@ namespace UDTApp.Models
 
                 conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
 
-                SqlCommand cmd = new SqlCommand(sqlTxt);
+                //SqlCommand cmd = new SqlCommand(sqlTxt);
+                DbCommand cmd = UDTDataSet.dbProvider.GetCommand(sqlTxt);
 
-                SqlDataReader reader;
+                //SqlDataReader reader;
+                DbDataReader reader = UDTDataSet.dbProvider.Reader;
 
                 cmd.Connection = conn;
                 conn.Open();
@@ -187,7 +193,8 @@ namespace UDTApp.Models
 
                 conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
 
-                SqlCommand cmd = new SqlCommand(sqlTxt);
+                //SqlCommand cmd = new SqlCommand(sqlTxt);
+                DbCommand cmd = UDTDataSet.dbProvider.GetCommand(sqlTxt);
 
                 cmd.Connection = conn;
                 conn.Open();
@@ -215,7 +222,8 @@ namespace UDTApp.Models
 
                     conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
 
-                    SqlCommand cmd = new SqlCommand(TableDDL(tableDef));
+                    //SqlCommand cmd = new SqlCommand(TableDDL(tableDef));
+                    DbCommand cmd = UDTDataSet.dbProvider.GetCommand(TableDDL(tableDef));
 
                     cmd.Connection = conn;
                     conn.Open();

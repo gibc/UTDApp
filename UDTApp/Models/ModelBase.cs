@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Configuration;
 using System.Data;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Reflection;
@@ -147,12 +148,14 @@ namespace UDTApp.Models
 
         public void CreateTable()
         {
-            using (SqlConnection conn = new SqlConnection())
+            //using (SqlConnection conn = new SqlConnection())
+            using (DbConnection conn = UDTDataSet.dbProvider.Conection)
             {
                 if (_tableUpdated) return;
 
                 conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
-                SqlCommand cmd = new SqlCommand(CreateDDL());
+                //SqlCommand cmd = new SqlCommand(CreateDDL());
+                DbCommand cmd = UDTDataSet.dbProvider.GetCommand(CreateDDL());
 
                 cmd.Connection = conn;
                 conn.Open();
@@ -256,7 +259,8 @@ namespace UDTApp.Models
             {
                 conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
                 SqlCommand cmd = new SqlCommand();
-                SqlDataReader reader;
+                //SqlDataReader reader;
+                DbDataReader reader = UDTDataSet.dbProvider.Reader;
 
                 if(parentId == -1) 
                     cmd.CommandText = string.Format("SELECT * FROM {0}", type.Name);

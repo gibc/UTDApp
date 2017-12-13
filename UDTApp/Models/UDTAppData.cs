@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
@@ -17,11 +18,14 @@ namespace UDTApp.Models
 
         public UDTAppData()
         {
-            using (SqlConnection conn = new SqlConnection())
+            //using (SqlConnection conn = new SqlConnection())
+            using (DbConnection conn = UDTDataSet.dbProvider.Conection)
             {
                 conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
-                SqlCommand cmd = new SqlCommand();
-                SqlDataReader reader;
+                //SqlCommand cmd = new SqlCommand();
+                DbCommand cmd = UDTDataSet.dbProvider.Command;
+                //SqlDataReader reader;
+                DbDataReader reader = UDTDataSet.dbProvider.Reader;
 
                 cmd.CommandText = "SELECT * FROM TableOne";
                 cmd.CommandType = CommandType.Text;
@@ -55,10 +59,13 @@ namespace UDTApp.Models
 
         public void SaveData()
         {
-            using (SqlConnection conn = new SqlConnection())
+            //using (SqlConnection conn = new SqlConnection())
+            using (DbConnection conn = UDTDataSet.dbProvider.Conection)
             {
                 conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
-                SqlCommand cmd = new SqlCommand();
+                //SqlCommand cmd = new SqlCommand();
+                DbCommand cmd = UDTDataSet.dbProvider.Command;
+
 
                 cmd.CommandText = string.Format("UPDATE TableOne set fieldName = '{0}'", _fieldName);
                 cmd.CommandType = CommandType.Text;

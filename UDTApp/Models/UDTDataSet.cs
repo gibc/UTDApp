@@ -11,6 +11,9 @@ using System.Threading.Tasks;
 using System.Windows;
 using UDTApp.ViewModels;
 using UDTAppControlLibrary.Controls;
+using ADODB;
+using UDTApp.DataBaseProvider;
+using System.Data.Common;
 
 namespace UDTApp.Models
 {
@@ -19,6 +22,20 @@ namespace UDTApp.Models
         public UDTDataSet()
         {
 
+        }
+
+        private static DbProvider _dbProvider = null;
+        public static DbProvider dbProvider
+        {
+            get
+            {
+                if (_dbProvider == null)
+                {
+                    //_dbProvider = new DbProvider(DBType.sqlExpress);
+                    _dbProvider = new DbProvider(DBType.sqlLite);
+                }
+                return _dbProvider;
+            }
         }
 
         private static UDTDataSet _udtDataSet = null;
@@ -71,13 +88,21 @@ namespace UDTApp.Models
 
         private void createSQLDatabase(string DBName)
         {
-            using (SqlConnection conn = new SqlConnection())
+            //using (SqlConnection conn = new SqlConnection())
+            if (UDTDataSet.dbProvider.dbType == DBType.sqlLite) return;
+
+            using (DbConnection conn = UDTDataSet.dbProvider.Conection)
             {
 
-                conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
-                SqlCommand cmd = new SqlCommand(
+                //conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
+                conn.ConnectionString = UDTDataSet.dbProvider.ConnectionString;
+                //SqlCommand cmd = new SqlCommand(
+                //    string.Format("select count(*) from (select * from sys.databases where name = '{0}') rows", DBName)
+                //    );
+                DbCommand cmd = UDTDataSet.dbProvider.GetCommand(
                     string.Format("select count(*) from (select * from sys.databases where name = '{0}') rows", DBName)
-                    );
+                    ); 
+
 
                 cmd.Connection = conn;
                 conn.Open();
@@ -107,20 +132,37 @@ namespace UDTApp.Models
                 (SELECT * FROM {0}.dbo.sysobjects WHERE xtype = 'U' AND name = '{1}') rows",
                 dbName, tableName);
 
+            //select (select count() from XXX) as count
+            if(UDTDataSet.dbProvider.dbType == DBType.sqlLite)
+                sqlTxt = string.Format(@"SELECT name FROM sqlite_master WHERE type='table' AND name='{0}'",
+                    tableName);
+
             bool retVal = true;
-            using (SqlConnection conn = new SqlConnection())
+            //using (SqlConnection conn = new SqlConnection())
+            using (DbConnection conn = UDTDataSet.dbProvider.Conection)
             {
 
-                conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
+                //conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
+                conn.ConnectionString = UDTDataSet.dbProvider.ConnectionString;
 
-                SqlCommand cmd = new SqlCommand(sqlTxt);
+                //SqlCommand cmd = new SqlCommand(sqlTxt);
+                DbCommand cmd = UDTDataSet.dbProvider.GetCommand(sqlTxt);
 
                 cmd.Connection = conn;
                 conn.Open();
                 try
                 {
-                    int dbCount = (int)cmd.ExecuteScalar();
-                    retVal = (dbCount >= 1);
+                    if(UDTDataSet.dbProvider.dbType == DBType.sqlLite)
+                    {
+                        DbDataReader reader = UDTDataSet.dbProvider.Reader;
+                        reader = cmd.ExecuteReader();
+                        retVal = reader.HasRows;
+                    }
+                    else
+                    { 
+                        int dbCount = (int)cmd.ExecuteScalar();
+                        retVal = (dbCount >= 1);
+                    }
 
                 }
                 catch (Exception ex)
@@ -143,9 +185,10 @@ namespace UDTApp.Models
 
             if (!TableExists(dataItem.Name, dbName))
             {
-                using (SqlConnection conn = new SqlConnection())
+                //using (SqlConnection conn = new SqlConnection())
+                using (DbConnection conn = UDTDataSet.dbProvider.Conection)
                 {
-                    ddl = string.Format("USE [{0}] CREATE TABLE {1} (", dbName, dataItem.Name);
+                    ddl = UDTDataSet.dbProvider.adjSQL(string.Format("USE [{0}] CREATE TABLE {1} (", dbName, dataItem.Name));
                     ddl += string.Format("[Id] [uniqueidentifier] NOT NULL, ");
                     //foreach (UDTBase item in dataItem.ChildData)
                     foreach (UDTBase item in dataItem.columnData)
@@ -164,8 +207,11 @@ namespace UDTApp.Models
 
                     tableGuids.Add(dataItem.objId);
 
-                    conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
-                    SqlCommand cmd = new SqlCommand(ddl);
+                    //conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
+                    conn.ConnectionString = UDTDataSet.dbProvider.ConnectionString;
+                    //SqlCommand cmd = new SqlCommand(ddl);
+                    DbCommand cmd = UDTDataSet.dbProvider.GetCommand(ddl);
+
 
                     cmd.Connection = conn;
                     conn.Open();
@@ -208,19 +254,27 @@ namespace UDTApp.Models
         private List<string> GetColumns(string table, string dbName)
         {
 
-            string sqlTxt = string.Format(@"USE [{0}] SELECT * FROM INFORMATION_SCHEMA.COLUMNS
+            string sqlTxt = UDTDataSet.dbProvider.adjSQL(string.Format(@"USE [{0}] SELECT * FROM INFORMATION_SCHEMA.COLUMNS
                     WHERE TABLE_NAME = '{1}'
-                    ORDER BY ORDINAL_POSITION", dbName, table);
+                    ORDER BY ORDINAL_POSITION", dbName, table));
+
+            if (UDTDataSet.dbProvider.dbType == DBType.sqlLite)
+                sqlTxt = string.Format("PRAGMA table_info({0})", table);
 
             List<string> colList = new List<string>();
-            using (SqlConnection conn = new SqlConnection())
+            //using (SqlConnection conn = new SqlConnection())
+            using (DbConnection conn = UDTDataSet.dbProvider.Conection)
             {
 
-                conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
+                //conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
+                conn.ConnectionString = UDTDataSet.dbProvider.ConnectionString;
 
-                SqlCommand cmd = new SqlCommand(sqlTxt);
+                //SqlCommand cmd = new SqlCommand(sqlTxt);
+                DbCommand cmd = UDTDataSet.dbProvider.GetCommand(sqlTxt);
 
-                SqlDataReader reader;
+
+                //SqlDataReader reader;
+                DbDataReader reader = UDTDataSet.dbProvider.Reader;
 
                 cmd.Connection = conn;
                 conn.Open();
@@ -230,7 +284,10 @@ namespace UDTApp.Models
                 {
                     while (reader.Read())
                     {
-                        colList.Add((string)reader["COLUMN_NAME"]);
+                        if (UDTDataSet.dbProvider.dbType == DBType.sqlLite)
+                            colList.Add(reader.GetString(1));
+                        else
+                            colList.Add((string)reader["COLUMN_NAME"]);
                     }
 
                 }
@@ -250,16 +307,19 @@ namespace UDTApp.Models
         {
             //ALTER TABLE table_name ADD column_name datatype;
 
-            string sqlTxt = string.Format(@"USE [{0}] ALTER TABLE {1} ", dbName, table);
+            string sqlTxt = UDTDataSet.dbProvider.adjSQL(string.Format(@"USE [{0}] ALTER TABLE {1} ", dbName, table));
             sqlTxt += string.Format("ADD {0} ", udtItem.Name);
             sqlTxt += string.Format("{0} ", udtItem.Type);
 
-            using (SqlConnection conn = new SqlConnection())
+            //using (SqlConnection conn = new SqlConnection())
+            using (DbConnection conn = UDTDataSet.dbProvider.Conection)
             {
 
-                conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
+                //conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
+                conn.ConnectionString = UDTDataSet.dbProvider.ConnectionString;
 
-                SqlCommand cmd = new SqlCommand(sqlTxt);
+                //SqlCommand cmd = new SqlCommand(sqlTxt);
+                DbCommand cmd = UDTDataSet.dbProvider.GetCommand(sqlTxt);
 
                 cmd.Connection = conn;
                 conn.Open();
@@ -417,21 +477,22 @@ namespace UDTApp.Models
             }
 
             DataTable dataTable = dataSet.Tables[dataItem.Name];
-            using (SqlConnection conn = new SqlConnection())
-            //using (SQLiteConnection conn = new SQLiteConnection())
+            //using (SqlConnection conn = new SqlConnection())
+            using (DbConnection conn = UDTDataSet.dbProvider.Conection)
             {
-                conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
-                SqlCommand cmd = new SqlCommand();
-                //SQLiteCommand cmd = new SQLiteCommand();
-                SqlDataReader reader;
-                //SQLiteDataReader reader;
+
+                //conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
+                conn.ConnectionString = UDTDataSet.dbProvider.ConnectionString;
+                //SqlCommand cmd = new SqlCommand();
+                DbCommand cmd = UDTDataSet.dbProvider.Command;
+                //SqlDataReader reader;
+                DbDataReader reader = UDTDataSet.dbProvider.Reader;
 
 
                 // read all records in table on first call and only call
                 string sqlTxt;
                 //if (parentId == -1)
-                sqlTxt = string.Format("USE [{0}] select * from {1} ", dbName, dataItem.Name);
-                //sqlTxt = string.Format("select * from {1} ", dbName, dataItem.Name);
+                sqlTxt = UDTDataSet.dbProvider.adjSQL(string.Format("USE [{0}] select * from {1} ", dbName, dataItem.Name));
 
                 cmd.CommandText = sqlTxt;
                 cmd.CommandType = CommandType.Text;
@@ -520,13 +581,16 @@ namespace UDTApp.Models
             //DELETE FROM table_name
             //WHERE condition;
             Guid id = (Guid)row["Id", DataRowVersion.Original];
-            string sqlTxt = string.Format("USE [{0}] delete from {1} where Id = '{2}'", 
-                DataSet.DataSetName, row.Table.TableName, id);
-            using (SqlConnection conn = new SqlConnection())
+            string sqlTxt = UDTDataSet.dbProvider.adjSQL(string.Format("USE [{0}] delete from {1} where Id = '{2}'", 
+                DataSet.DataSetName, row.Table.TableName, id));
+            //using (SqlConnection conn = new SqlConnection())
+            using (DbConnection conn = UDTDataSet.dbProvider.Conection)
             {
 
-                conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
-                SqlCommand cmd = new SqlCommand(sqlTxt);
+                //conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
+                conn.ConnectionString = UDTDataSet.dbProvider.ConnectionString;
+                //SqlCommand cmd = new SqlCommand(sqlTxt);
+                DbCommand cmd = UDTDataSet.dbProvider.GetCommand(sqlTxt);
 
                 cmd.Connection = conn;
                 conn.Open();
@@ -548,8 +612,8 @@ namespace UDTApp.Models
         {
             //INSERT INTO table_name (column1, column2, column3, ...)
             //VALUES (value1, value2, value3, ...);
-            string sqlTxt = string.Format("USE [{0}] insert into {1} (", 
-                DataSet.DataSetName, row.Table.TableName);
+            string sqlTxt = UDTDataSet.dbProvider.adjSQL(string.Format("USE [{0}] insert into {1} (", 
+                DataSet.DataSetName, row.Table.TableName));
             foreach (DataColumn col in row.Table.Columns)
             {
                 sqlTxt += string.Format("{0}, ", col.ColumnName);
@@ -576,11 +640,14 @@ namespace UDTApp.Models
             }
             sqlTxt = sqlTxt.Substring(0, sqlTxt.Length - 2);
             sqlTxt += ")";
-            using (SqlConnection conn = new SqlConnection())
+            //using (SqlConnection conn = new SqlConnection())
+            using (DbConnection conn = UDTDataSet.dbProvider.Conection)
             {
 
-                conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
-                SqlCommand cmd = new SqlCommand(sqlTxt);
+                //conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
+                conn.ConnectionString = UDTDataSet.dbProvider.ConnectionString;
+                //SqlCommand cmd = new SqlCommand(sqlTxt);
+                DbCommand cmd = UDTDataSet.dbProvider.GetCommand(sqlTxt);
 
                 cmd.Connection = conn;
                 conn.Open();
@@ -603,7 +670,7 @@ namespace UDTApp.Models
             //UPDATE table_name
             //SET column1 = value1, column2 = value2, ...
             //WHERE condition;
-            string sqlTxt = string.Format("USE [{0}] update {1} set ", DataSet.DataSetName, row.Table.TableName);
+            string sqlTxt = UDTDataSet.dbProvider.adjSQL(string.Format("USE [{0}] update {1} set ", DataSet.DataSetName, row.Table.TableName));
             foreach(DataColumn col in row.Table.Columns)
             {
                 //if(col.ColumnName != "Id")
@@ -627,11 +694,14 @@ namespace UDTApp.Models
             sqlTxt = sqlTxt.Substring(0, sqlTxt.Length - 2);
             sqlTxt += string.Format(" where Id = '{0}' ", row["Id"]);
 
-            using (SqlConnection conn = new SqlConnection())
+            //using (SqlConnection conn = new SqlConnection())
+            using (DbConnection conn = UDTDataSet.dbProvider.Conection)
             {
 
-                conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
-                SqlCommand cmd = new SqlCommand(sqlTxt);
+                //conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
+                conn.ConnectionString = UDTDataSet.dbProvider.ConnectionString;
+                //SqlCommand cmd = new SqlCommand(sqlTxt);
+                DbCommand cmd = UDTDataSet.dbProvider.GetCommand(sqlTxt);
 
                 cmd.Connection = conn;
                 conn.Open();
