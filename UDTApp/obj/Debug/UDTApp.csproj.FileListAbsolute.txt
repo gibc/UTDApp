@@ -107,3 +107,6 @@ C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\bin\Debug\System.Data.SQLite.Linq.dll
 C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\bin\Debug\EntityFramework.xml
 C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\bin\Debug\EntityFramework.SqlServer.xml
 C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\bin\Debug\System.Data.SQLite.xml
+C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\bin\Debug\x86\SQLite.Interop.dll
+C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\obj\Debug\UDTApp_Content.g.cs
+C:\GibPCStuff\UDTApp\UDTAppGetHub\UDTApp\bin\Debug\x64\SQLite.Interop.dll

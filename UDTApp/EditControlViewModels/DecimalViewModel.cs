@@ -98,7 +98,10 @@ namespace UDTApp.EditControlViewModels
             {
                 if (row[colName] == DBNull.Value)
                 {
-                    row[colName] = decNum;
+                    if(decNum == null)
+                        row[colName] = DBNull.Value;
+                    else
+                        row[colName] = decNum;
                 }
                 else
                 {

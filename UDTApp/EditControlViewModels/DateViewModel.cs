@@ -103,7 +103,10 @@ namespace UDTApp.EditControlViewModels
             {
                 if (row[colName] == DBNull.Value)
                 {
-                    row[colName] = dateNum;
+                    if(dateNum == null)
+                        row[colName] = DBNull.Value;
+                    else
+                        row[colName] = dateNum;
                 }
                 else if (udtItem.TypeName == UDTTypeName.Date)
                 {

@@ -5,6 +5,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using UDTApp.Log;
 
 namespace UDTApp
 {
@@ -19,6 +20,7 @@ namespace UDTApp
     {
         protected override void OnStartup(StartupEventArgs e)
         {
+            UDTApp.Log.Log.LogMessage("test");
             base.OnStartup(e);
             Bootstrapper bs = new Bootstrapper();
             bs.Run();
