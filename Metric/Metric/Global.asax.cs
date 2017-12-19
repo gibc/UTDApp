@@ -6,7 +6,7 @@ using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
 using System.Web.Http;
-
+using Metric.DAL;
 
 namespace Metric
 {
@@ -21,6 +21,12 @@ namespace Metric
 
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
+
+            // initialization of database on model changes.
+            using (var context = new LogMessageContext())
+            {
+                context.Database.Initialize(force: false);
+            }
 
         }
     }

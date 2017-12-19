@@ -1,7 +1,11 @@
-﻿using System;
+﻿using Metric.ApiMessages;
+using Metric.DAL;
+using Metric.Models;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
+using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Net;
@@ -24,16 +28,31 @@ namespace Metric.Controllers
             return "value";
         }
 
+        private LogMessageContext db = new LogMessageContext();
+
         // POST: api/Log
-        public string Post([FromBody]string value)
+        public string Post([FromBody]ApiLogMessage value)
         {
-            string connString = ConfigurationManager.ConnectionStrings["MetricDB"].ConnectionString;
-            using (SqlConnection conn = new SqlConnection())
+            AppHosts host = db.AppHosts.SingleOrDefault(apphost => apphost.Name == value.AppHost);
+            if (host == null)
             {
-                conn.ConnectionString = connString;
-                conn.Open();
+                var hosts = new List<AppHosts>
+                {
+                    new AppHosts{Name=value.AppHost},
+                };
+                hosts.ForEach(s => db.AppHosts.Add(s));
+                db.SaveChanges();
+                host = db.AppHosts.SingleOrDefault(apphost => apphost.Name == value.AppHost);
             }
-                return "a ok";
+
+            var msgs = new List<LogMessage>
+            {
+                new LogMessage { UserName = value.UserName, AppHostsID = host.AppHostsID, Message = value.Message, DateTime= value.DateTime },
+            };
+            msgs.ForEach(s => db.LogMessage.Add(s));
+            db.SaveChanges();
+
+            return "a ok";
         }
 
         // PUT: api/Log/5

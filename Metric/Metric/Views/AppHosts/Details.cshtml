@@ -1,0 +1,37 @@
+﻿@model Metric.Models.AppHosts
+
+@{
+    ViewBag.Title = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h3>Host: @Html.DisplayFor(model => model.Name)</h3>
+
+    <h4>Log Messages:</h4>
+    <table class="table">
+        <tr>
+            <th>User Name</th>
+            <th>Date Time</th>
+            <th>Message</th>
+        </tr>
+
+        @foreach (var item in Model.LogMessage)
+        {
+            <tr>
+                <td>              
+                    @Html.DisplayFor(modelItem => item.UserName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.DateTime)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Message)
+                </td>
+            </tr>
+        }
+        </table>
+
+<p>
+    @*@Html.ActionLink("Edit", "Edit", new { id = Model.AppHostsID }) |*@
+    @Html.ActionLink("Back to List", "Index")
+</p>

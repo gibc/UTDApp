@@ -1,0 +1,38 @@
+﻿@model IEnumerable<Metric.Models.AppHosts>
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h3>Log Hosts:</h3>
+
+@*<p>
+    @Html.ActionLink("Create New", "Create")
+</p>*@
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Name)
+        </th>
+        <th>
+            Logs
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.Name)
+        </td>
+
+        <td>
+            @*@Html.ActionLink("Edit", "Edit", new { id=item.AppHostsID }) |*@
+            @Html.ActionLink("View Logs", "Details", new { id=item.AppHostsID }) 
+            @*@Html.ActionLink("Delete", "Delete", new { id=item.AppHostsID })*@
+        </td>
+    </tr>
+}
+
+</table>

@@ -25,6 +25,10 @@
                     <li>@Html.ActionLink("Contact", "Contact", "Home")</li>
                     <li>@Html.ActionLink("File", "FileOps", "Home")</li>
                     <li>@Html.ActionLink("Downloads", "Downloads", "Test")</li>
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <li>@Html.ActionLink("App Hosts", "Index", "AppHosts")</li>
+                    }
                 </ul>
                 @Html.Partial("_LoginPartial")
             </div>

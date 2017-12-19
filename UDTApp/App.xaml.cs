@@ -20,7 +20,7 @@ namespace UDTApp
     {
         protected override void OnStartup(StartupEventArgs e)
         {
-            UDTApp.Log.Log.LogMessage("test");
+            UDTApp.Log.Log.LogMessage("UDTApp startup.");
             base.OnStartup(e);
             Bootstrapper bs = new Bootstrapper();
             bs.Run();

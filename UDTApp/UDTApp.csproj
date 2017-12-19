@@ -139,6 +139,7 @@
     <Compile Include="EditControlViewModels\DecimalViewModel.cs" />
     <Compile Include="EditControlViewModels\NumberViewModel.cs" />
     <Compile Include="EditControlViewModels\TextViewModel.cs" />
+    <Compile Include="Log\ApiLogMessage.cs" />
     <Compile Include="Log\Log.cs" />
     <Compile Include="Models\DataItem.cs" />
     <Compile Include="Models\DataSet.cs" />
