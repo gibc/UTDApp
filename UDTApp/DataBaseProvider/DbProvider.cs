@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UDTApp.Models;
 
+// map to slqlite or sql sever ado classes
 namespace UDTApp.DataBaseProvider
 {
     public enum DBType { sqlExpress, sqlLite}
