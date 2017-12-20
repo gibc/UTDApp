@@ -8,7 +8,7 @@ using System.Web;
 
 namespace Metric.DAL
 {
-    // comment for commit text
+    // another comment for commit text
     public class LogMessageContext : DbContext
     {
         public LogMessageContext() : base("LoggingConnection")
