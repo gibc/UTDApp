@@ -164,7 +164,7 @@ PublishScripts/
 *.nuget.targets
 
 #connection string secrets
-connectionStrings.config
+metric/metric/connectionStrings.config
 
 # Microsoft Azure Build Output
 csx/
