@@ -165,6 +165,7 @@ PublishScripts/
 
 #connection string secrets
 metric/metric/connectionStrings.config
+metric/metric/Web.config
 
 # Microsoft Azure Build Output
 csx/
