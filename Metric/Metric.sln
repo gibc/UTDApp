@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Metric", "Metric\Metric.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unzip", "..\Unzip\Unzip\Unzip.csproj", "{028FC760-F4A0-4F56-8472-E388FA7F5C74}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UDTApp", "..\UDTApp\UDTApp.csproj", "{12258DE7-49F1-44CD-BFCD-259B0B0E0FAE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UDTAppControlLibrary", "..\UDTAppControlLibrary\UDTAppControlLibrary.csproj", "{F3143ADA-78B2-4870-8DDA-1B28A6BA2135}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +25,14 @@ Global
 		{028FC760-F4A0-4F56-8472-E388FA7F5C74}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{028FC760-F4A0-4F56-8472-E388FA7F5C74}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{028FC760-F4A0-4F56-8472-E388FA7F5C74}.Release|Any CPU.Build.0 = Release|Any CPU
+		{12258DE7-49F1-44CD-BFCD-259B0B0E0FAE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{12258DE7-49F1-44CD-BFCD-259B0B0E0FAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{12258DE7-49F1-44CD-BFCD-259B0B0E0FAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{12258DE7-49F1-44CD-BFCD-259B0B0E0FAE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F3143ADA-78B2-4870-8DDA-1B28A6BA2135}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3143ADA-78B2-4870-8DDA-1B28A6BA2135}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3143ADA-78B2-4870-8DDA-1B28A6BA2135}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3143ADA-78B2-4870-8DDA-1B28A6BA2135}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

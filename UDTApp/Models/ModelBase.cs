@@ -310,6 +310,7 @@ namespace UDTApp.Models
                 }
                 catch(Exception ex)
                 {
+                    UDTApp.Log.Log.LogMessage(ex.Message);
                     MessageBox.Show(ex.Message);
                 }
                 finally

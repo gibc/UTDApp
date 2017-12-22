@@ -73,6 +73,7 @@
                     <Button  Command="{Binding EditCommand}"  Content="Edit"/>
                     <Button Command="{Binding NewCommand}"  Content="New"/>
                     <Button Command="{Binding SaveCommand}"  Content="SavePoject"/>
+                    <Button Command="{Binding AboutCommand}"  Content="About"/>
                 </ToolBar>
             </ToolBarTray>
         </DockPanel>

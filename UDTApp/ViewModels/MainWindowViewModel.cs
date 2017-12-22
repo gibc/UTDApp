@@ -32,6 +32,7 @@ namespace UDTApp.ViewModels
         public DelegateCommand SaveCommand { get; set; }
         public DelegateCommand NewCommand { get; set; }
         public DelegateCommand SaveDataCommand { get; set; }
+        public DelegateCommand AboutCommand { get; set; }
 
 
         public MainWindowViewModel(IRegionManager regionManager)
@@ -46,6 +47,7 @@ namespace UDTApp.ViewModels
             SaveCommand = new DelegateCommand(saveProject, canSavePorjext); 
             NewCommand = new DelegateCommand(newProject);
             SaveDataCommand = new DelegateCommand(saveData, canSaveData);
+            AboutCommand = new DelegateCommand(showAbout);
         }
 
         private string currentView = "";
@@ -67,14 +69,23 @@ namespace UDTApp.ViewModels
 
         private void editProject()
         {
-            List<UDTBase> schema = UDTXml.UDTXmlData.readFromXml();
-            if(schema != null)
+            try
             { 
-                UDTData master = schema[0] as UDTData;
-                master.validationChangedEvent += projectValidationChanged;
-                master.dataChangeEvent += projectDataChanged;
-                projectDataModified = false;
-                Navigate("PageZero");
+                List<UDTBase> schema = UDTXml.UDTXmlData.readFromXml();
+                if(schema != null)
+                { 
+                    UDTData master = schema[0] as UDTData;
+                    master.validationChangedEvent += projectValidationChanged;
+                    master.dataChangeEvent += projectDataChanged;
+                    projectDataModified = false;
+                    Navigate("PageZero");
+                }
+            }
+            catch(Exception ex)
+            {
+                string msg = string.Format("editProject failed: {0}", ex.Message);
+                UDTApp.Log.Log.LogMessage(msg);
+                MessageBox.Show(msg);
             }
         }
 
@@ -92,14 +103,24 @@ namespace UDTApp.ViewModels
         // run current project else select poject and run
         private void runProject()
         {
-            if(UDTXml.UDTXmlData.SchemaData.Count == 0)
+            try
             { 
-                List<UDTBase> schema = UDTXml.UDTXmlData.readFromXml();
-                if (schema == null) return;
+                if(UDTXml.UDTXmlData.SchemaData.Count == 0)
+                { 
+                    List<UDTBase> schema = UDTXml.UDTXmlData.readFromXml();
+                    if (schema == null) return;
+                }
+                UDTDataSet.udtDataSet.dataChangeEvent += dataChanged;
+                UDTDataSet.udtDataSet.validationChangedEvent += dataValidationChanged;
+                Navigate("DataEditView");
             }
-            UDTDataSet.udtDataSet.dataChangeEvent += dataChanged;
-            UDTDataSet.udtDataSet.validationChangedEvent += dataValidationChanged;
-            Navigate("DataEditView");
+            catch (Exception ex)
+            {
+                string msg = string.Format("runProject failed: {0}", ex.Message);
+                UDTApp.Log.Log.LogMessage(msg);
+                MessageBox.Show(msg);
+            }
+
         }
 
         private bool canRun()
@@ -111,29 +132,51 @@ namespace UDTApp.ViewModels
         // select a project and run
         private void openProject()
         {
-            List<UDTBase> schema = UDTXml.UDTXmlData.readFromXml();
-            if(schema != null)
+            try
             { 
-                UDTDataSet.udtDataSet.dataChangeEvent += dataChanged;
-                UDTDataSet.udtDataSet.validationChangedEvent += dataValidationChanged;
-                Navigate("DataEditView");
+                List<UDTBase> schema = UDTXml.UDTXmlData.readFromXml();
+                if(schema != null)
+                { 
+                    UDTDataSet.udtDataSet.dataChangeEvent += dataChanged;
+                    UDTDataSet.udtDataSet.validationChangedEvent += dataValidationChanged;
+                    Navigate("DataEditView");
+                }
             }
+            catch (Exception ex)
+            {
+                string msg = string.Format("openProject failed: {0}", ex.Message);
+                UDTApp.Log.Log.LogMessage(msg);
+                MessageBox.Show(msg);
+            }
+
         }
 
         private void saveProject()
         {
             // save to xml file AND create/update database
-            if(UDTXml.UDTXmlData.saveToXml(UDTXml.UDTXmlData.SchemaData))
-            {
-                try 
+            try
+            { 
+                if(UDTXml.UDTXmlData.saveToXml(UDTXml.UDTXmlData.SchemaData))
                 {
-                    UDTDataSet.udtDataSet.createDatabase(UDTXml.UDTXmlData.SchemaData[0] as UDTData);
-                }
-                catch(Exception ex)
-                {
-                    MessageBox.Show(string.Format("createDatabase failed: {0}", ex.Message));
+                    try 
+                    {
+                        UDTDataSet.udtDataSet.createDatabase(UDTXml.UDTXmlData.SchemaData[0] as UDTData);
+                    }
+                    catch(Exception ex)
+                    {
+                        string msg = string.Format("createDatabase failed: {0}", ex.Message);
+                        UDTApp.Log.Log.LogMessage(msg);
+                        MessageBox.Show(msg);
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                string msg = string.Format("saveProject failed: {0}", ex.Message);
+                UDTApp.Log.Log.LogMessage(msg);
+                MessageBox.Show(msg);
+            }
+
         }
 
         private bool canSavePorjext()
@@ -176,6 +219,12 @@ namespace UDTApp.ViewModels
             UDTDataSet.udtDataSet.saveDataset();
         }
 
+        private void showAbout()
+        {
+            AboutBox aboutBox = new AboutBox();
+            aboutBox.ShowDialog();   
+        }
+
 
         public void dataChanged()
         {
@@ -197,19 +246,28 @@ namespace UDTApp.ViewModels
 
         private void newProject()
         {
-            NewProject win = new NewProject();
-            win.ShowDialog();
-            if((bool)win.DialogResult)
-            { 
-                string projName = win.prjName.Text;
-                List<UDTBase> newSchmea = UDTXml.UDTXmlData.newProject(projName);
-                UDTData master = newSchmea[0] as UDTData;
-                master.validationChangedEvent += projectValidationChanged;
-                master.dataChangeEvent += projectDataChanged;
-                projectDataModified = false;
-                Navigate("PageZero");
+            try
+            {
+                NewProject win = new NewProject();
+                win.ShowDialog();
+                if ((bool)win.DialogResult)
+                {
+                    string projName = win.prjName.Text;
+                    List<UDTBase> newSchmea = UDTXml.UDTXmlData.newProject(projName);
+                    UDTData master = newSchmea[0] as UDTData;
+                    master.validationChangedEvent += projectValidationChanged;
+                    master.dataChangeEvent += projectDataChanged;
+                    projectDataModified = false;
+                    Navigate("PageZero");
+                }
             }
-           
+            catch (Exception ex)
+            {
+                string msg = string.Format("newProject failed: {0}", ex.Message);
+                UDTApp.Log.Log.LogMessage(msg);
+                MessageBox.Show(msg);
+            }
+
         }
 
         private bool projectDataModified { get; set; }
