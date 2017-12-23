@@ -9,7 +9,7 @@
         xmlns:local="clr-namespace:UDTApp.Views"
         mc:Ignorable="d"
         Name="aboutBoxView"
-        Title="AboutBox" Height="300" Width="300">
+        Title="About UDT App" Height="250" Width="380">
 
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Loaded">
@@ -19,19 +19,42 @@
     
     <Grid>
         <StackPanel>
-            <WrapPanel HorizontalAlignment="Center" Margin="0,30,0,0">
-                <Label Width="150" Padding="0" Content="Version: " HorizontalContentAlignment="Right"/>
-                <TextBlock Name="version" Text="{Binding versionNumber}" Height="20" Width="100"/>
+            <TextBlock FontWeight="Bold" Margin="0,10,0,0" HorizontalAlignment="Center" Text="{Binding titlecopyright}"/>
+            <WrapPanel>
+            <Image Width="150">
+                <Image.Source>
+                    <BitmapImage DecodePixelWidth="300" UriSource="/images/3d-scale.png" />
+                </Image.Source>
+            </Image>
+                <StackPanel>
+                    <WrapPanel HorizontalAlignment="Center" Margin="0,30,0,0">
+                        <Label Width="100" Padding="0" Content="Company: " HorizontalContentAlignment="Right"/>
+                        <TextBlock Name="company" Text="{Binding companyName}" Height="20" Width="110"/>
+                    </WrapPanel>
+                    <WrapPanel HorizontalAlignment="Center" Margin="0,0,0,0">
+                        <Label Width="100" Padding="0" Content="Web site: " HorizontalContentAlignment="Right"/>
+                        <TextBlock Height="20" Width="110">
+                            <Hyperlink x:Name="webLink" NavigateUri="http://metricresearch.org/" >
+                                MetricResarch.org
+                            </Hyperlink>
+                        </TextBlock>
+                    </WrapPanel>
+
+                    <WrapPanel HorizontalAlignment="Center" Margin="0,0,0,0">
+                        <Label Width="100" Padding="0" Content="Version: " HorizontalContentAlignment="Right"/>
+                        <TextBlock Name="version" Text="{Binding versionNumber}" Height="20" Width="110"/>
+                    </WrapPanel>
+                    <WrapPanel HorizontalAlignment="Center" Margin="0,0,0,0">
+                    <Label  Width="100" Padding="0" Content="Major Revision: " HorizontalContentAlignment="Right"/>
+                        <TextBlock Name="Major" Text="{Binding majorRevision}" Height="20" Width="110"/>
+                </WrapPanel>
+                <WrapPanel HorizontalAlignment="Center" Margin="0,0,0,0">
+                    <Label Width="100" Padding="0" Content="Minor Revision: " HorizontalContentAlignment="Right"/>
+                    <TextBlock Name="Minor" Text="{Binding minorRevision}" Height="20" Width="110"/>
+                </WrapPanel>
+            </StackPanel>
             </WrapPanel>
-            <WrapPanel HorizontalAlignment="Center" Margin="0,0,0,0">
-                <Label  Width="150" Padding="0" Content="Major Revision: " HorizontalContentAlignment="Right"/>
-                <TextBlock Name="Major" Text="{Binding majorRevision}" Height="20" Width="100"/>
-            </WrapPanel>
-            <WrapPanel HorizontalAlignment="Center" Margin="0,0,0,0">
-                <Label Width="150" Padding="0" Content="Minor Revision: " HorizontalContentAlignment="Right"/>
-                <TextBlock Name="Minor" Text="{Binding minorRevision}" Height="20" Width="100"/>
-            </WrapPanel>
-            <WrapPanel  HorizontalAlignment="Center" Margin="0,30,0,0">
+            <WrapPanel  HorizontalAlignment="Center" Margin="0,0,0,0">
                 <Button Content="Ok" Command="{Binding OkCommand}" Margin="0,0,0,0" Height="20" Width="60"/>
             </WrapPanel>
         </StackPanel>
