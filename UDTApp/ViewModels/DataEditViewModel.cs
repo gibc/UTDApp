@@ -578,23 +578,21 @@ namespace UDTApp.ViewModels
     public class DataEditViewModel : ValidatableBindableBase
     {
         public DelegateCommand WindowLoadedCommand { get; set; }
-
+        static public DataEditViewModel dataEditViewModel = null;
         public DataEditViewModel()
         {
             WindowLoadedCommand = new DelegateCommand(windowLoaded);
-
+            dataEditViewModel = this;
         }
 
-        private void windowLoaded()
+        public void windowLoaded()
         {
             // load database from currently loaded schema
-            //SelectedItem = null;
-            UDTDataSet.udtDataSet.readDatabase(UDTXml.UDTXmlData.SchemaData[0] as UDTData);
+            UDTData curentSchem = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
+            if (UDTDataSet.udtDataSet.DataSet == null || curentSchem.Name != UDTDataSet.udtDataSet.DataSet.DataSetName)
+                UDTDataSet.udtDataSet.readDatabase(UDTXml.UDTXmlData.SchemaData[0] as UDTData);
             UDTDataSet.udtDataSet.IsModified = false;
-            //DisplayTable(UDTXml.UDTXmlData.SchemaData[0] as UDTData);
             DataEditDataBase editDataBase = new DataEditDataBase();
-            //topDataEditGrid = new DataEditGrid(UDTXml.UDTXmlData.SchemaData[0] as UDTData, navBtnClk);
-            //createDataGrids(topDataEditGrid, UDTXml.UDTXmlData.SchemaData[0] as UDTData, navBtnClk);
 
             UDTData dbItem = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
             foreach (UDTData table in dbItem.tableData)

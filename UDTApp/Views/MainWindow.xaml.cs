@@ -28,6 +28,5 @@ namespace UDTApp.Views
             InitializeComponent();
         }
 
- 
     }
 }

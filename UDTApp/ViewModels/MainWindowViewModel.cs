@@ -17,15 +17,20 @@ using System.Dynamic;
 using System.ComponentModel;
 using UDTApp.Views;
 using UDTApp.DataBaseProvider;
+using System.Windows.Controls;
+using UDTApp.Settings;
+using Microsoft.Win32;
 
 namespace UDTApp.ViewModels
-{    
+{
     public class MainWindowViewModel : BindableBase
     {
         private readonly IRegionManager _regionManager;
 
         public DelegateCommand<string> NavigateCommand { get; set; }
-        public DelegateCommand WindowLoadedCommand { get; set; }
+        //public DelegateCommand WindowLoadedCommand { get; set; }
+        public DelegateCommand<Window> WindowLoadedCommand { get; set; }
+
         public DelegateCommand EditCommand { get; set; }
         public DelegateCommand RunCommand { get; set; }
         public DelegateCommand OpenCommand { get; set; }
@@ -33,6 +38,9 @@ namespace UDTApp.ViewModels
         public DelegateCommand NewCommand { get; set; }
         public DelegateCommand SaveDataCommand { get; set; }
         public DelegateCommand AboutCommand { get; set; }
+        public DelegateCommand<MenuItem> SubmenuOpenedCommand { get; set; }
+        public DelegateCommand ViewDatasetCommand { get; set; }
+        public DelegateCommand ViewDesignCommand { get; set; }
 
 
         public MainWindowViewModel(IRegionManager regionManager)
@@ -40,14 +48,60 @@ namespace UDTApp.ViewModels
             _regionManager = regionManager;
 
             NavigateCommand = new DelegateCommand<string>(Navigate);
-            WindowLoadedCommand = new DelegateCommand(windowLoaded);
+            //WindowLoadedCommand = new DelegateCommand(windowLoaded);
+            WindowLoadedCommand = new DelegateCommand<Window>(windowLoaded);
             EditCommand = new DelegateCommand(editProject);
             RunCommand = new DelegateCommand(runProject, canRun);
             OpenCommand = new DelegateCommand(openProject);
-            SaveCommand = new DelegateCommand(saveProject, canSavePorjext); 
+            SaveCommand = new DelegateCommand(saveProject, canSavePorjext);
             NewCommand = new DelegateCommand(newProject);
             SaveDataCommand = new DelegateCommand(saveData, canSaveData);
             AboutCommand = new DelegateCommand(showAbout);
+            SubmenuOpenedCommand = new DelegateCommand<MenuItem>(menuOpen);
+            ViewDatasetCommand = new DelegateCommand(viewDataset, canChangeView);
+            ViewDesignCommand = new DelegateCommand(viewDesign, canChangeView);
+        }
+
+        private bool canChangeView()
+        {
+            if (UDTXml.UDTXmlData.SchemaData.Count == 0) return false;
+            return true;
+        }
+
+        private bool _designVisible = false;
+        public bool designVisible
+        {
+            get { return _designVisible; }
+            set { SetProperty(ref _designVisible, value); }
+        }
+
+        private void viewDesign()
+        {
+            designVisible = true;
+            AppSettings.appSettings.designView = true;
+            ViewDatasetCommand.RaiseCanExecuteChanged();
+            ViewDesignCommand.RaiseCanExecuteChanged();
+            if (PageZeroViewModel.viewModel != null)
+                PageZeroViewModel.viewModel.windowLoaded();
+            Navigate("PageZero");
+        }
+
+        private bool _dataSetVisible = false;
+        public bool dataSetVisible
+        {
+            get { return _dataSetVisible; }
+            set { SetProperty(ref _dataSetVisible, value); }
+        }
+
+        private void viewDataset()
+        {
+            dataSetVisible = true;
+            AppSettings.appSettings.designView = false;
+            ViewDatasetCommand.RaiseCanExecuteChanged();
+            ViewDesignCommand.RaiseCanExecuteChanged();
+            if (DataEditViewModel.dataEditViewModel != null)
+                DataEditViewModel.dataEditViewModel.windowLoaded();
+            Navigate("DataEditView");
         }
 
         private string currentView = "";
@@ -61,19 +115,23 @@ namespace UDTApp.ViewModels
             SaveDataCommand.RaiseCanExecuteChanged();
         }
 
-        private void windowLoaded()
+        private void windowLoaded(Window window)
         {
-            //Navigate("Data");
-            //Navigate("DataEditView");
+            if (AppSettings.appSettings.autoOpenFile != null)
+            {
+                if (AppSettings.appSettings.designView) designVisible = true;
+                else dataSetVisible = true;
+                openProject(AppSettings.appSettings.autoOpenFile.filePath);
+            }
         }
 
         private void editProject()
         {
             try
-            { 
+            {
                 List<UDTBase> schema = UDTXml.UDTXmlData.readFromXml();
-                if(schema != null)
-                { 
+                if (schema != null)
+                {
                     UDTData master = schema[0] as UDTData;
                     master.validationChangedEvent += projectValidationChanged;
                     master.dataChangeEvent += projectDataChanged;
@@ -81,7 +139,7 @@ namespace UDTApp.ViewModels
                     Navigate("PageZero");
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 string msg = string.Format("editProject failed: {0}", ex.Message);
                 UDTApp.Log.Log.LogMessage(msg);
@@ -104,9 +162,9 @@ namespace UDTApp.ViewModels
         private void runProject()
         {
             try
-            { 
-                if(UDTXml.UDTXmlData.SchemaData.Count == 0)
-                { 
+            {
+                if (UDTXml.UDTXmlData.SchemaData.Count == 0)
+                {
                     List<UDTBase> schema = UDTXml.UDTXmlData.readFromXml();
                     if (schema == null) return;
                 }
@@ -132,14 +190,35 @@ namespace UDTApp.ViewModels
         // select a project and run
         private void openProject()
         {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Xml (*.xml)|*.xml";
+            if (openFileDialog.ShowDialog().Value)
+            {
+                openProject(openFileDialog.FileName);
+            }
+        }
+
+
+        void openProject(string filePath)
+        {
             try
-            { 
-                List<UDTBase> schema = UDTXml.UDTXmlData.readFromXml();
-                if(schema != null)
-                { 
+            {
+
+                List<UDTBase> schema = UDTXml.UDTXmlData.openProject(filePath);
+                if (schema != null)
+                {
+                    UDTXml.UDTXmlData.SchemaData = schema;
+
+                    AppSettings.appSettings.addFile(filePath);
                     UDTDataSet.udtDataSet.dataChangeEvent += dataChanged;
                     UDTDataSet.udtDataSet.validationChangedEvent += dataValidationChanged;
-                    Navigate("DataEditView");
+                    //Navigate("DataEditView");
+                    if (dataSetVisible)
+                        viewDataset();
+                    else if(designVisible)
+                        viewDesign();
+                    else
+                        viewDataset();
                 }
             }
             catch (Exception ex)
@@ -148,8 +227,8 @@ namespace UDTApp.ViewModels
                 UDTApp.Log.Log.LogMessage(msg);
                 MessageBox.Show(msg);
             }
-
         }
+
 
         private void saveProject()
         {
@@ -183,7 +262,6 @@ namespace UDTApp.ViewModels
         {
             if (UDTXml.UDTXmlData.SchemaData.Count == 0) return false;
             else if (currentView != "PageZero") return false;
-            //else if (UDTXml.UDTXmlData.SchemaData[0].AnyErrors) return false;
             else if (findValidationError(UDTXml.UDTXmlData.SchemaData[0])) return false;
             else return projectDataModified;
         }
@@ -225,6 +303,29 @@ namespace UDTApp.ViewModels
             aboutBox.ShowDialog();   
         }
 
+        private void menuOpen(MenuItem fileMenu)
+        {
+            //int itemCount = fileMenu.Items.Count;
+            //if (itemCount > 3)
+            //    for (int i = 3; i < itemCount; i++)
+            //        fileMenu.Items.RemoveAt(i);
+            fileMenu.Items.Clear();
+            foreach (FileSetting file in AppSettings.appSettings.fileSettings)
+            {
+                MenuItem newItem = new MenuItem();
+                newItem.Header = file.filePath;
+                newItem.Click += fileOpen_Click;
+                fileMenu.Items.Add(newItem);
+            }
+
+        }
+
+        private void fileOpen_Click(object sender, RoutedEventArgs e)
+        {
+            MenuItem item = sender as MenuItem;
+            string header = item.Header.ToString();
+            openProject(header);
+        }
 
         public void dataChanged()
         {
@@ -258,7 +359,8 @@ namespace UDTApp.ViewModels
                     master.validationChangedEvent += projectValidationChanged;
                     master.dataChangeEvent += projectDataChanged;
                     projectDataModified = false;
-                    Navigate("PageZero");
+                    //Navigate("PageZero");
+                    viewDesign();
                 }
             }
             catch (Exception ex)

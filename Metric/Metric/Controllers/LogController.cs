@@ -36,20 +36,35 @@ namespace Metric.Controllers
             AppHosts host = db.AppHosts.SingleOrDefault(apphost => apphost.Name == value.AppHost);
             if (host == null)
             {
-                var hosts = new List<AppHosts>
-                {
-                    new AppHosts{Name=value.AppHost},
-                };
-                hosts.ForEach(s => db.AppHosts.Add(s));
+                //var hosts = new List<AppHosts>
+                //{
+                //    new AppHosts{Name=value.AppHost},
+                //};
+                //hosts.ForEach(s => db.AppHosts.Add(s));
+                db.AppHosts.Add(new AppHosts { Name = value.AppHost });
                 db.SaveChanges();
                 host = db.AppHosts.SingleOrDefault(apphost => apphost.Name == value.AppHost);
             }
 
-            var msgs = new List<LogMessage>
+            List<LogMessage> currMsgs = db.LogMessage.Where(logmsg => logmsg.AppHostsID == host.AppHostsID)
+                .OrderByDescending(log => log.DateTime).ToList();
+            if(currMsgs.Count > 15)
             {
-                new LogMessage { UserName = value.UserName, AppHostsID = host.AppHostsID, Message = value.Message, DateTime= value.DateTime },
-            };
-            msgs.ForEach(s => db.LogMessage.Add(s));
+                currMsgs.RemoveRange(0, 15);
+                foreach (LogMessage lm in currMsgs)
+                    db.LogMessage.Remove(lm);
+            }
+
+            //var msgs = new List<LogMessage>
+            //{
+            //    new LogMessage { UserName = value.UserName, AppHostsID = host.AppHostsID, Message = value.Message, DateTime= value.DateTime },
+            //};
+            db.LogMessage.
+                Add(new LogMessage { UserName = value.UserName,
+                    AppHostsID = host.AppHostsID,
+                    Message = value.Message,
+                    DateTime = value.DateTime });
+            //msgs.ForEach(s => db.LogMessage.Add(s));
             db.SaveChanges();
 
             return "a ok";

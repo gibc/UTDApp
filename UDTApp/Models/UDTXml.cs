@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
+using UDTApp.Settings;
 
 namespace UDTApp.Models
 {
@@ -77,15 +78,28 @@ namespace UDTApp.Models
             openFileDialog.Filter = "Xml (*.xml)|*.xml";
             if (openFileDialog.ShowDialog().Value)
             {
-                StreamReader xmlFile = File.OpenText(openFileDialog.FileName);
-                string xml = xmlFile.ReadToEnd();
-                xmlFile.Close();
+                AppSettings.appSettings.addFile(openFileDialog.FileName);
+                //StreamReader xmlFile = File.OpenText(openFileDialog.FileName);
+                //string xml = xmlFile.ReadToEnd();
+                //xmlFile.Close();
 
-                List<UDTBase> schema = readFromXml(xml);
-                SchemaData = schema;
-                return SchemaData;
+                //List<UDTBase> schema = readFromXml(xml);
+                //SchemaData = schema;
+                //return SchemaData;
+                return openProject(openFileDialog.FileName);
             }
             return null;
+        }
+
+        public List<UDTBase> openProject(string filePath)
+        {
+            StreamReader xmlFile = File.OpenText(filePath);
+            string xml = xmlFile.ReadToEnd();
+            xmlFile.Close();
+
+            List<UDTBase> schema = readFromXml(xml);
+            SchemaData = schema;
+            return SchemaData;
         }
 
         private static string SerializeToString(object obj)

@@ -32,7 +32,6 @@ namespace UDTApp.ViewModels
         public DelegateCommand ReadDataBaseCommand { get; set; }
         public DelegateCommand WindowLoadedCommand { get; set; }
 
-
         public PageZeroViewModel()
         {
             MouseMoveCommand = new DelegateCommand<MouseEventArgs>(mouseMove);
@@ -338,7 +337,7 @@ namespace UDTApp.ViewModels
             }
         }
 
-        private void windowLoaded()
+        public void windowLoaded()
         {
             SchemaList = UDTXml.UDTXmlData.SchemaData;
         }

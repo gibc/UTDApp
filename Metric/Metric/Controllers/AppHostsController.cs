@@ -29,8 +29,11 @@ namespace Metric.Controllers
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
 
-            db.AppHosts.Include("LogMessage");
+            //db.AppHosts.Include("LogMessage");
             AppHosts appHosts = db.AppHosts.Find(id);
+            appHosts.LogMessage = db.LogMessage.
+                Where(logmsg => logmsg.AppHostsID == appHosts.AppHostsID).
+                OrderByDescending(logmsg => logmsg.DateTime).ToList();
 
             if (appHosts == null)
             {

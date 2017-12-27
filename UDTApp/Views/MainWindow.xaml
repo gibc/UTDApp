@@ -8,6 +8,8 @@
         xmlns:contrls="clr-namespace:UDTApp.ViewModels.DataEntryControls"
         xmlns:diag="clr-namespace:System.Diagnostics;assembly=WindowsBase"
         xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+        xmlns:ribbon="http://schemas.microsoft.com/winfx/2006/xaml/presentation/ribbon"
+        Name="mainWindow"
         Title="UDTApp" Height="600" Width="800">
 
     <Window.Resources>
@@ -44,40 +46,54 @@
 
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Loaded">
-            <i:InvokeCommandAction Command="{Binding WindowLoadedCommand}" />
+            <i:InvokeCommandAction Command="{Binding WindowLoadedCommand}" CommandParameter="{Binding ElementName=mainWindow}"/>
         </i:EventTrigger>
     </i:Interaction.Triggers>
+    
 
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        
-        <DockPanel Grid.Row="0">
-            <ToolBarTray DockPanel.Dock="Top">
-                <ToolBar DockPanel.Dock="Top"  Background="PaleTurquoise">
-                    <ToolBar.Header>
-                        <TextBlock Text="DATA:" FontWeight="SemiBold">
-                        </TextBlock>
-                    </ToolBar.Header>
-                    <Button Command="{Binding OpenCommand}"  Content="Open"/>
-                    <Button Command="{Binding RunCommand}" Content="Run"/>
-                    <Button Command="{Binding SaveDataCommand}" Content="SaveData"/>
-                </ToolBar>
-                <ToolBar DockPanel.Dock="Top"  Background="LightYellow">
-                    <ToolBar.Header>
-                        <TextBlock Text="PROJECT:" FontWeight="SemiBold">
-                        </TextBlock>
-                    </ToolBar.Header>
-                    <Button  Command="{Binding EditCommand}"  Content="Edit"/>
-                    <Button Command="{Binding NewCommand}"  Content="New"/>
-                    <Button Command="{Binding SaveCommand}"  Content="SavePoject"/>
-                    <Button Command="{Binding AboutCommand}"  Content="About"/>
-                </ToolBar>
-            </ToolBarTray>
-        </DockPanel>
-
+        <Border Background="Azure"  BorderThickness="2" BorderBrush="LightBlue"  Width="auto" CornerRadius="2">
+            <Grid Width="auto" Grid.Row="0" Grid.Column="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <WrapPanel Grid.Column="0">
+                    <Button Command="{Binding OpenCommand}"  Content="Open Dateset"/>
+                    <Button Margin="3,0,0,0" Command="{Binding NewCommand}"  Content="New Dataset"/>
+                    <Menu Margin="3,0,0,0">
+                        <MenuItem Height="20" x:Name="fileMenu" Header="_Recent Datasets" >
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="SubmenuOpened">
+                                    <i:InvokeCommandAction Command="{Binding SubmenuOpenedCommand}" CommandParameter="{Binding ElementName=fileMenu}"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                            <MenuItem Header="_New" Command="{Binding NewCommand}"/>
+                            <MenuItem Header="_Open" Command="{Binding OpenCommand}"/>
+                            <MenuItem Header="_Save" Command="{Binding SaveDataCommand}"/>
+                            <Separator />
+                        </MenuItem>
+                    </Menu>
+                    <Button Margin="3,0,0,0" Command="{Binding SaveDataCommand}" Content="Save Changes"/>
+                    <RadioButton GroupName="View" Command="{Binding ViewDatasetCommand}" VerticalAlignment="Center" 
+                                IsChecked ="{Binding dataSetVisible, Mode=TwoWay}" Margin="3,0,0,0" >
+                        Dataset View
+                    </RadioButton>
+                    <RadioButton GroupName="View" Command="{Binding ViewDesignCommand}" VerticalAlignment="Center"
+                                 IsChecked ="{Binding designVisible, Mode=TwoWay}" Margin="3,0,0,0" >
+                        Design View
+                    </RadioButton>
+                </WrapPanel>
+                <WrapPanel Grid.Column="1" HorizontalAlignment="Right">
+                    <Button Margin="3,0,0,0" Command="{Binding AboutCommand}" HorizontalAlignment="Right" Content="Help"/>
+                    <Button Margin="3,0,0,0" Command="{Binding AboutCommand}" HorizontalAlignment="Right" Content="About"/>
+                </WrapPanel>
+            </Grid>
+        </Border>
         <!--<StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal">
             <Button Content="Data" Margin="5" Command="{Binding NavigateCommand}" CommandParameter="Data"/>
             <Button Content="SetUp" Margin="5" Command="{Binding NavigateCommand}" CommandParameter="SetUp"/>

@@ -26,9 +26,10 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>15</ApplicationRevision>
+    <ApplicationRevision>19</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
+    <CreateDesktopShortcut>true</CreateDesktopShortcut>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
@@ -194,6 +195,8 @@
     <Compile Include="Models\UDTDataSet.cs" />
     <Compile Include="Models\UDTUserData.cs" />
     <Compile Include="Models\UDTXml.cs" />
+    <Compile Include="Settings\FileSetting.cs" />
+    <Compile Include="Settings\Settings.cs" />
     <Compile Include="ViewModels\AboutBoxViewModel.cs" />
     <Compile Include="ViewModels\DataEditViewModel.cs" />
     <Compile Include="ViewModels\DataEntryControls.cs" />
