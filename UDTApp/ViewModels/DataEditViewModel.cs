@@ -1336,7 +1336,6 @@ namespace UDTApp.ViewModels
             }
             UDTDataSet.udtDataSet.validationChange(false);
             AddRowCommand.RaiseCanExecuteChanged();
-
         }
 
         private void updateEditBoxes(DataRowView selectedRow)

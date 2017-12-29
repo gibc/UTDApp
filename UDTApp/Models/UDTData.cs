@@ -452,7 +452,8 @@ namespace UDTApp.Models
             set 
             {
                 DisplayName = value;
-                if (_name != value && MasterGroup != null) MasterGroup.dataChanged();
+                if (!string.IsNullOrEmpty(_name) && _name != value && MasterGroup != null)
+                    MasterGroup.dataChanged();
                 SetProperty(ref _name, value);
                 if (HasErrors)
                     PopUpOpen = true;

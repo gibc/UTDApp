@@ -54,6 +54,7 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <Border Background="Azure"  BorderThickness="2" BorderBrush="LightBlue"  Width="auto" CornerRadius="2">
@@ -78,7 +79,6 @@
                             <Separator />
                         </MenuItem>
                     </Menu>
-                    <Button Margin="3,0,0,0" Command="{Binding SaveDataCommand}" Content="Save Changes"/>
                     <RadioButton GroupName="View" Command="{Binding ViewDatasetCommand}" VerticalAlignment="Center" 
                                 IsChecked ="{Binding dataSetVisible, Mode=TwoWay}" Margin="3,0,0,0" >
                         Dataset View
@@ -87,19 +87,44 @@
                                  IsChecked ="{Binding designVisible, Mode=TwoWay}" Margin="3,0,0,0" >
                         Design View
                     </RadioButton>
+ 
                 </WrapPanel>
                 <WrapPanel Grid.Column="1" HorizontalAlignment="Right">
+                    <Label Content="Dataset: " Height="20" VerticalContentAlignment="Center" Padding="0"/>
+                    <TextBlock FontWeight="SemiBold" Foreground="Blue"  Margin="0,0,10,0" VerticalAlignment="Center" Text="{Binding projectName, Mode=TwoWay}"/>
                     <Button Margin="3,0,0,0" Command="{Binding AboutCommand}" HorizontalAlignment="Right" Content="Help"/>
                     <Button Margin="3,0,0,0" Command="{Binding AboutCommand}" HorizontalAlignment="Right" Content="About"/>
                 </WrapPanel>
             </Grid>
+        </Border>
+        <Border Grid.Row="1" Background="Azure" HorizontalAlignment="Right" BorderThickness="2" 
+               Visibility="{Binding saveRemoveButtonVisibility, Mode=TwoWay}" BorderBrush="LightBlue" 
+               Width="auto" CornerRadius="2">
+        <WrapPanel HorizontalAlignment="Right" Grid.Row="1" Width="auto">
+            <TextBlock VerticalAlignment="Center" Visibility="{Binding dataSetStatusVisibility, Mode=TwoWay}" 
+                        Text="Dataset Status: "/>
+            <TextBlock VerticalAlignment="Center"  Visibility="{Binding dataSetStatusVisibility, Mode=TwoWay}"
+                        Foreground="{Binding dataSetStatusColor, Mode=TwoWay}"
+                        Text="{Binding dataSetStatus}" Margin="0,0,0,0"/>
+            
+            <TextBlock  VerticalAlignment="Center" Visibility="{Binding projectStatusVisibility, Mode=TwoWay}" Text="Design Status: "
+                       Margin="10,0,0,0"/>
+            <TextBlock VerticalAlignment="Center" Foreground="{Binding projectStatusColor, Mode=TwoWay}" 
+                       Visibility="{Binding projectStatusVisibility, Mode=TwoWay}"  
+                       Text="{Binding projectStatus}" Margin="0,0,10,0"/>
+            
+            <Button Margin="3,0,0,0" Command="{Binding SaveDataCommand}" Content="Save Changes"
+                    Visibility="{Binding saveRemoveButtonVisibility, Mode=TwoWay}"/>
+            <Button Margin="3,0,0,0" Command="{Binding UndoChangesCommand}" Content="Undo Changes"
+                    Visibility="{Binding saveRemoveButtonVisibility, Mode=TwoWay}"/>
+        </WrapPanel>
         </Border>
         <!--<StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal">
             <Button Content="Data" Margin="5" Command="{Binding NavigateCommand}" CommandParameter="Data"/>
             <Button Content="SetUp" Margin="5" Command="{Binding NavigateCommand}" CommandParameter="SetUp"/>
         </StackPanel>-->
 
-        <ContentControl Grid.Row="1" Grid.Column="0" prism:RegionManager.RegionName="ContentRegion" Margin="0,0,-24.333,-254.333"/>
+        <ContentControl Grid.Row="2" Grid.Column="0" prism:RegionManager.RegionName="ContentRegion" Margin="0,0,-24.333,-254.333"/>
         <!--<ContentControl Grid.Row="1" Grid.Column="0" prism:RegionManager.RegionName="ContentRegion" 
                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>-->
 

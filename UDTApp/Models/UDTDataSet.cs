@@ -63,7 +63,9 @@ namespace UDTApp.Models
             get { return _isModified; }
             set
             {
+                bool isChanged = (value != _isModified);
                 SetProperty(ref _isModified, value);
+                if (dataChangeEvent != null && isChanged) dataChangeEvent();
             }
         }
 

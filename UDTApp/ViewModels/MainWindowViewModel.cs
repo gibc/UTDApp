@@ -20,6 +20,7 @@ using UDTApp.DataBaseProvider;
 using System.Windows.Controls;
 using UDTApp.Settings;
 using Microsoft.Win32;
+using System.Windows.Media;
 
 namespace UDTApp.ViewModels
 {
@@ -28,7 +29,6 @@ namespace UDTApp.ViewModels
         private readonly IRegionManager _regionManager;
 
         public DelegateCommand<string> NavigateCommand { get; set; }
-        //public DelegateCommand WindowLoadedCommand { get; set; }
         public DelegateCommand<Window> WindowLoadedCommand { get; set; }
 
         public DelegateCommand EditCommand { get; set; }
@@ -48,7 +48,6 @@ namespace UDTApp.ViewModels
             _regionManager = regionManager;
 
             NavigateCommand = new DelegateCommand<string>(Navigate);
-            //WindowLoadedCommand = new DelegateCommand(windowLoaded);
             WindowLoadedCommand = new DelegateCommand<Window>(windowLoaded);
             EditCommand = new DelegateCommand(editProject);
             RunCommand = new DelegateCommand(runProject, canRun);
@@ -84,6 +83,8 @@ namespace UDTApp.ViewModels
             if (PageZeroViewModel.viewModel != null)
                 PageZeroViewModel.viewModel.windowLoaded();
             Navigate("PageZero");
+            //projectDataModified = false;
+
         }
 
         private bool _dataSetVisible = false;
@@ -147,15 +148,157 @@ namespace UDTApp.ViewModels
             }
         }
 
+        private Visibility _projectStatusVisibility = Visibility.Collapsed;
+        public Visibility projectStatusVisibility
+        {
+            get
+            {
+                if (findDesignValidationError())
+                    return Visibility.Visible;
+                else if (projectDataModified)
+                    return Visibility.Visible;
+                else
+                    return Visibility.Collapsed;
+            }
+            set { SetProperty(ref _projectStatusVisibility, value); }
+        }
+
+        private Visibility _dataSetStatusVisibility = Visibility.Collapsed;
+        public Visibility dataSetStatusVisibility
+        {
+            get
+            {
+                if (findDataSetError())
+                    return Visibility.Visible;
+                else if (UDTDataSet.udtDataSet.IsModified)
+                    return Visibility.Visible;
+                else return Visibility.Collapsed;
+            }
+            set { SetProperty(ref _dataSetStatusVisibility, value); }
+        }
+
+        private Visibility _saveRemoveButtonVisibility = Visibility.Collapsed;
+        public Visibility saveRemoveButtonVisibility
+        {
+            get
+            {
+                if (projectStatus == projectSatausEnum.normal && dataSetStatus == projectSatausEnum.normal)
+                    return Visibility.Collapsed;
+                else return Visibility.Visible;
+            }
+            set
+            {
+                value = Visibility.Visible;
+                if (projectStatus == projectSatausEnum.normal && dataSetStatus == projectSatausEnum.normal)
+                    value = Visibility.Collapsed;
+                else value = Visibility.Visible;
+                SetProperty(ref _saveRemoveButtonVisibility, value);
+            }
+        }
+
+        public enum projectSatausEnum { normal, modifed, error, Error}
+        private projectSatausEnum _projectStatus = projectSatausEnum.normal;
+        public projectSatausEnum projectStatus
+        {
+            get
+            {
+                if (findDesignValidationError())
+                    return projectSatausEnum.error;
+                else if (projectDataModified)
+                    return projectSatausEnum.modifed;
+                else
+                    return projectSatausEnum.normal;
+            }
+            set
+            {
+                if (findDesignValidationError())
+                    value = projectSatausEnum.error;
+                else if (projectDataModified)
+                    value = projectSatausEnum.modifed;
+                else
+                    value = projectSatausEnum.normal;
+
+                SetProperty(ref _projectStatus, value);
+            }
+        }
+
+        private projectSatausEnum _dataSetStatus = projectSatausEnum.normal;
+        public projectSatausEnum dataSetStatus
+        {
+            get
+            {
+                if (findDataSetError())
+                    return projectSatausEnum.error;
+                else if (UDTDataSet.udtDataSet.IsModified)
+                    return projectSatausEnum.modifed;
+                return projectSatausEnum.normal;
+            }
+            set
+            {
+                if (findDataSetError())
+                    value = projectSatausEnum.error;
+                else if (UDTDataSet.udtDataSet.IsModified)
+                    value = projectSatausEnum.modifed;
+                else value = projectSatausEnum.normal;
+
+                SetProperty(ref _dataSetStatus, value);
+            }
+        }
+
+        private SolidColorBrush _projectStatusColor = new SolidColorBrush(Colors.DarkOrange);
+        public SolidColorBrush projectStatusColor
+        {
+            get
+            {
+                if (findDesignValidationError())
+                    return new SolidColorBrush(Colors.Red);
+                else if (projectDataModified)
+                    return new SolidColorBrush(Colors.Orange);
+                else
+                    return new SolidColorBrush(Colors.Black);
+            }
+            set
+            {
+                SetProperty(ref _projectStatusColor, value);
+            }
+        }
+
+        private SolidColorBrush _dataSetStatusColor = new SolidColorBrush(Colors.DarkOrange);
+        public SolidColorBrush dataSetStatusColor
+        {
+            get
+            {
+                if (findDataSetError())
+                    return new SolidColorBrush(Colors.Red);
+                else if (UDTDataSet.udtDataSet.IsModified)
+                    return new SolidColorBrush(Colors.DarkOrange);
+                else return new SolidColorBrush(Colors.Black);
+            }
+            set
+            {
+                SetProperty(ref _dataSetStatusColor, value);
+            }
+        }
+
+
         private void projectValidationChanged()
         {
             SaveCommand.RaiseCanExecuteChanged();
+            RaisePropertyChanged("projectStatus");
+            RaisePropertyChanged("projectStatusVisibility");
+            RaisePropertyChanged("projectStatusColor");
+            RaisePropertyChanged("saveRemoveButtonVisibility");
         }
 
         private void projectDataChanged()
         {
             projectDataModified = true;
             SaveCommand.RaiseCanExecuteChanged();
+            RaisePropertyChanged("projectStatus");
+            RaisePropertyChanged("projectStatusVisibility");
+            RaisePropertyChanged("projectStatusColor");
+            RaisePropertyChanged("saveRemoveButtonVisibility");
+
         }
 
         // run current project else select poject and run
@@ -198,6 +341,12 @@ namespace UDTApp.ViewModels
             }
         }
 
+        private string _projectName = "none"; 
+        public string projectName
+        {
+            get { return _projectName; }
+            set { SetProperty(ref _projectName, value); }
+        }
 
         void openProject(string filePath)
         {
@@ -207,11 +356,18 @@ namespace UDTApp.ViewModels
                 List<UDTBase> schema = UDTXml.UDTXmlData.openProject(filePath);
                 if (schema != null)
                 {
+                    projectName = schema[0].Name;
                     UDTXml.UDTXmlData.SchemaData = schema;
 
                     AppSettings.appSettings.addFile(filePath);
                     UDTDataSet.udtDataSet.dataChangeEvent += dataChanged;
                     UDTDataSet.udtDataSet.validationChangedEvent += dataValidationChanged;
+
+                    UDTData master = schema[0] as UDTData;
+                    master.validationChangedEvent += projectValidationChanged;
+                    master.dataChangeEvent += projectDataChanged;
+                    projectDataModified = false;
+
                     //Navigate("DataEditView");
                     if (dataSetVisible)
                         viewDataset();
@@ -262,8 +418,15 @@ namespace UDTApp.ViewModels
         {
             if (UDTXml.UDTXmlData.SchemaData.Count == 0) return false;
             else if (currentView != "PageZero") return false;
-            else if (findValidationError(UDTXml.UDTXmlData.SchemaData[0])) return false;
+            else if (findDesignValidationError()) return false;
             else return projectDataModified;
+        }
+
+        private bool findDesignValidationError()
+        {
+            if (UDTXml.UDTXmlData.SchemaData.Count <= 0)
+                return false;
+            else return findValidationError(UDTXml.UDTXmlData.SchemaData[0]);
         }
 
         private bool findValidationError(UDTBase udtItem)
@@ -305,10 +468,6 @@ namespace UDTApp.ViewModels
 
         private void menuOpen(MenuItem fileMenu)
         {
-            //int itemCount = fileMenu.Items.Count;
-            //if (itemCount > 3)
-            //    for (int i = 3; i < itemCount; i++)
-            //        fileMenu.Items.RemoveAt(i);
             fileMenu.Items.Clear();
             foreach (FileSetting file in AppSettings.appSettings.fileSettings)
             {
@@ -330,11 +489,44 @@ namespace UDTApp.ViewModels
         public void dataChanged()
         {
             SaveDataCommand.RaiseCanExecuteChanged();
+            RaisePropertyChanged("dataSetStatus");
+            RaisePropertyChanged("dataSetStatusVisibility");
+            RaisePropertyChanged("dataSetStatusColor");
+            RaisePropertyChanged("saveRemoveButtonVisibility");
         }
 
         public void dataValidationChanged()
         {
             SaveDataCommand.RaiseCanExecuteChanged();
+            RaisePropertyChanged("dataSetStatus");
+            RaisePropertyChanged("dataSetStatusVisibility");
+            RaisePropertyChanged("dataSetStatusColor");
+            RaisePropertyChanged("saveRemoveButtonVisibility");
+        }
+
+        private bool findDataSetError()
+        {
+            if(DataEditViewModel.dataEditViewModel == null) return false;
+            DataEditGrid grid = DataEditViewModel.dataEditViewModel.currentEditGrid;
+            if (grid == null) return false;
+
+            bool error = false;
+            findDataSetError(grid, ref error);
+            return error;
+        }
+
+        private void findDataSetError(DataEditGrid grid, ref bool error)
+        {
+            foreach (DataEditGrid childGrid in grid.childGrids)
+                findDataSetError(childGrid, ref error);
+            foreach (UDTDataBoxBase editBox in grid.editBoxes)
+            {
+                if (editBox.HasErrors)
+                { 
+                    error = true;
+                    return;
+                }
+            }          
         }
 
         private bool canSaveData()
@@ -372,7 +564,17 @@ namespace UDTApp.ViewModels
 
         }
 
-        private bool projectDataModified { get; set; }
+        private bool _projectDataModified = false;
+        private bool projectDataModified
+        {
+            get { return _projectDataModified; }
+            set
+            {
+                SetProperty(ref _projectDataModified, value);
+                projectStatus = projectSatausEnum.modifed;
+                
+            }
+        }
 
 
     }
