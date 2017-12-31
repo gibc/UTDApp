@@ -34,6 +34,16 @@ namespace UDTApp.Settings
             set;
         }
 
+        public bool findPojectName(string name)
+        {
+            foreach(FileSetting setting in fileSettings)
+            {
+                if (Path.GetFileNameWithoutExtension(setting.filePath) == name)
+                    return true;
+            }
+            return false;
+        }
+
         public void addFile(string _filePath)
         {
             FileSetting setting = fileSettings.Find(fs => fs.filePath == _filePath);

@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
+using UDTApp.Settings;
 
 namespace UDTApp.ViewModels
 {
@@ -28,11 +29,19 @@ namespace UDTApp.ViewModels
         [Required(ErrorMessage = "Project Name is required.")]
         [StringLength(15, MinimumLength = 5, ErrorMessage = "Project Name must be between 5 and 15 characters.")]
         [RegularExpression(@"^[a-zA-Z]+$", ErrorMessage = "Project Name can include only letter characters")]
-        public string ProjectName 
+        [CustomValidation(typeof(NewProjectViewModel), "CheckDuplicateName")]
+        public string ProjectName
         {
             get { return _projectName; }
-            set 
+            set
             {
+                //if (AppSettings.appSettings.findPojectName(value))
+                //{
+                //    List<string> errLst = new List<string>();
+                //    string errMsg = string.Format("Duplicat project name");
+                //    errLst.Add(errMsg);
+                //    SetErrors(() => this.ProjectName, errLst);
+                //}
                 SetProperty(ref _projectName, value);
                 OkCommand.RaiseCanExecuteChanged();
             }
@@ -41,7 +50,7 @@ namespace UDTApp.ViewModels
         private void okCmd()
         {
             newPrjView.DialogResult = true;
-            closeAction();            
+            closeAction();
         }
 
         private bool canOk()
@@ -62,6 +71,19 @@ namespace UDTApp.ViewModels
             closeAction = new Action(window.Close);
             newPrjView = window;
             ProjectName = "";
+        }
+
+        public static System.ComponentModel.DataAnnotations.ValidationResult CheckDuplicateName(string name, ValidationContext context)
+        {
+            NewProjectViewModel dataObj = context.ObjectInstance as NewProjectViewModel;
+            if (dataObj != null)
+            {
+                if (AppSettings.appSettings.findPojectName(dataObj.ProjectName))
+                {
+                    return new System.ComponentModel.DataAnnotations.ValidationResult("A project already exits with this name. Select another name.");
+                }
+            }
+            return System.ComponentModel.DataAnnotations.ValidationResult.Success;
         }
     }
 }

@@ -112,8 +112,8 @@
             <TextBlock VerticalAlignment="Center" Foreground="{Binding projectStatusColor, Mode=TwoWay}" 
                        Visibility="{Binding projectStatusVisibility, Mode=TwoWay}"  
                        Text="{Binding projectStatus}" Margin="0,0,10,0"/>
-            
-            <Button Margin="3,0,0,0" Command="{Binding SaveDataCommand}" Content="Save Changes"
+
+             <Button Margin="3,0,0,0" Command="{Binding SaveCommand}" Content="Save Changes"
                     Visibility="{Binding saveRemoveButtonVisibility, Mode=TwoWay}"/>
             <Button Margin="3,0,0,0" Command="{Binding UndoChangesCommand}" Content="Undo Changes"
                     Visibility="{Binding saveRemoveButtonVisibility, Mode=TwoWay}"/>

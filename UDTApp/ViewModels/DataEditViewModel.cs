@@ -590,27 +590,74 @@ namespace UDTApp.ViewModels
             // load database from currently loaded schema
             UDTData curentSchem = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
             if (UDTDataSet.udtDataSet.DataSet == null || curentSchem.Name != UDTDataSet.udtDataSet.DataSet.DataSetName)
-                UDTDataSet.udtDataSet.readDatabase(UDTXml.UDTXmlData.SchemaData[0] as UDTData);
+                loadDataSet();
+
+            //    UDTDataSet.udtDataSet.readDatabase(UDTXml.UDTXmlData.SchemaData[0] as UDTData);
+            //UDTDataSet.udtDataSet.IsModified = false;
+            //DataEditDataBase editDataBase = new DataEditDataBase();
+
+            //UDTData dbItem = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
+            //foreach (UDTData table in dbItem.tableData)
+            //{
+            //    DataEditGrid grid = new DataEditGrid(table, navBtnClk);
+            //    //if (currentEditGrid == null)
+            //        currentEditGrid = grid;
+            //    editDataBase.editGrids.Add(grid);
+            //    createDataGrids(grid, table, navBtnClk);
+            //}
+
+
+            ////currentEditGrid = topDataEditGrid;
+            ////dataEditDataBase = editDataBase;
+            ////currentEditGrid.localNavButtonClick();
+            //foreach (DataEditGrid grid in editDataBase.editGrids)
+            //    grid.localNavButtonClick();
+            //dataEditDataBase = editDataBase;
+
+        }
+
+        public void loadDataSet()
+        {
+            // load database from currently loaded schema
+ 
+            UDTDataSet.udtDataSet.readDatabase(UDTXml.UDTXmlData.SchemaData[0] as UDTData);
             UDTDataSet.udtDataSet.IsModified = false;
+
+            loadDataGrid();
+
+            //DataEditDataBase editDataBase = new DataEditDataBase();
+
+            //UDTData dbItem = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
+            //foreach (UDTData table in dbItem.tableData)
+            //{
+            //    DataEditGrid grid = new DataEditGrid(table, navBtnClk);
+            //    currentEditGrid = grid;
+            //    editDataBase.editGrids.Add(grid);
+            //    createDataGrids(grid, table, navBtnClk);
+            //}
+
+            //foreach (DataEditGrid grid in editDataBase.editGrids)
+            //    grid.localNavButtonClick();
+            //dataEditDataBase = editDataBase;
+            
+        }
+
+        public void loadDataGrid()
+        {
             DataEditDataBase editDataBase = new DataEditDataBase();
 
             UDTData dbItem = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
             foreach (UDTData table in dbItem.tableData)
             {
                 DataEditGrid grid = new DataEditGrid(table, navBtnClk);
-                if (currentEditGrid == null)
-                    currentEditGrid = grid;
+                currentEditGrid = grid;
                 editDataBase.editGrids.Add(grid);
                 createDataGrids(grid, table, navBtnClk);
             }
 
-            //currentEditGrid = topDataEditGrid;
-            //dataEditDataBase = editDataBase;
-            //currentEditGrid.localNavButtonClick();
             foreach (DataEditGrid grid in editDataBase.editGrids)
                 grid.localNavButtonClick();
             dataEditDataBase = editDataBase;
-
         }
 
         private DataEditDataBase _dataEditDataBase = null;
@@ -700,7 +747,7 @@ namespace UDTApp.ViewModels
             editBoxes = new List<UDTDataBoxBase>();
             foreach (UDTBase item in udtData.columnData)
             {
-                // TBD: create editBox type based on item typeName
+                // create editBox type based on item typeName
                 if (item.TypeName == UDTTypeName.Number )
                     //editBoxes.Add(new UDTDataNumberBox(item.Name, item, editBoxValidationChanged));
                     editBoxes.Add(new NumberViewModel(item.Name, item, editBoxValidationChanged));

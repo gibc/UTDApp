@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Xml.Serialization;
 using UDTApp.Settings;
 
@@ -55,6 +56,28 @@ namespace UDTApp.Models
             }
             return false;
         }
+
+        public bool saveToXml(List<UDTBase> SchemaList, string filePath)
+        {
+            try
+            { 
+                string xml = SerializeToString(SchemaList);
+                FileStream xmlFile = File.Open(filePath, FileMode.Create);
+                Byte[] info = new UTF8Encoding(true).GetBytes(xml);
+                xmlFile.Write(info, 0, info.Length);
+                xmlFile.Close();
+                SchemaData = SchemaList;
+                return true;
+            }
+            catch(Exception ex)
+            {
+                string msg = string.Format("saveToXml failed: {0}", ex.Message);
+                UDTApp.Log.Log.LogMessage(msg);
+                MessageBox.Show(msg);
+                return false;
+            }
+        }
+
 
         public List<UDTBase> newProject(string ProjectName)
         {

@@ -159,6 +159,7 @@ namespace UDTApp.Models
                         DbDataReader reader = UDTDataSet.dbProvider.Reader;
                         reader = cmd.ExecuteReader();
                         retVal = reader.HasRows;
+                        reader.Close();
                     }
                     else
                     { 
@@ -173,7 +174,7 @@ namespace UDTApp.Models
                 }
                 finally
                 {
-
+                    conn.Close();
                 }
             }
             return retVal;
@@ -309,8 +310,8 @@ namespace UDTApp.Models
         {
             //ALTER TABLE table_name ADD column_name datatype;
 
-            string sqlTxt = UDTDataSet.dbProvider.adjSQL(string.Format(@"USE [{0}] ALTER TABLE {1} ", dbName, table));
-            sqlTxt += string.Format("ADD {0} ", udtItem.Name);
+            string sqlTxt = UDTDataSet.dbProvider.adjSQL(string.Format(@"USE [{0}] ALTER TABLE {1}", dbName, table));
+            sqlTxt += string.Format(" ADD {0} ", udtItem.Name);
             sqlTxt += string.Format("{0} ", udtItem.Type);
 
             //using (SqlConnection conn = new SqlConnection())
