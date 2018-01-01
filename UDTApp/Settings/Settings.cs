@@ -38,7 +38,7 @@ namespace UDTApp.Settings
         {
             foreach(FileSetting setting in fileSettings)
             {
-                if (Path.GetFileNameWithoutExtension(setting.filePath) == name)
+                if (Path.GetFileNameWithoutExtension(setting.filePath).ToUpper() == name.ToUpper())
                     return true;
             }
             return false;

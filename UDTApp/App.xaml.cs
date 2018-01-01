@@ -25,6 +25,7 @@ namespace UDTApp
             AppSettings settings = AppSettings.appSettings;
             base.OnStartup(e);
             Bootstrapper bs = new Bootstrapper();
+            ShutdownMode = ShutdownMode.OnLastWindowClose;
             bs.Run();
         }
 
@@ -34,9 +35,5 @@ namespace UDTApp
             AppSettings.Save(settings, AppSettings.settingFilePath);
         }
 
-        //private void CheckBox_Checked(object sender, RoutedEventArgs e)
-        //{
-
-        //}
     }
 }

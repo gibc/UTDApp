@@ -31,7 +31,7 @@ namespace UDTApp.ViewModels
 
         public DelegateCommand<string> NavigateCommand { get; set; }
         public DelegateCommand<Window> WindowLoadedCommand { get; set; }
-
+        //public DelegateCommand<CancelEventArgs> WindowClosingCommand { get; set; }
         public DelegateCommand EditCommand { get; set; }
         public DelegateCommand RunCommand { get; set; }
         public DelegateCommand OpenCommand { get; set; }
@@ -50,6 +50,7 @@ namespace UDTApp.ViewModels
 
             NavigateCommand = new DelegateCommand<string>(Navigate);
             WindowLoadedCommand = new DelegateCommand<Window>(windowLoaded);
+            //WindowClosingCommand = new DelegateCommand<CancelEventArgs>(windowClosing);
             EditCommand = new DelegateCommand(editProject);
             RunCommand = new DelegateCommand(runProject, canRun);
             OpenCommand = new DelegateCommand(openProject);
@@ -115,8 +116,19 @@ namespace UDTApp.ViewModels
             SaveDataCommand.RaiseCanExecuteChanged();
         }
 
+        private void windowClosing(object sender, CancelEventArgs e)
+        {
+            if(saveProject(SaveType.appExit))
+            {
+                e.Cancel = false;
+            }
+            else e.Cancel = true;
+        }
+
         private void windowLoaded(Window window)
         {
+            window.Closing += windowClosing;
+        
             if (AppSettings.appSettings.autoOpenFile != null)
             {
                 if (AppSettings.appSettings.designView) designVisible = true;
@@ -396,30 +408,41 @@ namespace UDTApp.ViewModels
             }
         }
 
-
         private void saveProject()
+        {
+            saveProject(SaveType.saveCommand);
+        }
+
+        enum SaveType { appExit, viewChange, saveCommand};
+        private bool saveProject(SaveType saveType)
         {
             try
             {
+                string opeationName = "save";
+                if (saveType == SaveType.appExit)
+                    opeationName = "exit";
 
                 if (dataSetStatus == projectSatausEnum.error)
                 {
-                    string msg = 
-                        @"The Dataset has errors." + Environment.NewLine +
-                        "Select 'Cancel' to stop the save opeation and correct the errors or" + Environment.NewLine +
-                        "Select 'Ok' to permanently discard all changes and continue.";
+                    string msg =
+                        string.Format(@"The Dataset has errors." + Environment.NewLine +
+                        "Select 'Cancel' to stop the {0} opeation and correct the errors or" + Environment.NewLine +
+                        "Select 'Ok' to permanently discard all changes and continue.", opeationName);
                     if (MessageBox.Show(msg,
                         "Dataset Errors", MessageBoxButton.OKCancel, MessageBoxImage.Error) == MessageBoxResult.OK)
                     {
-                        UDTDataSet.udtDataSet.DataSet.RejectChanges();
-                        UDTDataSet.udtDataSet.IsModified = false;
-                        DataEditViewModel.dataEditViewModel.loadDataGrid();
-                        RaisePropertyChanged("dataSetStatus");
-                        RaisePropertyChanged("dataSetStatusVisibility");
-                        RaisePropertyChanged("dataSetStatusColor");
-                        RaisePropertyChanged("saveRemoveButtonVisibility");
+                        if (saveType != SaveType.appExit)
+                        { 
+                            UDTDataSet.udtDataSet.DataSet.RejectChanges();
+                            UDTDataSet.udtDataSet.IsModified = false;
+                            DataEditViewModel.dataEditViewModel.loadDataGrid();
+                            RaisePropertyChanged("dataSetStatus");
+                            RaisePropertyChanged("dataSetStatusVisibility");
+                            RaisePropertyChanged("dataSetStatusColor");
+                            RaisePropertyChanged("saveRemoveButtonVisibility");
+                        }
                     }
-                    else return;
+                    else return false; // return stop exit
                 }
 
                 else if (projectStatus == projectSatausEnum.error)
@@ -427,60 +450,84 @@ namespace UDTApp.ViewModels
                     // if un-saved new project..
                     if (AppSettings.appSettings.autoOpenFile == null)
                     {
-                        string msg =
+                        string msg = string.Format(
                             @"The new Dataset has Design errors." + Environment.NewLine +
-                            "Select 'Cancel' to stop the save opeation and correct the errors or" + Environment.NewLine +
-                            "Select 'Ok' to permanently discard the new project and contine.";
+                            "Select 'Cancel' to stop the {0} opeation and correct the errors or" + Environment.NewLine +
+                            "Select 'Ok' to permanently discard the new project and contine.", opeationName);
                         if (MessageBox.Show(msg,
                             "Design Errors", MessageBoxButton.OKCancel, MessageBoxImage.Error) == MessageBoxResult.OK)
                         {
-                            PageZeroViewModel.viewModel.SchemaList = null;
-                            UDTXml.UDTXmlData.SchemaData.Clear();
-                            RaisePropertyChanged("projectStatus");
-                            RaisePropertyChanged("projectStatusVisibility");
-                            RaisePropertyChanged("projectStatusColor");
+                            //if (saveType != SaveType.appExit)
+                            { 
+                                PageZeroViewModel.viewModel.SchemaList = null;
+                                UDTXml.UDTXmlData.SchemaData.Clear();
+                                RaisePropertyChanged("projectStatus");
+                                RaisePropertyChanged("projectStatusVisibility");
+                                RaisePropertyChanged("projectStatusColor");
+                            }
                         }
-                        else return;
+                        else return false; // stop exit
                     }
                     // else if project has been saved
                     else
                     {
-                        string msg =
+                        string msg = string.Format(
                             @"The Dataset Design has errors." + Environment.NewLine +
-                            "Select 'Cancel' to stop the save opeation and correct the errors or" + Environment.NewLine +
-                            "Select 'Ok' to permanently discard all changes and continue.";
+                            "Select 'Cancel' to stop the {0} opeation and correct the errors or" + Environment.NewLine +
+                            "Select 'Ok' to permanently discard all changes and continue.", opeationName);
                         if (MessageBox.Show(msg,
                             "Design Errors", MessageBoxButton.OKCancel, MessageBoxImage.Error) == MessageBoxResult.OK)
                         {
                             List<UDTBase> schema = UDTXml.UDTXmlData.openProject(AppSettings.appSettings.autoOpenFile.filePath);
                             if (schema != null)
                             {
-                                projectName = schema[0].Name;
-                                UDTXml.UDTXmlData.SchemaData = schema;
-                                UDTData master = schema[0] as UDTData;
-                                master.validationChangedEvent += projectValidationChanged;
-                                master.dataChangeEvent += projectDataChanged;
-                                projectDataModified = false;
-                                PageZeroViewModel.viewModel.windowLoaded();
+                                //if (saveType != SaveType.appExit)
+                                { 
+                                    projectName = schema[0].Name;
+                                    UDTXml.UDTXmlData.SchemaData = schema;
+                                    UDTData master = schema[0] as UDTData;
+                                    master.validationChangedEvent += projectValidationChanged;
+                                    master.dataChangeEvent += projectDataChanged;
+                                    projectDataModified = false;
+                                    PageZeroViewModel.viewModel.windowLoaded();
+                                }
                             }
                         }
-                        else return;
+                        else return false; // stop exit
                     }
                 }
 
                 if(dataSetStatus == projectSatausEnum.modifed)
                 {
-                    if (MessageBox.Show("Save Dataset changes?", 
+                    string msg = "Save Dataset changes?";
+                    if (saveType == SaveType.appExit)
+                    { 
+                        msg = 
+                            @"The dataset is modifed."  + Environment.NewLine +
+                            "Select OK to save the data set changes" + Environment.NewLine +
+                            "or Select cancel to permanently discard the changes.";
+                    }
+
+                    if (MessageBox.Show(msg, 
                         "Dataset Changes", MessageBoxButton.OKCancel, MessageBoxImage.Question) == MessageBoxResult.OK)
                     {
                         UDTDataSet.udtDataSet.saveDataset();
                     }
-                    else return;
+                    //else return true; // contine status checks
                 }
 
                 if (projectStatus == projectSatausEnum.modifed)
                 {
-                    if (MessageBox.Show("Save dataset Design changes?.", 
+                    string msg = "Save dataset Design changes?";
+                    if (saveType == SaveType.appExit)
+                    {
+                        msg = 
+                        @"The dataset design is modifed." + Environment.NewLine +
+                        "Select OK to save the design changes"  + Environment.NewLine +
+                        "or Select cancel to permanently discard the changes.";
+                    }
+
+                    if (MessageBox.Show(msg, 
                         "Design Changes", MessageBoxButton.OKCancel, MessageBoxImage.Question) == MessageBoxResult.OK)
                     {
                         if (AppSettings.appSettings.autoOpenFile == null)
@@ -498,7 +545,7 @@ namespace UDTApp.ViewModels
                                 FileSetting fileSetting = new FileSetting() { filePath = filePath, dateTime = DateTime.Now.ToString() };
                                 AppSettings.appSettings.autoOpenFile = fileSetting;
                             }
-                            else return;
+                            else return false; // stop exit, project mods not saved
                         }
                          
                         // save current design to xml file
@@ -521,13 +568,14 @@ namespace UDTApp.ViewModels
                             }
                             catch (Exception ex)
                             {
-                                string msg = string.Format("create load dataset failed: {0}", ex.Message);
-                                UDTApp.Log.Log.LogMessage(msg);
-                                MessageBox.Show(msg);
+                                string errmsg = string.Format("create load dataset failed: {0}", ex.Message);
+                                UDTApp.Log.Log.LogMessage(errmsg);
+                                MessageBox.Show(errmsg);
+                                return false; // stop exit
                             }
                         }
                     }
-                    else return;
+                    else return true; // continue exit
                 }
             }
             catch (Exception ex)
@@ -535,16 +583,13 @@ namespace UDTApp.ViewModels
                 string msg = string.Format("saveProject failed: {0}", ex.Message);
                 UDTApp.Log.Log.LogMessage(msg);
                 MessageBox.Show(msg);
+                return false; // stop exit
             }
-
+            return true;
         }
 
         private bool canSavePorjext()
         {
-            //if (UDTXml.UDTXmlData.SchemaData.Count == 0) return false;
-            //else if (currentView != "PageZero") return false;
-            //else if (findDesignValidationError()) return false;
-            //else return projectDataModified;
             return true;
         }
 
@@ -673,10 +718,7 @@ namespace UDTApp.ViewModels
                 if ((bool)win.DialogResult)
                 {
                     string projName = win.prjName.Text;
-                    //if (AppSettings.appSettings.findPojectName(projName))
-                    //{
 
-                    //}
                     AppSettings.appSettings.autoOpenFile = null;
                     List<UDTBase> newSchmea = UDTXml.UDTXmlData.newProject(projName);
                     UDTData master = newSchmea[0] as UDTData;
