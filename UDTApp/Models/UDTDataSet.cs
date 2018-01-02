@@ -193,12 +193,11 @@ namespace UDTApp.Models
                 {
                     ddl = UDTDataSet.dbProvider.adjSQL(string.Format("USE [{0}] CREATE TABLE {1} (", dbName, dataItem.Name));
                     ddl += string.Format("[Id] [uniqueidentifier] NOT NULL, ");
-                    //foreach (UDTBase item in dataItem.ChildData)
                     foreach (UDTBase item in dataItem.columnData)
                     {
                         //if (item.GetType() != typeof(UDTData))
                         //{
-                            ddl += string.Format("{0} {1}, ", item.Name, item.Type);
+                        ddl += string.Format("{0} {1}, ", item.Name, item.Type);
                         //}
                     }
                     foreach (string colName in dataItem.ParentColumnNames)
@@ -228,7 +227,7 @@ namespace UDTApp.Models
                     }
                 }
             }
-            // if table exits check for and add any new columns
+            // if table exits check for and add any new or missing columns
             else
             {
                 List<string> colList = GetColumns(dataItem.Name, dbName);
@@ -240,6 +239,66 @@ namespace UDTApp.Models
                     if (!colList.Contains(item.Name))
                     {
                         AddColumn(dataItem.Name, item, dbName);
+                    }
+                }
+
+                // check if all columns in database are in schema def
+                if (UDTDataSet.dbProvider.dbType != DBType.sqlLite)
+                    return;
+
+                colList = GetColumns(dataItem.Name, dbName);
+                List<string> dropColumns = new List<string>(colList);
+                foreach (string colName in colList)
+                {
+                    foreach (UDTBase item in dataItem.columnData)
+                    {
+                        if (item.Name == colName)
+                            dropColumns.Remove(colName);
+                    }
+                }
+
+                if (dropColumns.Count > 0)
+                {
+                    string colNamesDDL = "";
+                    colNamesDDL += string.Format("[Id] [uniqueidentifier] NOT NULL, ");
+                    foreach (UDTBase item in dataItem.columnData)
+                    {
+                        colNamesDDL += string.Format("{0} {1}", item.Name, item.Type);
+                        if (item != dataItem.columnData.Last())
+                            colNamesDDL += ", ";
+                    }
+                    foreach (string colName in dataItem.ParentColumnNames)
+                    {
+                        colNamesDDL += string.Format("{0} [uniqueidentifier], ", colName);
+                        if (colName != dataItem.ParentColumnNames.Last())
+                            colNamesDDL += ", ";
+                    }
+
+                    string sqlTxt = string.Format(@"BEGIN TRANSACTION;
+                        CREATE TEMPORARY TABLE t1_backup({1});
+                        INSERT INTO t1_backup SELECT {1} FROM {0};
+                        DROP TABLE {0};
+                        CREATE TABLE {0}({1});
+                        INSERT INTO {0} SELECT {1} FROM t1_backup;
+                        DROP TABLE t1_backup;
+                        COMMIT;", dataItem.Name, colNamesDDL);
+
+                    using (DbConnection conn = UDTDataSet.dbProvider.Conection)
+                    {
+                        conn.ConnectionString = UDTDataSet.dbProvider.ConnectionString;
+
+                        DbCommand cmd = UDTDataSet.dbProvider.GetCommand(sqlTxt);
+
+                        cmd.Connection = conn;
+                        conn.Open();
+                        try
+                        {
+                            cmd.ExecuteNonQuery();
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show(ex.Message);
+                        }
                     }
                 }
             }
