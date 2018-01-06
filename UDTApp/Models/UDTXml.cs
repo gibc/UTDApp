@@ -182,9 +182,14 @@ namespace UDTApp.Models
 
         private void setParentRefs(UDTData dataItem)
         {
-            foreach(UDTBase child in dataItem.columnData)
+            // TBD: load backup savName, savColumnData, savTableData
+            dataItem.savName = dataItem.Name;
+            dataItem.savColumnData = new ObservableCollection<UDTBase>(dataItem.columnData);
+            dataItem.savTableData = new ObservableCollection<UDTData>(dataItem.tableData);
+            foreach (UDTBase child in dataItem.columnData)
             {
                 child.parentObj = dataItem;
+                child.savName = child.Name;
             }
 
             foreach (UDTData child in dataItem.tableData)
@@ -195,8 +200,6 @@ namespace UDTApp.Models
                 child.parentObj = dataItem;
 
             }
-
-
 
         }
     }

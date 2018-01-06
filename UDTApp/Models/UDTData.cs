@@ -57,6 +57,32 @@ namespace UDTApp.Models
             if (dataChangeEvent != null) dataChangeEvent();
         }
 
+        [XmlIgnoreAttribute]
+        public override bool isModified
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(savName)) return true;
+                if (savName != Name) return true;
+                if (savTableData == null || !tableData.Equals(savTableData)) return true;
+                if (savColumnData == null || !columnData.Equals(savColumnData)) return true;
+                if (columnData.Any(p => p.isModified)) return true;
+                if (isColumnDeleted) return true;
+                return false;
+            }
+        }
+
+        [XmlIgnoreAttribute]
+        public bool isColumnDeleted
+        {
+            get
+            {
+                if (savTableData == null) return false;
+               return savColumnData.Any(p => columnData.FirstOrDefault(a => a.savName == p.Name) == null);
+            }
+        }
+
+
         private ObservableCollection<UDTData> _tableData;
         //[XmlIgnoreAttribute]
         public ObservableCollection<UDTData> tableData
@@ -71,6 +97,19 @@ namespace UDTApp.Models
             }
         }
 
+        private ObservableCollection<UDTData> _savTableData = null;
+        [XmlIgnoreAttribute]
+        public ObservableCollection<UDTData> savTableData
+        {
+            get
+            {
+                return _savTableData;
+            }
+            set
+            {
+                _savTableData = value;
+            }
+        }
 
         private ObservableCollection<UDTBase> _columnData;
         //[XmlIgnoreAttribute]
@@ -83,6 +122,20 @@ namespace UDTApp.Models
             set
             {
                 SetProperty(ref _columnData, value);
+            }
+        }
+
+        private ObservableCollection<UDTBase> _savColumnData = null;
+        [XmlIgnoreAttribute]
+        public ObservableCollection<UDTBase> savColumnData
+        {
+            get
+            {
+                return _savColumnData;
+            }
+            set
+            {
+                _savColumnData = value;
             }
         }
         // group children can have more than one parent
@@ -438,6 +491,25 @@ namespace UDTApp.Models
         {
             get { return _displayName; }
             set { SetProperty(ref _displayName, value); }
+        }
+
+        [XmlIgnoreAttribute]
+        private string _savName = "";
+        public string savName
+        {
+            get { return _savName; }
+            set { _savName = value; }
+        }
+
+        [XmlIgnoreAttribute]
+        public virtual bool isModified
+        {
+            get
+            {
+                if(string.IsNullOrEmpty(savName)) return true;
+                if (savName != Name) return true;
+                return false;
+            }
         }
 
         private string _name = "";

@@ -78,10 +78,8 @@ namespace UDTApp.Models
 
         public void createDatabase(UDTData masterItem)
         {
-            //createSQLDatabase(getDbName(masterItem));
             createSQLDatabase(masterItem.Name);
             List<Guid> tableGuids = new List<Guid>();
-            //createDBTable(masterItem, getDbName(masterItem), tableGuids);
             foreach(UDTData table in masterItem.tableData)
             {
                 createDBTable(table, masterItem.Name, tableGuids);
@@ -182,112 +180,65 @@ namespace UDTApp.Models
 
         private void createDBTable(UDTData dataItem, string dbName, List<Guid> tableGuids)
         {
+            if (dataItem.savTableData != null)
+            {
+                foreach (UDTData item in dataItem.savTableData)
+                {
+                    var c = dataItem.tableData.FirstOrDefault(p => p.Name == item.Name);
+                    if(c == null)
+                    {
+                        c = dataItem.tableData.FirstOrDefault(p => p.savName == item.Name);
+                        if(c == null)
+                        {
+                            // table has been deleted
+                            //delteDBTable(item, dbName, tableGuids);
+                        }
+                    }
+                }
+            }
+
+            foreach (UDTData item in dataItem.tableData)
+            {
+                createDBTable(item, dbName, tableGuids);
+            }
+
             string ddl;
 
             if (tableGuids.Contains(dataItem.objId)) return;
 
             if (!TableExists(dataItem.Name, dbName))
             {
-                //using (SqlConnection conn = new SqlConnection())
-                using (DbConnection conn = UDTDataSet.dbProvider.Conection)
+                if (!string.IsNullOrEmpty(dataItem.savName) && TableExists(dataItem.savName, dbName))
                 {
-                    ddl = UDTDataSet.dbProvider.adjSQL(string.Format("USE [{0}] CREATE TABLE {1} (", dbName, dataItem.Name));
-                    ddl += string.Format("[Id] [uniqueidentifier] NOT NULL, ");
-                    foreach (UDTBase item in dataItem.columnData)
-                    {
-                        //if (item.GetType() != typeof(UDTData))
-                        //{
-                        ddl += string.Format("{0} {1}, ", item.Name, item.Type);
-                        //}
-                    }
-                    foreach (string colName in dataItem.ParentColumnNames)
-                    {
-                        ddl += string.Format("{0} [uniqueidentifier], ", colName);
-                    }
-                    ddl = ddl.Substring(0, ddl.Length - 2);
-                    ddl += "); ";
-
-                    tableGuids.Add(dataItem.objId);
-
-                    //conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
-                    conn.ConnectionString = UDTDataSet.dbProvider.ConnectionString;
-                    //SqlCommand cmd = new SqlCommand(ddl);
-                    DbCommand cmd = UDTDataSet.dbProvider.GetCommand(ddl);
-
-
-                    cmd.Connection = conn;
-                    conn.Open();
-                    try
-                    {
-                        cmd.ExecuteNonQuery();
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show(ex.Message);
-                    }
+                    // table has a new name
+                    string sqlTxt = UDTDataSet.dbProvider.adjSQL(string.Format("USE [{0}]  ALTER TABLE {1} RENAME TO {2}",
+                        dbName, dataItem.savName, dataItem.Name));
+                    if (!executeQuery(sqlTxt)) return;
+                    dataItem.savName = dataItem.Name;  // remove table name mod from schema
                 }
-            }
-            // if table exits check for and add any new or missing columns
-            else
-            {
-                List<string> colList = GetColumns(dataItem.Name, dbName);
-
-                //foreach (UDTBase item in dataItem.ChildData)
-                foreach (UDTBase item in dataItem.columnData)
+                else
                 {
-                    //if (item.GetType() != typeof(UDTData) && !colList.Contains(item.Name))
-                    if (!colList.Contains(item.Name))
-                    {
-                        AddColumn(dataItem.Name, item, dbName);
-                    }
-                }
-
-                // check if all columns in database are in schema def
-                if (UDTDataSet.dbProvider.dbType != DBType.sqlLite)
-                    return;
-
-                colList = GetColumns(dataItem.Name, dbName);
-                List<string> dropColumns = new List<string>(colList);
-                foreach (string colName in colList)
-                {
-                    foreach (UDTBase item in dataItem.columnData)
-                    {
-                        if (item.Name == colName)
-                            dropColumns.Remove(colName);
-                    }
-                }
-
-                if (dropColumns.Count > 0)
-                {
-                    string colNamesDDL = "";
-                    colNamesDDL += string.Format("[Id] [uniqueidentifier] NOT NULL, ");
-                    foreach (UDTBase item in dataItem.columnData)
-                    {
-                        colNamesDDL += string.Format("{0} {1}", item.Name, item.Type);
-                        if (item != dataItem.columnData.Last())
-                            colNamesDDL += ", ";
-                    }
-                    foreach (string colName in dataItem.ParentColumnNames)
-                    {
-                        colNamesDDL += string.Format("{0} [uniqueidentifier], ", colName);
-                        if (colName != dataItem.ParentColumnNames.Last())
-                            colNamesDDL += ", ";
-                    }
-
-                    string sqlTxt = string.Format(@"BEGIN TRANSACTION;
-                        CREATE TEMPORARY TABLE t1_backup({1});
-                        INSERT INTO t1_backup SELECT {1} FROM {0};
-                        DROP TABLE {0};
-                        CREATE TABLE {0}({1});
-                        INSERT INTO {0} SELECT {1} FROM t1_backup;
-                        DROP TABLE t1_backup;
-                        COMMIT;", dataItem.Name, colNamesDDL);
-
+                    // create new table
                     using (DbConnection conn = UDTDataSet.dbProvider.Conection)
                     {
-                        conn.ConnectionString = UDTDataSet.dbProvider.ConnectionString;
+                        ddl = UDTDataSet.dbProvider.adjSQL(string.Format("USE [{0}] CREATE TABLE {1} (", dbName, dataItem.Name));
+                        ddl += string.Format("[Id] [uniqueidentifier] NOT NULL, ");
+                        foreach (UDTBase item in dataItem.columnData)
+                        {
+                            ddl += string.Format("{0} {1}, ", item.Name, item.Type);
+                        }
+                        foreach (string colName in dataItem.ParentColumnNames)
+                        {
+                            ddl += string.Format("{0} [uniqueidentifier], ", colName);
+                        }
+                        ddl = ddl.Substring(0, ddl.Length - 2);
+                        ddl += "); ";
 
-                        DbCommand cmd = UDTDataSet.dbProvider.GetCommand(sqlTxt);
+                        tableGuids.Add(dataItem.objId);
+
+                        conn.ConnectionString = UDTDataSet.dbProvider.ConnectionString;
+                        DbCommand cmd = UDTDataSet.dbProvider.GetCommand(ddl);
+
 
                         cmd.Connection = conn;
                         conn.Open();
@@ -300,17 +251,196 @@ namespace UDTApp.Models
                             MessageBox.Show(ex.Message);
                         }
                     }
+                    return;
                 }
             }
 
-            //foreach (UDTBase item in dataItem.ChildData)
-            foreach (UDTData item in dataItem.tableData)
+            // if table exits check for added, deleted, renamed columns
+            if(dataItem.savColumnData != null)
             {
-                //if (item.GetType() == typeof(UDTData))
-                //{
-                    createDBTable(item as UDTData, dbName, tableGuids);
-                //}
+                // no col mods, exit
+                //if (dataItem.columnData.Equals(dataItem.savColumnData))
+                //    return;
+                if (!dataItem.isModified) return;
+
+                // if we have no data then just drop and recreate table with
+                // all column mods
+                if(isTableEmpty(dataItem.Name))
+                {
+                    string sqlTxt = string.Format(@"DROP TABLE {0}", dataItem.Name);
+                    if (!executeQuery(sqlTxt)) return;
+                    createNewTable(dataItem, dataItem.Name, dbName);
+                    return;
+                }
+
+                // if we have data check for deleted columns and
+                // save to backup table
+                if(dataItem.isColumnDeleted)
+                { 
+                    UDTData dropedColTable = new UDTData();
+                    dropedColTable.Name = dataItem.Name += "DropedCols";
+
+                    List<UDTBase> deleted = dataItem.savColumnData.ToList().FindAll
+                        (p => dataItem.columnData.FirstOrDefault(a => a.savName == p.Name) == null);
+                    dropedColTable.columnData = 
+                        new System.Collections.ObjectModel.ObservableCollection<UDTBase>(deleted);
+
+                    //createNewTable(dropedColTable, dropedColTable.Name, dbName);
+                    //// copy data from current table to new table SELECT
+                    //string sqlTxt = string.Format(@"INSERT INTO {0}({2}) SELECT {2} FROM {1}",
+                    //    dropedColTable.Name, dataItem.Name,
+                    //    getColSql(dropedColTable));
+                    //if (!executeQuery(sqlTxt)) return;
+
+                }
+
+                // add new cols and renamed cols and
+                // drop any deleted cols and
+                // copy over data to renamed cols
+                if (!RenameColumns(dataItem, dbName)) return;
+              }
+        }
+
+        private List<string> getColNameList(UDTData dataItem, bool savedCols = false)
+        {
+            List<string> colNameList = new List<string>();
+            colNameList.Add("Id");
+
+            // if col is presnet in current list then not deleted 
+            // so this gets undeleted colums by new name
+            // or by old name and not new columns
+            foreach(UDTBase col in dataItem.columnData)
+            {
+                // skip new columns
+                var c = dataItem.savColumnData.FirstOrDefault(p => p.Name == col.Name);
+                if (c == null)
+                    continue;
+
+                if (savedCols)
+                    colNameList.Add(col.savName);
+                else
+                    colNameList.Add(col.Name);
             }
+
+            // TBD: need saved parent column names
+            foreach (string colName in dataItem.ParentColumnNames)
+            {
+                colNameList.Add(string.Format("{0}", colName));
+            }
+
+            return colNameList;
+        }
+
+        private string getColSql(UDTData dataItem, bool savedCols = false)
+        {
+            string sqlTxt = "";
+            List<string> colNameList = getColNameList(dataItem, savedCols);
+            foreach(string colName in colNameList)
+            {
+                sqlTxt += colName;
+                if (colName != colNameList.Last())
+                    sqlTxt += ", ";
+            }
+            return sqlTxt;
+        }
+
+        bool isTableEmpty(string tableName)
+        {
+            bool retVal = true;
+            string sqlTxt = string.Format("SELECT * from {0}", tableName);
+            using (DbConnection conn = UDTDataSet.dbProvider.Conection)
+            {
+                conn.ConnectionString = UDTDataSet.dbProvider.ConnectionString;
+                DbCommand cmd = UDTDataSet.dbProvider.GetCommand(sqlTxt);
+                cmd.Connection = conn;
+                conn.Open();
+                try
+                {
+                    if (UDTDataSet.dbProvider.dbType == DBType.sqlLite)
+                    {
+                        DbDataReader reader = UDTDataSet.dbProvider.Reader;
+                        reader = cmd.ExecuteReader();
+                        retVal = !reader.HasRows;
+                        reader.Close();
+                    }
+                    else
+                    {
+                        int dbCount = (int)cmd.ExecuteScalar();
+                        retVal = !(dbCount >= 1);
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+                finally
+                {
+                    conn.Close();
+                }
+            }
+            return retVal;
+        }
+
+        private string unChangedColDefs(UDTData dataItem, List<string> unChangedColNames)
+        {
+            string colDef = "";
+            foreach(string colName in unChangedColNames)
+            {
+                UDTBase item = dataItem.columnData.FirstOrDefault(p => p.Name == colName);
+                if (item != null)
+                {
+                    if (!string.IsNullOrEmpty(colDef))
+                        colDef += ", ";
+                    colDef += string.Format("{0} {1}", item.Name, item.Type);
+                }
+            }
+            colDef += string.Format("[Id] [uniqueidentifier] NOT NULL");
+            return colDef;
+        }
+
+        private bool createNewTable(UDTData dataItem, string tableName, string dbName)
+        {
+            using (DbConnection conn = UDTDataSet.dbProvider.Conection)
+            {
+                string ddl = UDTDataSet.dbProvider.adjSQL(string.Format("USE [{0}] CREATE TABLE {1} (", dbName, dataItem.Name));
+                ddl += string.Format("[Id] [uniqueidentifier] NOT NULL, ");
+                foreach (UDTBase item in dataItem.columnData)
+                {
+                    ddl += string.Format("{0} {1}, ", item.Name, item.Type);
+                }
+                foreach (string colName in dataItem.ParentColumnNames)
+                {
+                    ddl += string.Format("{0} [uniqueidentifier], ", colName);
+                }
+                ddl = ddl.Substring(0, ddl.Length - 2);
+                ddl += "); ";
+
+                return executeQuery(ddl);
+            }
+        }
+
+        private bool executeQuery(string sqlTxt)
+        {
+            using (DbConnection conn = UDTDataSet.dbProvider.Conection)
+            {
+                conn.ConnectionString = UDTDataSet.dbProvider.ConnectionString;
+
+                DbCommand cmd = UDTDataSet.dbProvider.GetCommand(sqlTxt);
+
+                cmd.Connection = conn;
+                conn.Open();
+                try
+                {
+                    cmd.ExecuteNonQuery();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                    return false;
+                }
+            }
+            return true;
         }
 
         private List<string> GetColumns(string table, string dbName)
@@ -363,6 +493,42 @@ namespace UDTApp.Models
                 }
             }
             return colList;
+        }
+
+        private bool RenameColumns(UDTData table, string dbName)
+        {
+            //First rename the old table:
+            if (!renameTable(table.Name, string.Format("tmp_{0}", table.Name), dbName)) return false;
+
+            // create the new table with new and renamed columns but without deleted columns
+            createNewTable(table, table.Name, dbName);
+
+            //copy the contents of renamed cols across from the original table.
+            string sqlTxt = string.Format(@"INSERT INTO {0}({1}) SELECT {2} FROM tmp_{0}", 
+                table.Name, getColSql(table), getColSql(table, true));
+            if (!executeQuery(sqlTxt)) return false;
+
+            // drop the old table.
+            sqlTxt = string.Format(@"DROP TABLE tmp_{0}", table.Name);
+            if (!executeQuery(sqlTxt)) return false;
+
+            return true;
+        }
+
+        private bool renameTable(string oldName, string newName, string dbName)
+        {
+            string sqlTxt = "";
+            if (TableExists(newName, dbName))
+            {
+                sqlTxt = string.Format(@"DROP TABLE {0}", newName);
+                if (!executeQuery(sqlTxt)) return false;
+            }
+            sqlTxt = string.Format(@"ALTER TABLE {0} RENAME TO {1}",
+                oldName, newName);
+            if (!executeQuery(sqlTxt)) return false;
+
+            return true;
+
         }
 
         private void AddColumn(string table, UDTBase udtItem, string dbName)
@@ -678,12 +844,15 @@ namespace UDTApp.Models
                 DataSet.DataSetName, row.Table.TableName));
             foreach (DataColumn col in row.Table.Columns)
             {
-                sqlTxt += string.Format("{0}, ", col.ColumnName);
+                if(row[col.ColumnName] != DBNull.Value)
+                    sqlTxt += string.Format("{0}, ", col.ColumnName);
             }
             sqlTxt = sqlTxt.Substring(0, sqlTxt.Length - 2);
             sqlTxt += ") values (";
             foreach (DataColumn col in row.Table.Columns)
             {
+                if (row[col.ColumnName] == DBNull.Value)
+                    continue;
 
                 if (col.DataType == typeof(String))
                     sqlTxt += string.Format("'{0}', ", row[col.ColumnName]);
@@ -719,7 +888,7 @@ namespace UDTApp.Models
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message);
+                    MessageBox.Show(string.Format("addRow failed: {0}", ex.Message));
                 }
                 finally
                 {
@@ -733,25 +902,26 @@ namespace UDTApp.Models
             //SET column1 = value1, column2 = value2, ...
             //WHERE condition;
             string sqlTxt = UDTDataSet.dbProvider.adjSQL(string.Format("USE [{0}] update {1} set ", DataSet.DataSetName, row.Table.TableName));
+            sqlTxt += " ";
             foreach(DataColumn col in row.Table.Columns)
             {
-                //if(col.ColumnName != "Id")
+                if (row[col.ColumnName] == DBNull.Value) continue;
+                
+                if (col.DataType == typeof(String))
+                    sqlTxt += string.Format("{0}='{1}', ", col.ColumnName, row[col.ColumnName]);
+                else if (col.DataType == typeof(decimal) || col.DataType == typeof(int))
+                    sqlTxt += string.Format("{0}={1}, ", col.ColumnName, row[col.ColumnName]);
+                else if (col.DataType == typeof(DateTime))
+                    sqlTxt += string.Format("{0}='{1}', ", col.ColumnName, row[col.ColumnName]);
+                else if (col.DataType == typeof(Guid))
                 {
-                    if (col.DataType == typeof(String))
+                    var id = row[col.ColumnName];
+                    if (id.GetType() == typeof(Guid))
                         sqlTxt += string.Format("{0}='{1}', ", col.ColumnName, row[col.ColumnName]);
-                    else if (col.DataType == typeof(decimal) || col.DataType == typeof(int))
-                        sqlTxt += string.Format("{0}={1}, ", col.ColumnName, row[col.ColumnName]);
-                    else if (col.DataType == typeof(DateTime))
-                        sqlTxt += string.Format("{0}='{1}', ", col.ColumnName, row[col.ColumnName]);
-                    else if (col.DataType == typeof(Guid))
-                    {
-                        var id = row[col.ColumnName];
-                        if (id.GetType() == typeof(Guid))
-                            sqlTxt += string.Format("{0}='{1}', ", col.ColumnName, row[col.ColumnName]);
-                        else
-                            sqlTxt += string.Format("{0}=NULL, ", col.ColumnName);
-                    }
+                    else
+                        sqlTxt += string.Format("{0}=NULL, ", col.ColumnName);
                 }
+                
             }
             sqlTxt = sqlTxt.Substring(0, sqlTxt.Length - 2);
             sqlTxt += string.Format(" where Id = '{0}' ", row["Id"]);
@@ -773,7 +943,7 @@ namespace UDTApp.Models
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message);
+                    MessageBox.Show(string.Format("updateRow failed: {0}",ex.Message));
                 }
                 finally
                 {
