@@ -62,12 +62,31 @@ namespace UDTApp.Models
         {
             get
             {
-                if (string.IsNullOrEmpty(savName)) return true;
-                if (savName != Name) return true;
-                if (savTableData == null || !tableData.Equals(savTableData)) return true;
-                if (savColumnData == null || !columnData.Equals(savColumnData)) return true;
-                if (columnData.Any(p => p.isModified)) return true;
-                if (isColumnDeleted) return true;
+                if (string.IsNullOrEmpty(savName))
+                    return true;
+                if (savName != Name)
+                    return true;
+                if (columnData.Any(p => p.isModified))
+                    return true;
+                if (savColumnData == null)
+                    return true;
+                // check any added cols
+                if (columnData.Any(p => savColumnData.FirstOrDefault(q => p.Name == q.Name) == null ))
+                    return true;
+                if (isColumnDeleted)
+                    return true;
+                return false;
+            }
+        }
+
+        [XmlIgnoreAttribute]
+        public bool isSchemaModified
+        {
+            get
+            {
+                if (isModified) return true;
+                if (savTableData == null || tableData.Any(p => p.isModified)) return true;
+                if (tableData.Any(p => p.isSchemaModified)) return true;
                 return false;
             }
         }
@@ -138,8 +157,28 @@ namespace UDTApp.Models
                 _savColumnData = value;
             }
         }
+
         // group children can have more than one parent
         public List<string> ParentColumnNames { get; set; }
+
+        [XmlIgnoreAttribute]
+        public List<string> savParentColumnNames { get; set; }
+
+        public override void setSavedProps()
+        {
+            savName = Name;
+            savParentColumnNames = new List<string>(ParentColumnNames);
+            columnData.ToList().ForEach(p => p.setSavedProps());
+            savColumnData = new ObservableCollection<UDTBase>(columnData);
+            //savTableData = new ObservableCollection<UDTData>(tableData);
+        }
+
+        public void setAllSavedProps()
+        {
+            setSavedProps();
+            tableData.ToList().ForEach(p => p.setAllSavedProps());
+            savTableData = new ObservableCollection<UDTData>(tableData);
+        }
     }
 
     [XmlInclude(typeof(UDTTxtItem))]
@@ -240,6 +279,7 @@ namespace UDTApp.Models
             }
         }
 
+
         private bool disable(EventArgs eventArgs) 
         {
             if (ToolBoxItem) return true;
@@ -285,6 +325,14 @@ namespace UDTApp.Models
         {
             get { return _editProps; }
             set { SetProperty(ref _editProps, value); }
+        }
+
+        private UDTBaseEditProps _savEditProps = null;
+        [XmlIgnoreAttribute]
+        public UDTBaseEditProps savEditProps
+        {
+            get { return _savEditProps; }
+            set { SetProperty(ref _savEditProps, value); }
         }
 
         public Guid objId;
@@ -506,10 +554,17 @@ namespace UDTApp.Models
         {
             get
             {
-                if(string.IsNullOrEmpty(savName)) return true;
-                if (savName != Name) return true;
+                if(string.IsNullOrEmpty(savName))
+                    return true;
+                if (savName != Name)
+                    return true;
                 return false;
             }
+        }
+
+        public virtual void setSavedProps()
+        {
+            savName = Name;
         }
 
         private string _name = "";
@@ -985,12 +1040,23 @@ namespace UDTApp.Models
             //editProps.parentItem = this;
         }
 
-        //private UDTTextEditProps _editProps = null;
-        //public UDTTextEditProps editProps
-        //{
-        //    get { return _editProps; }
-        //    set { SetProperty(ref _editProps, value); }
-        //}
+        public override void setSavedProps()
+        {
+            base.setSavedProps();
+            savEditProps = new UDTTextEditProps(editProps);
+        }
+
+        [XmlIgnoreAttribute]
+        public override bool isModified
+        {
+            get
+            {
+                if (base.isModified) return true;
+                if (savEditProps == null)
+                    return true;
+                return !editProps.Equals(savEditProps);
+            }
+        }
     }
 
     public class UDTBaseEditProps : ValidatableBindableBase
@@ -1042,12 +1108,25 @@ namespace UDTApp.Models
             set { SetProperty(ref _currentValidationError, value); }
         }
 
+        public void editPropsDataChanged()
+        {
+            if (UDTXml.UDTXmlData.SchemaData != null && UDTXml.UDTXmlData.SchemaData.Count > 0)
+            {
+                UDTData master = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
+                master.dataChanged();
+            }
+        }
+
 
         private bool _required = false;
         public bool required
         {
             get { return _required; }
-            set { SetProperty(ref _required, value); }
+            set
+            {
+                SetProperty(ref _required, value);
+                editPropsDataChanged();
+            }
         }
     }
 
@@ -1055,6 +1134,33 @@ namespace UDTApp.Models
     public class UDTTextEditProps : UDTBaseEditProps
     {
         private UDTTextEditProps() : base() { }
+
+        public UDTTextEditProps(UDTBaseEditProps copyProps) : base()
+        {
+            UDTTextEditProps _copyProps = copyProps as UDTTextEditProps;
+            defaultText = _copyProps.defaultText;
+            maxLength = _copyProps.maxLength;
+            minLength = _copyProps.minLength;
+            required = _copyProps.required;
+        }
+
+        public override bool Equals(Object obj)
+        {
+            UDTTextEditProps savProps = obj as UDTTextEditProps;
+            bool retVal = (defaultText == savProps.defaultText &&
+            maxLength == savProps.maxLength &&
+            minLength == savProps.minLength &&
+            required == savProps.required);
+            if (retVal)
+                return true;
+            else
+                return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
 
         public UDTTextEditProps(Action editPropChanged) : base(editPropChanged)
         {
@@ -1071,7 +1177,8 @@ namespace UDTApp.Models
             get { return _defaultText; }
             set 
             { 
-                SetProperty(ref _defaultText, value); 
+                SetProperty(ref _defaultText, value);
+                editPropsDataChanged();
             }
         }
 
@@ -1085,6 +1192,7 @@ namespace UDTApp.Models
             set
             {
                 SetProperty(ref _minLength, value);
+                editPropsDataChanged();
                 if (maxLength != null && value != null && value >= maxLength)
                     maxLength = null;
                     //maxLength = value + 1;
@@ -1097,6 +1205,7 @@ namespace UDTApp.Models
             set
             {
                 SetProperty(ref _maxLength, value);
+                editPropsDataChanged();
                 if (minLength != null && value != null && value <= minLength)
                     minLength = null;
                     //minLength = value - 1;
@@ -1117,7 +1226,24 @@ namespace UDTApp.Models
             sortOrder = "ccc";
 
             editProps = new UDTIntEditProps(editPropValidaionChanged);
-        }    
+        }
+
+        public override void setSavedProps()
+        {
+            base.setSavedProps();
+            savEditProps = new UDTIntEditProps(editProps);
+        }
+
+        [XmlIgnoreAttribute]
+        public override bool isModified
+        {
+            get
+            {
+                if(base.isModified) return true;
+                if (savEditProps == null) return true;
+                return !editProps.Equals(savEditProps);
+            }
+        }
     }
 
     [XmlInclude(typeof(UDTBaseEditProps))]
@@ -1125,6 +1251,29 @@ namespace UDTApp.Models
     public class UDTIntEditProps : UDTBaseEditProps
     {
         private UDTIntEditProps() : base() { }
+
+        public UDTIntEditProps(UDTBaseEditProps copyProps) : base()
+        {
+            UDTIntEditProps _copyProps = copyProps as UDTIntEditProps;
+            defaultValue = _copyProps.defaultValue;
+            maxValue = _copyProps.maxValue;
+            minValue = _copyProps.minValue;
+            required = _copyProps.required;
+        }
+
+        public override bool Equals(Object obj)
+        {
+            UDTIntEditProps savProps = obj as UDTIntEditProps;
+            return (defaultValue == savProps.defaultValue &&
+            maxValue == savProps.maxValue &&
+            minValue == savProps.minValue &&
+            required == savProps.required);
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
 
         public UDTIntEditProps(Action editPropChanged) : base(editPropChanged) 
         {
@@ -1165,7 +1314,7 @@ namespace UDTApp.Models
                     minValue = value - 1;
             }
         }
- 
+
     }
 
     public class UDTDecimalItem : UDTBase
@@ -1180,7 +1329,22 @@ namespace UDTApp.Models
             editProps = new UDTDecimalEditProps(editPropValidaionChanged);
         }
 
+        public override void setSavedProps()
+        {
+            base.setSavedProps();
+            savEditProps = new UDTDecimalEditProps(editProps);
+        }
 
+        [XmlIgnoreAttribute]
+        public override bool isModified
+        {
+            get
+            {
+                if (base.isModified) return true;
+                if (savEditProps == null) return true;
+                return !editProps.Equals(savEditProps);
+            }
+        }
     }
 
     [XmlInclude(typeof(UDTBaseEditProps))]
@@ -1199,11 +1363,40 @@ namespace UDTApp.Models
         //public UDTNumberPicker minPicker { get; set; }
         //public UDTNumberPicker maxPicker { get; set; }
 
+        public UDTDecimalEditProps(UDTBaseEditProps copyProps) : base()
+        {
+            UDTDecimalEditProps _copyProps = copyProps as UDTDecimalEditProps;
+            defaultValue = _copyProps.defaultValue;
+            decimalFormat = _copyProps.decimalFormat;
+            maxValue = _copyProps.maxValue;
+            minValue = _copyProps.minValue;
+            required = _copyProps.required;
+        }
+
+        public override bool Equals(Object obj)
+        {
+            UDTDecimalEditProps savProps = obj as UDTDecimalEditProps;
+            return (defaultValue == savProps.defaultValue &&
+            decimalFormat == savProps.decimalFormat &&
+            maxValue == savProps.maxValue &&
+            minValue == savProps.minValue &&
+            required == savProps.required);
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
         private Decimal? _defaultValue = null;
         public Decimal? defaultValue
         {
             get { return _defaultValue; }
-            set { SetProperty(ref _defaultValue, value); }
+            set
+            {
+                SetProperty(ref _defaultValue, value);
+                editPropsDataChanged();
+            }
         }
         private Decimal? _minValue = null;
         public Decimal? minValue
@@ -1214,6 +1407,7 @@ namespace UDTApp.Models
                 SetProperty(ref _minValue, value);
                 if (maxValue != null && value != null && value >= maxValue)
                     maxValue = value + 1;
+                editPropsDataChanged();
             }
         }
         private Decimal? _maxValue = null;
@@ -1225,6 +1419,7 @@ namespace UDTApp.Models
                 SetProperty(ref _maxValue, value);
                 if (minValue != null && value != null && value <= minValue)
                     minValue = value - 1;
+                editPropsDataChanged();
             }
         }
 
@@ -1232,7 +1427,11 @@ namespace UDTApp.Models
         public DecimalFormatType decimalFormat 
         {
             get { return _decimalFormat; }
-            set { SetProperty(ref _decimalFormat, value); }
+            set
+            {
+                SetProperty(ref _decimalFormat, value);
+                editPropsDataChanged();
+            }
         }
         public List<DecimalFormatType> formatList
         {
@@ -1252,8 +1451,25 @@ namespace UDTApp.Models
             sortOrder = "eee";
 
             editProps = new UDTDateEditProps(editPropValidaionChanged);
-        }                
- 
+        }
+
+        public override void setSavedProps()
+        {
+            base.setSavedProps();
+            savEditProps = new UDTDateEditProps(editProps);
+        }
+
+        [XmlIgnoreAttribute]
+        public override bool isModified
+        {
+            get
+            {
+                if (base.isModified) return true;
+                if (savEditProps == null) return true;
+                return !editProps.Equals(savEditProps);
+            }
+        }
+
     }
 
     //public enum DateDefault { CurrentDay, CurrentWeek, CurrentMonth, CurrentYear, None }
@@ -1267,11 +1483,41 @@ namespace UDTApp.Models
         {
         }
 
+        public UDTDateEditProps(UDTBaseEditProps copyProps) : base()
+        {
+            UDTDateEditProps _copyProps = copyProps as UDTDateEditProps;
+            calandarTool = _copyProps.calandarTool;
+            dateFormat = _copyProps.dateFormat;
+            defaultDate = _copyProps.defaultDate;
+            editBoxTool = _copyProps.editBoxTool;
+            required = _copyProps.required;
+        }
+
+        public override bool Equals(Object obj)
+        {
+            UDTDateEditProps savProps = obj as UDTDateEditProps;
+            return (calandarTool == savProps.calandarTool &&
+            dateFormat == savProps.dateFormat &&
+            defaultDate == savProps.defaultDate &&
+            editBoxTool == savProps.editBoxTool &&
+            required == savProps.required);
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
+
         private DateTimeDefault _defaultDate = DateTimeDefault.None;
         public DateTimeDefault defaultDate
         {
             get { return _defaultDate; }
-            set { SetProperty(ref _defaultDate, value); }
+            set
+            {
+                SetProperty(ref _defaultDate, value);
+                editPropsDataChanged();
+            }
         }
 
 
@@ -1284,7 +1530,11 @@ namespace UDTApp.Models
         public DateTimeFormat dateFormat
         {
             get { return _dateFormat; }
-            set { SetProperty(ref _dateFormat, value); }
+            set
+            {
+                SetProperty(ref _dateFormat, value);
+                editPropsDataChanged();
+            }
         }
         public List<DateTimeFormat> formatList
         {
@@ -1295,20 +1545,32 @@ namespace UDTApp.Models
         public Boolean editBoxTool
         {
             get { return _editBoxTool; }
-            set { SetProperty(ref _editBoxTool, value); }
+            set
+            {
+                SetProperty(ref _editBoxTool, value);
+                editPropsDataChanged();
+            }
         }
         private Boolean _calandarTool = false;
         public Boolean calandarTool
         {
             get { return _calandarTool; }
-            set { SetProperty(ref _calandarTool, value); }
+            set
+            {
+                SetProperty(ref _calandarTool, value);
+                editPropsDataChanged();
+            }
         }
 
         private bool _dateRangeNotUsed = true;
         public bool dateRangeNotUsed
         {
             get { return _dateRangeNotUsed; }
-            set { SetProperty(ref _dateRangeNotUsed, value); }
+            set
+            {
+                SetProperty(ref _dateRangeNotUsed, value);
+                editPropsDataChanged();
+            }
         }
 
         //private DateTime? _minDate = DateTime.Parse("1/1/2000");
@@ -1321,6 +1583,7 @@ namespace UDTApp.Models
                 SetProperty(ref _minDate, value);
                 if (value >= maxDate)
                     maxDate = null;
+                editPropsDataChanged();
             }
         }
 
@@ -1334,6 +1597,7 @@ namespace UDTApp.Models
                 SetProperty(ref _maxDate, value);
                 if (value <= minDate)
                     minDate = null;
+                editPropsDataChanged();
             }
         }
 

@@ -150,6 +150,9 @@ namespace UDTApp.Models
 
             setParentRefs(result[0] as UDTData);
 
+            UDTData schema = result[0] as UDTData;
+            schema.setAllSavedProps();
+
             return result;
         }
 
@@ -183,13 +186,13 @@ namespace UDTApp.Models
         private void setParentRefs(UDTData dataItem)
         {
             // TBD: load backup savName, savColumnData, savTableData
-            dataItem.savName = dataItem.Name;
-            dataItem.savColumnData = new ObservableCollection<UDTBase>(dataItem.columnData);
-            dataItem.savTableData = new ObservableCollection<UDTData>(dataItem.tableData);
+            //dataItem.savName = dataItem.Name;
+            //dataItem.savColumnData = new ObservableCollection<UDTBase>(dataItem.columnData);
+            //dataItem.savTableData = new ObservableCollection<UDTData>(dataItem.tableData);
             foreach (UDTBase child in dataItem.columnData)
             {
                 child.parentObj = dataItem;
-                child.savName = child.Name;
+                //child.savName = child.Name;
             }
 
             foreach (UDTData child in dataItem.tableData)

@@ -442,7 +442,7 @@
                 <WrapPanel>
                     <Label HorizontalContentAlignment="Right" Content="Default Text: " 
                            Width="80"/>
-                    <TextBox Width="80" HorizontalAlignment="Left" Text="{Binding defaultText}"
+                    <TextBox Width="80" HorizontalAlignment="Left" Text="{Binding defaultText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                              FontStyle="Normal"/>
                 </WrapPanel>
                 <StackPanel>

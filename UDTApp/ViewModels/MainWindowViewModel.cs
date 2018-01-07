@@ -118,7 +118,7 @@ namespace UDTApp.ViewModels
             // if modifed, save or discard or stop view change
             if (projectStatus == projectSatausEnum.modifed)
             {
-                if (MessageBox.Show("Design Changed. Save Design Changes and switch to DataSet View?", "Save Design Changes", MessageBoxButton.OKCancel,
+                if (MessageBox.Show("Save Design Changes and switch to DataSet View?", "Save Design Changes", MessageBoxButton.OKCancel,
                     MessageBoxImage.Question) == MessageBoxResult.OK)
                 {
                     // Ok to save changes and continue
@@ -126,7 +126,7 @@ namespace UDTApp.ViewModels
                 }
                 else
                 {
-                    if (MessageBox.Show("Design Changed. Permanently DISCARD Design Changes and switch to DataSet View", "Design Changes", MessageBoxButton.OKCancel,
+                    if (MessageBox.Show("Permanently DISCARD Design Changes and switch to DataSet View", "Design Changes", MessageBoxButton.OKCancel,
                         MessageBoxImage.Question) == MessageBoxResult.OK)
                     {
                         // Ok to discard changes and continue
@@ -180,6 +180,7 @@ namespace UDTApp.ViewModels
                 if (AppSettings.appSettings.designView) designVisible = true;
                 else dataSetVisible = true;
                 openProject(AppSettings.appSettings.autoOpenFile.filePath);
+                raiseProjectChangeEvents();
             }
         }
 
@@ -193,7 +194,7 @@ namespace UDTApp.ViewModels
                     UDTData master = schema[0] as UDTData;
                     master.validationChangedEvent += projectValidationChanged;
                     master.dataChangeEvent += projectDataChanged;
-                    projectDataModified = false;
+                    //projectDataModified = false;
                     Navigate("PageZero");
                 }
             }
@@ -349,7 +350,7 @@ namespace UDTApp.ViewModels
 
         private void projectDataChanged()
         {
-            projectDataModified = true;
+            //projectDataModified = true;
             SaveCommand.RaiseCanExecuteChanged();
             RaisePropertyChanged("projectStatus");
             RaisePropertyChanged("projectStatusVisibility");
@@ -425,7 +426,7 @@ namespace UDTApp.ViewModels
                     UDTData master = schema[0] as UDTData;
                     master.validationChangedEvent += projectValidationChanged;
                     master.dataChangeEvent += projectDataChanged;
-                    projectDataModified = false;
+                    //projectDataModified = false;
 
                     //Navigate("DataEditView");
                     if (dataSetVisible)
@@ -662,7 +663,7 @@ namespace UDTApp.ViewModels
                     UDTData master = schema[0] as UDTData;
                     master.validationChangedEvent += projectValidationChanged;
                     master.dataChangeEvent += projectDataChanged;
-                    projectDataModified = false;
+                    //projectDataModified = false;
                     PageZeroViewModel.viewModel.windowLoaded();
                     raiseProjectChangeEvents();
                 }
@@ -704,12 +705,14 @@ namespace UDTApp.ViewModels
                 {
                     // update or create database from saved xml definition
                     UDTDataSet.udtDataSet.createDatabase(UDTXml.UDTXmlData.SchemaData[0] as UDTData);
+                    UDTData master = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
+                    master.setAllSavedProps();
                     // create DataEditView if not already created
                     if (DataEditViewModel.dataEditViewModel == null)
                         _regionManager.AddToRegion("ContentRegion", new DataEditView());
                     // loaded dataset data to DataSetView
                     DataEditViewModel.dataEditViewModel.loadDataSet();
-                    projectDataModified = false;
+                    //projectDataModified = false;
                     raiseProjectChangeEvents();
                 }
                 catch (Exception ex)
@@ -853,7 +856,7 @@ namespace UDTApp.ViewModels
                     UDTData master = newSchmea[0] as UDTData;
                     master.validationChangedEvent += projectValidationChanged;
                     master.dataChangeEvent += projectDataChanged;
-                    projectDataModified = false;
+                    //projectDataModified = false;
                     //Navigate("PageZero");
                     viewDesign();
                     RaisePropertyChanged("projectStatus");
@@ -874,15 +877,21 @@ namespace UDTApp.ViewModels
         private bool _projectDataModified = false;
         private bool projectDataModified
         {
-            get { return _projectDataModified; }
-            set
+            get
             {
-                SetProperty(ref _projectDataModified, value);
-                //if (_projectDataModified)
-                //    projectStatus = projectSatausEnum.modifed;
-                //else
-                //    projectStatus = projectSatausEnum.normal;               
+                UDTData master;
+                if (UDTXml.UDTXmlData.SchemaData != null && UDTXml.UDTXmlData.SchemaData.Count > 0)
+                {
+                    master = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
+                    return master.isSchemaModified;
+                }
+                return false;
+                //return _projectDataModified;
             }
+            //set
+            //{
+            //    SetProperty(ref _projectDataModified, value);
+            //}
         }
 
 
