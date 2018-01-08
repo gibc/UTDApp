@@ -496,9 +496,9 @@ namespace UDTApp.ViewModels
                 if (dataSetStatus == projectSatausEnum.error)
                 {
                     string msg =
-                        string.Format(@"The Dataset has errors." + Environment.NewLine +
-                        "Select 'Cancel' to stop the {0} opeation and correct the errors or" + Environment.NewLine +
-                        "Select 'Ok' to permanently discard all changes and continue.", opeationName);
+                        string.Format(@"The Dataset cannot be saved until errors are corrected." + Environment.NewLine +
+                        "Select 'Ok' to permanently discard all changes or" + Environment.NewLine +
+                        "Select 'Cancel' to stop the {0} opeation and correct the errors.", opeationName);
                     if (MessageBox.Show(msg,
                         "Dataset Errors", MessageBoxButton.OKCancel, MessageBoxImage.Error) == MessageBoxResult.OK)
                     {
@@ -513,34 +513,19 @@ namespace UDTApp.ViewModels
                 // if project design error discard changes or stop operation
                 else if (projectStatus == projectSatausEnum.error)
                 {
-                    // if un-saved new project..
-                    if (AppSettings.appSettings.autoOpenFile == null)
+                    string msg = string.Format(
+                        @"The Design cannot be saved until errors are corrected." + Environment.NewLine +
+                        "Select 'Ok' to permanently discard all changes or" + Environment.NewLine +
+                        "Select 'Cancel' to stop the {0} opeation and correct the errors.", opeationName);
+                    if (MessageBox.Show(msg,
+                        "Design Errors", MessageBoxButton.OKCancel, MessageBoxImage.Error) == MessageBoxResult.OK)
                     {
-                        string msg = string.Format(
-                            @"The new Dataset has Design errors." + Environment.NewLine +
-                            "Select 'Cancel' to stop the {0} opeation and correct the errors or" + Environment.NewLine +
-                            "Select 'Ok' to permanently discard the new project and contine.", opeationName);
-                        if (MessageBox.Show(msg,
-                            "Design Errors", MessageBoxButton.OKCancel, MessageBoxImage.Error) == MessageBoxResult.OK)
-                        {
+                        if (AppSettings.appSettings.autoOpenFile == null)
                             discardNewProjct();
-                        }
-                        else return false; // stop exit
-                    }
-                    // else if project has been saved
-                    else
-                    {
-                        string msg = string.Format(
-                            @"The Dataset Design has errors." + Environment.NewLine +
-                            "Select 'Cancel' to stop the {0} opeation and correct the errors or" + Environment.NewLine +
-                            "Select 'Ok' to permanently discard all changes and continue.", opeationName);
-                        if (MessageBox.Show(msg,
-                            "Design Errors", MessageBoxButton.OKCancel, MessageBoxImage.Error) == MessageBoxResult.OK)
-                        {
+                        else
                             discardProjectChanges();
-                        }
-                        else return false; // stop exit
                     }
+                    else return false; // stop exit
                 }
 
                 // if DataSet is modified save changes or discard changes and continue
@@ -549,10 +534,8 @@ namespace UDTApp.ViewModels
                     string msg = "Save Dataset changes?";
                     if (saveType == SaveType.appExit)
                     { 
-                        msg = 
-                            @"The dataset is modifed."  + Environment.NewLine +
-                            "Select OK to save the data set changes" + Environment.NewLine +
-                            "or Select cancel to permanently discard the changes.";
+                        msg = @"Select 'Ok' to save DataSet changes or." + Environment.NewLine +
+                            "Select 'Cancel' to permanently discard the changes.";
                     }
 
                     if (MessageBox.Show(msg, 
@@ -572,34 +555,14 @@ namespace UDTApp.ViewModels
                     string msg = "Save dataset Design changes?";
                     if (saveType == SaveType.appExit)
                     {
-                        msg = 
-                        @"The dataset design is modifed." + Environment.NewLine +
-                        "Select OK to save the design changes"  + Environment.NewLine +
-                        "or Select cancel to permanently discard the changes.";
+                        msg =
+                        @"Select 'OK' to save the design changes or" + Environment.NewLine +
+                        "Select 'Cancel' to permanently discard the changes.";
                     }
 
                     if (MessageBox.Show(msg, 
                         "Design Changes", MessageBoxButton.OKCancel, MessageBoxImage.Question) == MessageBoxResult.OK)
                     {
-                        // if new project get save-to directory from the user;
-                        //if (AppSettings.appSettings.autoOpenFile == null)
-                        //{
-                        //    System.Windows.Forms.FolderBrowserDialog dlg = new System.Windows.Forms.FolderBrowserDialog();
-                        //    if (AppSettings.appSettings.fileSettings.Count > 0)
-                        //    {
-                        //        string startPath = Path.GetDirectoryName(AppSettings.appSettings.fileSettings[0].filePath);
-                        //        dlg.SelectedPath = startPath;
-                        //    }
-                        //    System.Windows.Forms.DialogResult res = dlg.ShowDialog();
-                        //    if (res == System.Windows.Forms.DialogResult.OK)
-                        //    {
-                        //        string filePath = dlg.SelectedPath + "\\" + UDTXml.UDTXmlData.SchemaData[0].Name + ".xml";
-                        //        FileSetting fileSetting = new FileSetting() { filePath = filePath, dateTime = DateTime.Now.ToString() };
-                        //        AppSettings.appSettings.autoOpenFile = fileSetting;
-                        //    }
-                        //    else return false; // stop exit, project mods not saved
-                        //}
-
                         // save current design to xml file or stop operation if can't be saved
                         if (!saveDesignChanges()) return false;
                     }
@@ -712,7 +675,6 @@ namespace UDTApp.ViewModels
                         _regionManager.AddToRegion("ContentRegion", new DataEditView());
                     // loaded dataset data to DataSetView
                     DataEditViewModel.dataEditViewModel.loadDataSet();
-                    //projectDataModified = false;
                     raiseProjectChangeEvents();
                 }
                 catch (Exception ex)

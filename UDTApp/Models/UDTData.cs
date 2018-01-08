@@ -42,7 +42,20 @@ namespace UDTApp.Models
             sortOrder = "zzz";
 
         }
- 
+
+        public override UDTBase Clone()
+        {
+            UDTData tableItem = new UDTData();
+            tableItem.Name = Name;
+            tableItem.editProps = null;
+            tableItem.savParentColumnNames = new List<string>(ParentColumnNames);
+            tableItem.savColumnData = new ObservableCollection<UDTBase>();
+            columnData.ToList().ForEach(p => tableItem.savColumnData.Add(p.Clone()));
+            tableItem.tableData = new ObservableCollection<UDTData>();
+            tableData.ToList().ForEach(p => tableItem.tableData.Add(p.Clone() as UDTData));
+            return tableItem;
+        }
+
         public delegate void validationChangedDel();
         public event validationChangedDel validationChangedEvent;
         public void validationChanged()
@@ -62,18 +75,46 @@ namespace UDTApp.Models
         {
             get
             {
+                if (isAllButColumnModified)
+                    return true;
+                // check col mods including edit props
+                if (columnData.Any(p => p.isModified))
+                    return true;
+                return false;
+            }
+        }
+
+        [XmlIgnoreAttribute]
+        private bool isAllButColumnModified
+        {
+            get
+            {
                 if (string.IsNullOrEmpty(savName))
                     return true;
                 if (savName != Name)
                     return true;
-                if (columnData.Any(p => p.isModified))
-                    return true;
+                //if (columnData.Any(p => p.isNameModified))
+                //    return true;
                 if (savColumnData == null)
                     return true;
                 // check any added cols
-                if (columnData.Any(p => savColumnData.FirstOrDefault(q => p.Name == q.Name) == null ))
+                if (columnData.Any(p => savColumnData.FirstOrDefault(q => p.Name == q.Name) == null))
                     return true;
                 if (isColumnDeleted)
+                    return true;
+                return false;
+            }
+        }
+
+        [XmlIgnoreAttribute]
+        public bool isTableSchemsModified
+        {
+            get
+            {
+                if (isAllButColumnModified)
+                    return true;
+                // check col mods NOT including edit prop mods
+                if (columnData.Any(p => p.isNameModified))
                     return true;
                 return false;
             }
@@ -169,8 +210,10 @@ namespace UDTApp.Models
             savName = Name;
             savParentColumnNames = new List<string>(ParentColumnNames);
             columnData.ToList().ForEach(p => p.setSavedProps());
-            savColumnData = new ObservableCollection<UDTBase>(columnData);
-            //savTableData = new ObservableCollection<UDTData>(tableData);
+            savColumnData = new ObservableCollection<UDTBase>();
+            columnData.ToList().ForEach(p => savColumnData.Add(p.Clone()));
+            savTableData = new ObservableCollection<UDTData>();
+            tableData.ToList().ForEach(p => savTableData.Add(p.Clone() as UDTData));
         }
 
         public void setAllSavedProps()
@@ -193,7 +236,7 @@ namespace UDTApp.Models
     [XmlInclude(typeof(UDTNumberPicker))]
     [XmlInclude(typeof(UDTBaseEditProps))]
     [XmlRoot("UDTBase"), XmlType("UDTBase")]
-    public class UDTBase : ValidatableBindableBase//: ValidatableBindableBase, INotifyDataErrorInfo
+    public class UDTBase : ValidatableBindableBase //: ValidatableBindableBase, INotifyDataErrorInfo
     {
         public UDTBase()
         {
@@ -220,6 +263,14 @@ namespace UDTApp.Models
             sortOrder = "zzz";
 
             ErrorsChanged += OnErrorsChanged;
+        }
+
+        public virtual UDTBase Clone()
+        {
+            UDTBase intItem = new UDTBase();
+            intItem.Name = Name;
+            intItem.editProps = null;
+            return intItem;
         }
 
         public void editPropValidaionChanged()
@@ -550,15 +601,28 @@ namespace UDTApp.Models
         }
 
         [XmlIgnoreAttribute]
-        public virtual bool isModified
+        public bool isNameModified
         {
             get
             {
-                if(string.IsNullOrEmpty(savName))
+                if (string.IsNullOrEmpty(savName))
                     return true;
                 if (savName != Name)
                     return true;
                 return false;
+            }
+        }
+
+        [XmlIgnoreAttribute]
+        public virtual bool isModified
+        {
+            get
+            {
+                //if(string.IsNullOrEmpty(savName))
+                //    return true;
+                //if (savName != Name)
+                //    return true;
+                return isNameModified;
             }
         }
 
@@ -1026,7 +1090,7 @@ namespace UDTApp.Models
         public string ChildColumnName { get; set; }
     }
 
-    public class UDTTxtItem : UDTBase 
+    public class UDTTxtItem : UDTBase
     {
         public UDTTxtItem()
         { 
@@ -1044,6 +1108,14 @@ namespace UDTApp.Models
         {
             base.setSavedProps();
             savEditProps = new UDTTextEditProps(editProps);
+        }
+
+        public override UDTBase Clone()
+        {
+            UDTTxtItem txtItem = new UDTTxtItem();
+            txtItem.Name = Name;
+            txtItem.editProps = new UDTTextEditProps(editProps);
+            return txtItem;
         }
 
         [XmlIgnoreAttribute]
@@ -1234,6 +1306,14 @@ namespace UDTApp.Models
             savEditProps = new UDTIntEditProps(editProps);
         }
 
+        public override UDTBase Clone()
+        {
+            UDTIntItem intItem = new UDTIntItem();
+            intItem.Name = Name;
+            intItem.editProps = new UDTDecimalEditProps(editProps);
+            return intItem;
+        }
+
         [XmlIgnoreAttribute]
         public override bool isModified
         {
@@ -1327,6 +1407,14 @@ namespace UDTApp.Models
             sortOrder = "ddd";
 
             editProps = new UDTDecimalEditProps(editPropValidaionChanged);
+        }
+
+        public override UDTBase Clone()
+        {
+            UDTDecimalItem dateItem = new UDTDecimalItem();
+            dateItem.Name = Name;
+            dateItem.editProps = new UDTDecimalEditProps(editProps);
+            return dateItem;
         }
 
         public override void setSavedProps()
@@ -1459,6 +1547,14 @@ namespace UDTApp.Models
             savEditProps = new UDTDateEditProps(editProps);
         }
 
+        public override UDTBase Clone()
+        {
+            UDTDateItem dateItem = new UDTDateItem();
+            dateItem.Name = Name;
+            dateItem.editProps = new UDTDateEditProps(editProps);
+            return dateItem;
+        }
+
         [XmlIgnoreAttribute]
         public override bool isModified
         {
@@ -1492,6 +1588,7 @@ namespace UDTApp.Models
             editBoxTool = _copyProps.editBoxTool;
             required = _copyProps.required;
         }
+
 
         public override bool Equals(Object obj)
         {

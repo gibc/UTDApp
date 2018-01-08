@@ -258,14 +258,12 @@ namespace UDTApp.Models
             // if table exits check for added, deleted, renamed columns
             if(dataItem.savColumnData != null)
             {
-                // no col mods, exit
-                //if (dataItem.columnData.Equals(dataItem.savColumnData))
-                //    return;
-                if (!dataItem.isModified) return;
+                //if (!dataItem.isModified) return; 
+                if (!dataItem.isTableSchemsModified) return; 
 
                 // if we have no data then just drop and recreate table with
                 // all column mods
-                if(isTableEmpty(dataItem.Name))
+                if (isTableEmpty(dataItem.Name))
                 {
                     string sqlTxt = string.Format(@"DROP TABLE {0}", dataItem.Name);
                     if (!executeQuery(sqlTxt)) return;

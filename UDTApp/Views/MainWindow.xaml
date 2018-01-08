@@ -59,8 +59,8 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Border Background="Azure"  BorderThickness="2" BorderBrush="LightBlue"  Width="auto" CornerRadius="2">
             <Grid Width="auto" Grid.Row="0" Grid.Column="0">
@@ -102,7 +102,7 @@
                 </WrapPanel>
             </Grid>
         </Border>
-        <Border Grid.Row="1" Background="Azure" HorizontalAlignment="Right" BorderThickness="2" 
+        <Border Grid.Row="2" Background="Azure" HorizontalAlignment="Right" BorderThickness="2" 
                Visibility="{Binding saveRemoveButtonVisibility, Mode=TwoWay}" BorderBrush="LightBlue" 
                Width="auto" CornerRadius="2">
         <WrapPanel HorizontalAlignment="Right" Grid.Row="1" Width="auto">
@@ -129,7 +129,7 @@
             <Button Content="SetUp" Margin="5" Command="{Binding NavigateCommand}" CommandParameter="SetUp"/>
         </StackPanel>-->
 
-        <ContentControl Grid.Row="2" Grid.Column="0" prism:RegionManager.RegionName="ContentRegion" Margin="0,0,-24.333,-254.333"/>
+        <ContentControl Grid.Row="1" Grid.Column="0" prism:RegionManager.RegionName="ContentRegion" Margin="0,0,-24.333,-254.333"/>
         <!--<ContentControl Grid.Row="1" Grid.Column="0" prism:RegionManager.RegionName="ContentRegion" 
                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>-->
 
