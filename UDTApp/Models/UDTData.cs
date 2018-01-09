@@ -460,7 +460,7 @@ namespace UDTApp.Models
         {
             get
             {
-                if (UDTXml.UDTXmlData.SchemaData.Count <= 0) return null;
+                if (UDTXml.UDTXmlData.SchemaData == null || UDTXml.UDTXmlData.SchemaData.Count <= 0) return null;
                 return UDTXml.UDTXmlData.SchemaData[0] as UDTData;
             }
         }

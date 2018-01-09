@@ -48,9 +48,6 @@
         <i:EventTrigger EventName="Loaded">
             <i:InvokeCommandAction Command="{Binding WindowLoadedCommand}" CommandParameter="{Binding ElementName=mainWindow}"/>
         </i:EventTrigger>
-        <!--<i:EventTrigger EventName="Closing">
-            <i:InvokeCommandAction Command="{Binding WindowClosingCommand}" />
-        </i:EventTrigger>-->
     </i:Interaction.Triggers>
     
     
@@ -84,6 +81,8 @@
                             <Separator />
                         </MenuItem>
                     </Menu>
+                    <Button Command="{Binding CloseCommand}"  Content="Close Dateset"/>
+                    <Button Command="{Binding DeleteCommand}"  Content="Delete Dateset"/>
                     <RadioButton GroupName="View" Command="{Binding ViewDatasetCommand}" VerticalAlignment="Center" 
                                 IsChecked ="{Binding dataSetVisible, Mode=TwoWay}" Margin="3,0,0,0" >
                         Dataset View

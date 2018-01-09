@@ -14,6 +14,7 @@ using UDTAppControlLibrary.Controls;
 using ADODB;
 using UDTApp.DataBaseProvider;
 using System.Data.Common;
+using System.IO;
 
 namespace UDTApp.Models
 {
@@ -83,6 +84,36 @@ namespace UDTApp.Models
             foreach(UDTData table in masterItem.tableData)
             {
                 createDBTable(table, masterItem.Name, tableGuids);
+            }
+        }
+
+        public void deleteSQLDatabase(string dbName)
+        {
+            try
+            {
+                if (UDTDataSet.dbProvider.dbType == DBType.sqlLite)
+                {
+                    string path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                    string dataFolder = path + "\\UdtApp";
+                    if (Directory.Exists(dataFolder))
+                    {
+                        string filePath = string.Format("{0}\\{1}",
+                            dataFolder, dbName);
+                        if (File.Exists(filePath))
+                            File.Delete(filePath);
+                    }
+                }
+                else
+                {
+                    string sqlTxt = string.Format(@"DROP DATABASE {0}", dbName);
+                    if (!executeQuery(sqlTxt)) return;
+                }
+            }
+            catch (Exception ex)
+            {
+                string msg = string.Format("deleteSQLDatabase failed: {0}", ex.Message);
+                UDTApp.Log.Log.LogMessage("msg");
+                MessageBox.Show(msg);
             }
         }
 
@@ -433,8 +464,10 @@ namespace UDTApp.Models
                     cmd.ExecuteNonQuery();
                 }
                 catch (Exception ex)
-                {
-                    MessageBox.Show(ex.Message);
+                { 
+                    string msg = string.Format(@"executeQuery failed. Query: {0} Error: {1}", sqlTxt, ex.Message);
+                    UDTApp.Log.Log.LogMessage("msg");
+                    MessageBox.Show(msg);
                     return false;
                 }
             }

@@ -119,9 +119,24 @@ namespace UDTApp.Models
             StreamReader xmlFile = File.OpenText(filePath);
             string xml = xmlFile.ReadToEnd();
             xmlFile.Close();
+            List<UDTBase> schema = null;
+            try
+            {
+                schema = readFromXml(xml);
+                SchemaData = schema;
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show("Error: not a valid UDT project file.", "Invalid File", 
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+                FileSetting fileSetting = AppSettings.appSettings.fileSettings.FirstOrDefault(p => p.filePath == filePath);
+                if(fileSetting != null)
+                {
+                    AppSettings.appSettings.fileSettings.Remove(fileSetting);
+                }
 
-            List<UDTBase> schema = readFromXml(xml);
-            SchemaData = schema;
+            }
+            //SchemaData = schema;
             return SchemaData;
         }
 

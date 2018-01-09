@@ -34,8 +34,10 @@ namespace UDTApp.ViewModels
         //public DelegateCommand<CancelEventArgs> WindowClosingCommand { get; set; }
         public DelegateCommand EditCommand { get; set; }
         public DelegateCommand RunCommand { get; set; }
-        public DelegateCommand OpenCommand { get; set; }
+        public DelegateCommand OpenCommand { get; set; }       
         public DelegateCommand SaveCommand { get; set; }
+        public DelegateCommand DeleteCommand { get; set; }
+        public DelegateCommand CloseCommand { get; set; }
         public DelegateCommand NewCommand { get; set; }
         public DelegateCommand SaveDataCommand { get; set; }
         public DelegateCommand UndoChangesCommand { get; set; }
@@ -56,6 +58,8 @@ namespace UDTApp.ViewModels
             RunCommand = new DelegateCommand(runProject, canRun);
             OpenCommand = new DelegateCommand(openProject);
             SaveCommand = new DelegateCommand(saveProject, canSavePorjext);
+            DeleteCommand = new DelegateCommand(deleteProject, canDeleteProject);
+            CloseCommand = new DelegateCommand(closeProject, canDeleteProject);
             UndoChangesCommand = new DelegateCommand(undoChanges);
             NewCommand = new DelegateCommand(newProject);
             SaveDataCommand = new DelegateCommand(saveData, canSaveData);
@@ -67,7 +71,7 @@ namespace UDTApp.ViewModels
 
         private bool canChangeView()
         {
-            if (UDTXml.UDTXmlData.SchemaData.Count == 0) return false;
+            if (UDTXml.UDTXmlData.SchemaData == null || UDTXml.UDTXmlData.SchemaData.Count == 0) return false;
             return true;
         }
 
@@ -84,6 +88,7 @@ namespace UDTApp.ViewModels
             AppSettings.appSettings.designView = true;
             ViewDatasetCommand.RaiseCanExecuteChanged();
             ViewDesignCommand.RaiseCanExecuteChanged();
+            CloseCommand.RaiseCanExecuteChanged();
             if (PageZeroViewModel.viewModel != null)
                 PageZeroViewModel.viewModel.windowLoaded();
             Navigate("PageZero");
@@ -146,6 +151,8 @@ namespace UDTApp.ViewModels
             AppSettings.appSettings.designView = false;
             ViewDatasetCommand.RaiseCanExecuteChanged();
             ViewDesignCommand.RaiseCanExecuteChanged();
+            CloseCommand.RaiseCanExecuteChanged();
+
             if (DataEditViewModel.dataEditViewModel != null)
                 DataEditViewModel.dataEditViewModel.windowLoaded();
             Navigate("DataEditView");
@@ -403,7 +410,11 @@ namespace UDTApp.ViewModels
         public string projectName
         {
             get { return _projectName; }
-            set { SetProperty(ref _projectName, value); }
+            set
+            {
+                SetProperty(ref _projectName, value);
+                DeleteCommand.RaiseCanExecuteChanged();
+            }
         }
 
         void openProject(string filePath)
@@ -481,6 +492,78 @@ namespace UDTApp.ViewModels
         private void saveProject()
         {
             saveProject(SaveType.saveCommand);
+        }
+
+        private void closeProject()
+        {
+            if(dataSetStatus != projectSatausEnum.normal || projectStatus != projectSatausEnum.normal)
+            {
+                if(MessageBox.Show("Save project and dataset changes before closing?", "Save Changes", 
+                    MessageBoxButton.OKCancel, MessageBoxImage.Question) == MessageBoxResult.OK)
+                {
+                    if (!saveProject(SaveType.appExit)) return;
+                }
+                else if(MessageBox.Show("Permanently discard all changes and close project?", "Discard Changes",
+                    MessageBoxButton.OKCancel, MessageBoxImage.Question) != MessageBoxResult.OK)
+                {
+                    return;
+                }
+            }
+            closeProjectNoSave();
+        }
+
+        private void closeProjectNoSave()
+        {
+            projectName = "none";
+            UDTXml.UDTXmlData.SchemaData.Clear();
+            UDTDataSet.udtDataSet.DataSet = null;
+            ViewDatasetCommand.RaiseCanExecuteChanged();
+            ViewDesignCommand.RaiseCanExecuteChanged();
+            AppSettings.appSettings.autoOpenFile = null;
+
+            if (PageZeroViewModel.viewModel != null)
+            {
+                PageZero pageZeroview =
+                    _regionManager.Regions["ContentRegion"].Views.First(region => region.GetType()
+                    .Equals(typeof(PageZero))) as PageZero;
+                if (pageZeroview != null)
+                {
+                    _regionManager.Regions["ContentRegion"].Remove(pageZeroview);
+                    PageZeroViewModel.viewModel = null;
+                }
+            }
+
+            if (DataEditViewModel.dataEditViewModel != null)
+            {
+                DataEditView dataEditView =
+                    _regionManager.Regions["ContentRegion"].Views.FirstOrDefault(region => region.GetType()
+                    .Equals(typeof(DataEditView))) as DataEditView;
+                if (dataEditView != null)
+                {
+                    _regionManager.Regions["ContentRegion"].Remove(dataEditView);
+                    DataEditViewModel.dataEditViewModel = null;
+                }
+            }
+        }
+        private void deleteProject()
+        {
+            if (MessageBox.Show(
+                string.Format("Are you SURE you want to PERMANENTLY delete the '{0}' project and ALL related files?", projectName),
+                "Delete Project?", MessageBoxButton.OKCancel, MessageBoxImage.Exclamation) == MessageBoxResult.OK)
+            {
+
+                // TBD: put back UDTDataSet.udtDataSet.deleteSQLDatabase(projectName);
+                // TBD:  delete the project file, clear the design and dataset views
+
+                closeProjectNoSave();
+
+            }
+        }
+
+        public bool canDeleteProject()
+        {
+            //return (!string.IsNullOrEmpty(projectName) && projectName != "none");
+            return canChangeView();
         }
 
         enum SaveType { appExit, viewChange, saveCommand};
