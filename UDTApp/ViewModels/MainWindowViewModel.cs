@@ -552,8 +552,20 @@ namespace UDTApp.ViewModels
                 "Delete Project?", MessageBoxButton.OKCancel, MessageBoxImage.Exclamation) == MessageBoxResult.OK)
             {
 
-                // TBD: put back UDTDataSet.udtDataSet.deleteSQLDatabase(projectName);
+                UDTDataSet.udtDataSet.deleteSQLDatabase(projectName);
                 // TBD:  delete the project file, clear the design and dataset views
+                if (AppSettings.appSettings.autoOpenFile != null && 
+                    File.Exists(AppSettings.appSettings.autoOpenFile.filePath))
+                {
+                    File.Delete(AppSettings.appSettings.autoOpenFile.filePath);
+                    FileSetting fs = AppSettings.appSettings.fileSettings.FirstOrDefault(
+                        p => p.filePath == AppSettings.appSettings.autoOpenFile.filePath);
+                    if(fs != null)
+                    {
+                        AppSettings.appSettings.fileSettings.Remove(fs);
+                    }
+                    AppSettings.appSettings.autoOpenFile.filePath = null;
+                }
 
                 closeProjectNoSave();
 
@@ -894,10 +906,10 @@ namespace UDTApp.ViewModels
                 win.ShowDialog();
                 if ((bool)win.DialogResult)
                 {
-                    string projName = win.prjName.Text;
-
+                    projectName = win.prjName.Text;
+               
                     AppSettings.appSettings.autoOpenFile = null;
-                    List<UDTBase> newSchmea = UDTXml.UDTXmlData.newProject(projName);
+                    List<UDTBase> newSchmea = UDTXml.UDTXmlData.newProject(projectName);
                     UDTData master = newSchmea[0] as UDTData;
                     master.validationChangedEvent += projectValidationChanged;
                     master.dataChangeEvent += projectDataChanged;

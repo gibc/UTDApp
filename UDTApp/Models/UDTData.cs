@@ -1310,7 +1310,7 @@ namespace UDTApp.Models
         {
             UDTIntItem intItem = new UDTIntItem();
             intItem.Name = Name;
-            intItem.editProps = new UDTDecimalEditProps(editProps);
+            intItem.editProps = new UDTIntEditProps(editProps);
             return intItem;
         }
 

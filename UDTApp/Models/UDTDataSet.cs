@@ -97,7 +97,7 @@ namespace UDTApp.Models
                     string dataFolder = path + "\\UdtApp";
                     if (Directory.Exists(dataFolder))
                     {
-                        string filePath = string.Format("{0}\\{1}",
+                        string filePath = string.Format("{0}\\{1}.db",
                             dataFolder, dbName);
                         if (File.Exists(filePath))
                             File.Delete(filePath);
