@@ -53,13 +53,12 @@ namespace UDTApp.ViewModels
 
             NavigateCommand = new DelegateCommand<string>(Navigate);
             WindowLoadedCommand = new DelegateCommand<Window>(windowLoaded);
-            //WindowClosingCommand = new DelegateCommand<CancelEventArgs>(windowClosing);
             EditCommand = new DelegateCommand(editProject);
             RunCommand = new DelegateCommand(runProject, canRun);
             OpenCommand = new DelegateCommand(openProject);
             SaveCommand = new DelegateCommand(saveProject, canSavePorjext);
             DeleteCommand = new DelegateCommand(deleteProject, canDeleteProject);
-            CloseCommand = new DelegateCommand(closeProject, canDeleteProject);
+            CloseCommand = new DelegateCommand(closeProject, canCloseProject);
             UndoChangesCommand = new DelegateCommand(undoChanges);
             NewCommand = new DelegateCommand(newProject);
             SaveDataCommand = new DelegateCommand(saveData, canSaveData);
@@ -517,6 +516,8 @@ namespace UDTApp.ViewModels
             projectName = "none";
             UDTXml.UDTXmlData.SchemaData.Clear();
             UDTDataSet.udtDataSet.DataSet = null;
+            raiseDataSetChangeEvents();
+            raiseProjectChangeEvents();
             ViewDatasetCommand.RaiseCanExecuteChanged();
             ViewDesignCommand.RaiseCanExecuteChanged();
             AppSettings.appSettings.autoOpenFile = null;
@@ -572,9 +573,14 @@ namespace UDTApp.ViewModels
             }
         }
 
+        public bool canCloseProject()
+        {
+            return canChangeView(); 
+        }
+
         public bool canDeleteProject()
         {
-            //return (!string.IsNullOrEmpty(projectName) && projectName != "none");
+            if(AppSettings.appSettings.autoOpenFile == null) return false;
             return canChangeView();
         }
 
@@ -701,9 +707,10 @@ namespace UDTApp.ViewModels
 
         private void discardNewProjct()
         {
-            PageZeroViewModel.viewModel.SchemaList = null;
-            UDTXml.UDTXmlData.SchemaData.Clear();
-            raiseProjectChangeEvents();
+            //PageZeroViewModel.viewModel.SchemaList = null;
+            //UDTXml.UDTXmlData.SchemaData.Clear();
+            //raiseProjectChangeEvents();
+            closeProjectNoSave();
         }
 
         private void discardProjectChanges()
@@ -829,7 +836,8 @@ namespace UDTApp.ViewModels
         private void menuOpen(MenuItem fileMenu)
         {
             fileMenu.Items.Clear();
-            foreach (FileSetting file in AppSettings.appSettings.fileSettings)
+            List<FileSetting> orderedList = AppSettings.appSettings.fileSettings.OrderByDescending(fs => DateTime.Parse(fs.dateTime)).ToList();
+            foreach (FileSetting file in orderedList)
             {
                 MenuItem newItem = new MenuItem();
                 newItem.Header = file.filePath;
@@ -913,13 +921,13 @@ namespace UDTApp.ViewModels
                     UDTData master = newSchmea[0] as UDTData;
                     master.validationChangedEvent += projectValidationChanged;
                     master.dataChangeEvent += projectDataChanged;
-                    //projectDataModified = false;
-                    //Navigate("PageZero");
                     viewDesign();
                     RaisePropertyChanged("projectStatus");
                     RaisePropertyChanged("projectStatusVisibility");
                     RaisePropertyChanged("projectStatusColor");
                     RaisePropertyChanged("saveRemoveButtonVisibility");
+                    DeleteCommand.RaiseCanExecuteChanged();
+                    CloseCommand.RaiseCanExecuteChanged();
                 }
             }
             catch (Exception ex)

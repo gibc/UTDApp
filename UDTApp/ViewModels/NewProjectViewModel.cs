@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
+using UDTApp.Models;
 using UDTApp.Settings;
 
 namespace UDTApp.ViewModels
@@ -23,6 +24,7 @@ namespace UDTApp.ViewModels
             OkCommand = new DelegateCommand(okCmd, canOk);
             CancelCommand = new DelegateCommand(cancelCmd);
             WindowLoadedCommand = new DelegateCommand<Window>(winLoaded);
+            currentDBs = UDTDataSet.udtDataSet.getDbList();
         }
 
         private string _projectName = null;
@@ -45,6 +47,12 @@ namespace UDTApp.ViewModels
                 SetProperty(ref _projectName, value);
                 OkCommand.RaiseCanExecuteChanged();
             }
+        }
+
+        private List<string> currentDBs
+        {
+            get;
+            set;
         }
 
         private void okCmd()
@@ -76,9 +84,9 @@ namespace UDTApp.ViewModels
         public static System.ComponentModel.DataAnnotations.ValidationResult CheckDuplicateName(string name, ValidationContext context)
         {
             NewProjectViewModel dataObj = context.ObjectInstance as NewProjectViewModel;
-            if (dataObj != null)
+            if (dataObj.currentDBs != null)
             {
-                if (AppSettings.appSettings.findPojectName(dataObj.ProjectName))
+                if (dataObj.currentDBs.Contains(dataObj.ProjectName))
                 {
                     return new System.ComponentModel.DataAnnotations.ValidationResult("A project already exits with this name. Select another name.");
                 }

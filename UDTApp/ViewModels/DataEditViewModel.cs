@@ -588,6 +588,8 @@ namespace UDTApp.ViewModels
         public void windowLoaded()
         {
             // load database from currently loaded schema
+            if (UDTXml.UDTXmlData.SchemaData == null || UDTXml.UDTXmlData.SchemaData.Count <= 0)
+                return;
             UDTData curentSchem = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
             if (UDTDataSet.udtDataSet.DataSet == null || curentSchem.Name != UDTDataSet.udtDataSet.DataSet.DataSetName)
                 loadDataSet();

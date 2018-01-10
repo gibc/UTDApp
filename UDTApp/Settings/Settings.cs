@@ -28,10 +28,14 @@ namespace UDTApp.Settings
             }
         }
 
+        private List<FileSetting> _fileSettings = null;
         public List<FileSetting> fileSettings
         {
-            get;
-            set;
+            get
+            {
+                return _fileSettings; 
+            }
+            set { _fileSettings = value; }
         }
 
         public bool findPojectName(string name)
@@ -59,7 +63,7 @@ namespace UDTApp.Settings
 
             autoOpenFile = setting;
             fileSettings.Add(setting);
-            fileSettings.OrderByDescending(fs => fs.dateTime);
+            fileSettings = fileSettings.OrderByDescending(fs => DateTime.Parse(fs.dateTime)).ToList();
             if(fileSettings.Count > 10)
             {
                 fileSettings.RemoveRange(10, fileSettings.Count - 10);

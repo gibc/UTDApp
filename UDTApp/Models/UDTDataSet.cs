@@ -117,6 +117,53 @@ namespace UDTApp.Models
             }
         }
 
+        public List<string> getDbList()
+        {
+            List<string> dbList = new List<string>();
+            if (UDTDataSet.dbProvider.dbType == DBType.sqlLite)
+            {
+                string path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                string dataFolder = path + "\\UdtApp";
+                if (Directory.Exists(dataFolder))
+                {
+                    Directory.GetFiles(dataFolder, "*.db").ToList().
+                        ForEach(p => dbList.Add(Path.GetFileNameWithoutExtension(p)));
+                }
+            }
+            else if(UDTDataSet.dbProvider.dbType == DBType.sqlExpress)
+            {
+                using (DbConnection conn = UDTDataSet.dbProvider.Conection)
+                {
+                    conn.ConnectionString = UDTDataSet.dbProvider.ConnectionString;
+                    DbCommand cmd = UDTDataSet.dbProvider.GetCommand(
+                        "select * from sys.databases");
+
+                    cmd.Connection = conn;
+                    DbDataReader reader = UDTDataSet.dbProvider.Reader;
+                    conn.Open();
+                    try
+                    {
+                        reader = cmd.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            dbList.Add((string)reader["name"]);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        string msg = string.Format("getDbList filed: {0}", ex.Message);
+                        MessageBox.Show(msg);
+                        UDTApp.Log.Log.LogMessage("msg");
+                    }
+                    finally
+                    {
+                        reader.Close();
+                    }
+                }
+            }
+            return dbList;
+        }
+
         private void createSQLDatabase(string DBName)
         {
             //using (SqlConnection conn = new SqlConnection())
