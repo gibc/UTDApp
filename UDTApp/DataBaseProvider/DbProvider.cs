@@ -13,7 +13,7 @@ using UDTApp.Models;
 // map to slqlite or sql sever ado classes
 namespace UDTApp.DataBaseProvider
 {
-    public enum DBType { sqlExpress, sqlLite}
+    public enum DBType { sqlExpress, sqlLite, none}
     public class DbProvider
     {
         public DbProvider(DBType _dbType)

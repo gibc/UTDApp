@@ -46,8 +46,15 @@
     <Grid>
         <StackPanel>
             <WrapPanel HorizontalAlignment="Center" Margin="0,30,0,0">
-                <Label Content="Project Name:" />
-                <TextBox Name="prjName" Text="{Binding ProjectName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Height="25" Width="100"/>
+                <Label Width="100" HorizontalContentAlignment="Right" Content="Database Type:" />
+                <CheckBox Command="{Binding SqliteCommand}" VerticalAlignment="Center" 
+                          IsChecked ="{Binding sqliteDb}" Content="Sqlite" Margin="0,0,5,0"></CheckBox>
+                <CheckBox Command="{Binding SqlServerCommand}" VerticalAlignment="Center" 
+                          IsChecked ="{Binding sqlServerDb}" Content="Sql Server"></CheckBox>
+            </WrapPanel>
+            <WrapPanel HorizontalAlignment="Center" Margin="0,0,0,0">
+                <Label Width="100" HorizontalContentAlignment="Right" Content="Project Name:" />
+                <TextBox Text="{Binding ProjectName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Height="25" Width="134"/>
             </WrapPanel>
             <WrapPanel  HorizontalAlignment="Center" Margin="0,30,0,0">
                 <Button Content="Ok" Command="{Binding OkCommand}" Margin="0,0,20,0" Height="20" Width="60"/>

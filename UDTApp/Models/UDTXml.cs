@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Xml.Serialization;
+using UDTApp.DataBaseProvider;
 using UDTApp.Settings;
 
 namespace UDTApp.Models
@@ -79,10 +80,11 @@ namespace UDTApp.Models
         }
 
 
-        public List<UDTBase> newProject(string ProjectName)
+        public List<UDTBase> newProject(string ProjectName, DBType dbType)
         {
             SchemaData = new List<UDTBase>();
             UDTData baseObj = new UDTData();
+            baseObj.dbType = dbType;
             baseObj.ToolBoxItem = false;
             baseObj.Name = ProjectName;
             baseObj.parentObj = null;

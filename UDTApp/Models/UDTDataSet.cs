@@ -37,6 +37,11 @@ namespace UDTApp.Models
                 }
                 return _dbProvider;
             }
+
+            set
+            {
+                _dbProvider = value;
+            }
         }
 
         private static UDTDataSet _udtDataSet = null;
@@ -71,14 +76,12 @@ namespace UDTApp.Models
         }
 
         
-        //private string getDbName(UDTData udtData)
-        //{
-        //    return udtData.Name + "_db";
-        //}
-
-
         public void createDatabase(UDTData masterItem)
         {
+            if(masterItem.dbType != DBType.none)
+            {
+                UDTDataSet.dbProvider = new DbProvider(masterItem.dbType);
+            }
             createSQLDatabase(masterItem.Name);
             List<Guid> tableGuids = new List<Guid>();
             foreach(UDTData table in masterItem.tableData)
@@ -341,10 +344,11 @@ namespace UDTApp.Models
 
                 // if we have no data then just drop and recreate table with
                 // all column mods
-                if (isTableEmpty(dataItem.Name))
+                if (isTableEmpty(dataItem.Name, dbName))
                 {
-                    string sqlTxt = string.Format(@"DROP TABLE {0}", dataItem.Name);
-                    if (!executeQuery(sqlTxt)) return;
+                    //string sqlTxt = string.Format(@"DROP TABLE {0}", dataItem.Name);
+                    if (!dropTable(dataItem.Name, dbName)) return;
+
                     createNewTable(dataItem, dataItem.Name, dbName);
                     return;
                 }
@@ -420,10 +424,10 @@ namespace UDTApp.Models
             return sqlTxt;
         }
 
-        bool isTableEmpty(string tableName)
+        bool isTableEmpty(string tableName, string dbName)
         {
             bool retVal = true;
-            string sqlTxt = string.Format("SELECT * from {0}", tableName);
+            string sqlTxt = UDTDataSet.dbProvider.adjSQL(string.Format("USE [{1}] SELECT * from {0}", tableName, dbName));
             using (DbConnection conn = UDTDataSet.dbProvider.Conection)
             {
                 conn.ConnectionString = UDTDataSet.dbProvider.ConnectionString;
@@ -441,8 +445,10 @@ namespace UDTApp.Models
                     }
                     else
                     {
-                        int dbCount = (int)cmd.ExecuteScalar();
-                        retVal = !(dbCount >= 1);
+                        DbDataReader reader = UDTDataSet.dbProvider.Reader;
+                        reader = cmd.ExecuteReader();
+                        retVal = !reader.HasRows;
+                        reader.Close();
                     }
 
                 }
@@ -494,6 +500,13 @@ namespace UDTApp.Models
 
                 return executeQuery(ddl);
             }
+        }
+
+        public bool dropTable(string tableName, string dbName)
+        {
+            string sqlTxt = 
+                UDTDataSet.dbProvider.adjSQL(string.Format("USE [{0}] DROP TABLE {1}", dbName, tableName));
+            return executeQuery(sqlTxt);
         }
 
         private bool executeQuery(string sqlTxt)
@@ -582,13 +595,14 @@ namespace UDTApp.Models
             createNewTable(table, table.Name, dbName);
 
             //copy the contents of renamed cols across from the original table.
-            string sqlTxt = string.Format(@"INSERT INTO {0}({1}) SELECT {2} FROM tmp_{0}", 
-                table.Name, getColSql(table), getColSql(table, true));
+            string sqlTxt = UDTDataSet.dbProvider.adjSQL(
+                string.Format(@"USE [{0}] INSERT INTO {1}({2}) SELECT {2} FROM tmp_{1}", 
+                dbName, table.Name, getColSql(table), getColSql(table, true)));
             if (!executeQuery(sqlTxt)) return false;
 
             // drop the old table.
-            sqlTxt = string.Format(@"DROP TABLE tmp_{0}", table.Name);
-            if (!executeQuery(sqlTxt)) return false;
+            //sqlTxt = string.Format(@"DROP TABLE tmp_{0}", table.Name);
+            if (!dropTable(table.Name, dbName)) return false;
 
             return true;
         }
@@ -598,11 +612,16 @@ namespace UDTApp.Models
             string sqlTxt = "";
             if (TableExists(newName, dbName))
             {
-                sqlTxt = string.Format(@"DROP TABLE {0}", newName);
-                if (!executeQuery(sqlTxt)) return false;
+                //sqlTxt = string.Format(@"DROP TABLE {0}", newName);
+                if (!dropTable(newName, dbName)) return false;
             }
-            sqlTxt = string.Format(@"ALTER TABLE {0} RENAME TO {1}",
-                oldName, newName);
+            if (UDTDataSet.dbProvider.dbType == DBType.sqlLite)
+                sqlTxt = string.Format(@"ALTER TABLE {0} RENAME TO {1}",
+                    oldName, newName);
+            else if(UDTDataSet.dbProvider.dbType == DBType.sqlExpress)
+            {
+                sqlTxt = string.Format(@"USE [{0}] EXEC sp_rename '{1}', '{2}'", dbName, oldName, newName);
+            }
             if (!executeQuery(sqlTxt)) return false;
 
             return true;
@@ -647,11 +666,10 @@ namespace UDTApp.Models
 
         public void readDatabase(UDTData masterItem)
         {
-            //DataSet = new System.Data.DataSet(getDbName(masterItem));
             DataSet = new System.Data.DataSet(masterItem.Name);
             DataSet.EnforceConstraints = true;
-            //readTable(DataSet, masterItem, getDbName(masterItem));
-            //readTable(DataSet, masterItem, masterItem.Name);
+            if (masterItem.dbType != DBType.none)
+                UDTDataSet.dbProvider = new DbProvider(masterItem.dbType);
             foreach(UDTData table in masterItem.tableData)
             {
                 readTable(DataSet, table, masterItem.Name);

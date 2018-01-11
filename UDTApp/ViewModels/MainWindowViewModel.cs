@@ -914,10 +914,11 @@ namespace UDTApp.ViewModels
                 win.ShowDialog();
                 if ((bool)win.DialogResult)
                 {
-                    projectName = win.prjName.Text;
-               
+                    NewProjectViewModel dc = win.DataContext as NewProjectViewModel;
+                    projectName = dc.ProjectName;
+
                     AppSettings.appSettings.autoOpenFile = null;
-                    List<UDTBase> newSchmea = UDTXml.UDTXmlData.newProject(projectName);
+                    List<UDTBase> newSchmea = UDTXml.UDTXmlData.newProject(dc.ProjectName, dc.dbType);
                     UDTData master = newSchmea[0] as UDTData;
                     master.validationChangedEvent += projectValidationChanged;
                     master.dataChangeEvent += projectDataChanged;

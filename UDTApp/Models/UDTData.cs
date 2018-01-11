@@ -21,6 +21,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
 using System.Xml.Serialization;
+using UDTApp.DataBaseProvider;
 using UDTApp.ViewModels;
 using UDTApp.ViewModels.DataEntryControls;
 using UDTAppControlLibrary.Controls;
@@ -39,8 +40,8 @@ namespace UDTApp.Models
             Name = TypeName.ToString();
             backgroundBrush = Brushes.White;
             ParentColumnNames = new List<string>();
+            dbType = DBType.none;
             sortOrder = "zzz";
-
         }
 
         public override UDTBase Clone()
@@ -54,6 +55,12 @@ namespace UDTApp.Models
             tableItem.tableData = new ObservableCollection<UDTData>();
             tableData.ToList().ForEach(p => tableItem.tableData.Add(p.Clone() as UDTData));
             return tableItem;
+        }
+
+        public DBType dbType
+        {
+            get;
+            set;
         }
 
         public delegate void validationChangedDel();
