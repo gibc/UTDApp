@@ -16,9 +16,10 @@ namespace UDTApp.DataBaseProvider
     public enum DBType { sqlExpress, sqlLite, none}
     public class DbProvider
     {
-        public DbProvider(DBType _dbType)
+        public DbProvider(DBType _dbType, string remoteConString)
         {
             dbType = _dbType;
+            remoteConnectionString = remoteConString;
         }
 
         public DbConnection Conection 
@@ -74,6 +75,41 @@ namespace UDTApp.DataBaseProvider
             }
         }
 
+        private List<string> conStrings;
+        private string remoteConnectionString
+        {
+            get
+            {
+                if (conStrings == null) return "";
+                if(!string.IsNullOrEmpty(initialCatalog))
+                {
+                    conStrings.Add(initialCatalog);
+                }
+                string retString = string.Join("; ", conStrings);
+                if (!string.IsNullOrEmpty(initialCatalog))
+                {
+                    conStrings.Remove(initialCatalog);
+                }
+                return retString;
+            }
+            set
+            {
+                conStrings = value.Split(';').Where(x => !string.IsNullOrWhiteSpace(x)).Select(p => p.Trim()).ToList();
+                string catalog = conStrings.FirstOrDefault(p => p.Contains("Catalog"));
+                if (catalog != null)
+                {
+                    initialCatalog = catalog;
+                    conStrings.Remove(catalog);
+                }
+            }
+        }
+
+        public string initialCatalog
+        {
+            get;
+            set;
+        }
+
         public string ConnectionString
         {
             get
@@ -84,20 +120,22 @@ namespace UDTApp.DataBaseProvider
                     Directory.CreateDirectory(dataFolder);
                 if (dbType == DBType.sqlLite)
                 {
-                    //return string.Format("Data Source=c:\\GibPCStuff\\UDTApp\\TestApp\\{0}.db;Version=3;",
-                    //    DbName);
                     string conStr = string.Format("Data Source={0}\\{1}.db;Version=3;datetimeformat=CurrentCulture;",
                         dataFolder, DbName);
                     return conStr;
                 }
-                else
+                else if (dbType == DBType.sqlExpress)
+                {
+                    if (!string.IsNullOrEmpty(remoteConnectionString)) return remoteConnectionString;
                     return ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
+                }
+                return "";
             }
         }
 
         public string adjSQL(string sqltxt)
         {
-            if (dbType == DBType.sqlLite)
+            if (dbType == DBType.sqlLite || !string.IsNullOrEmpty(remoteConnectionString))
             {
                 if(sqltxt.ToUpper().Contains("USE"))
                 {

@@ -33,7 +33,7 @@ namespace UDTApp.Models
                 if (_dbProvider == null)
                 {
                     //_dbProvider = new DbProvider(DBType.sqlExpress);
-                    _dbProvider = new DbProvider(DBType.sqlLite);
+                    _dbProvider = new DbProvider(DBType.sqlLite, "");
                 }
                 return _dbProvider;
             }
@@ -80,7 +80,7 @@ namespace UDTApp.Models
         {
             if(masterItem.dbType != DBType.none)
             {
-                UDTDataSet.dbProvider = new DbProvider(masterItem.dbType);
+                UDTDataSet.dbProvider = new DbProvider(masterItem.dbType, masterItem.conectionString);
             }
             createSQLDatabase(masterItem.Name);
             List<Guid> tableGuids = new List<Guid>();
@@ -174,12 +174,9 @@ namespace UDTApp.Models
 
             using (DbConnection conn = UDTDataSet.dbProvider.Conection)
             {
-
-                //conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
+                UDTDataSet.dbProvider.initialCatalog = "Initial Catalog = MASTER";
                 conn.ConnectionString = UDTDataSet.dbProvider.ConnectionString;
-                //SqlCommand cmd = new SqlCommand(
-                //    string.Format("select count(*) from (select * from sys.databases where name = '{0}') rows", DBName)
-                //    );
+                UDTDataSet.dbProvider.initialCatalog = string.Format("Initial Catalog = {0}", DBName);
                 DbCommand cmd = UDTDataSet.dbProvider.GetCommand(
                     string.Format("select count(*) from (select * from sys.databases where name = '{0}') rows", DBName)
                     ); 
@@ -189,6 +186,7 @@ namespace UDTApp.Models
                 conn.Open();
                 try
                 {
+                    // TBD: this fails for azure database
                     int dbCount = (int)cmd.ExecuteScalar();
                     if (dbCount < 1)
                     {
@@ -602,7 +600,7 @@ namespace UDTApp.Models
 
             // drop the old table.
             //sqlTxt = string.Format(@"DROP TABLE tmp_{0}", table.Name);
-            if (!dropTable(table.Name, dbName)) return false;
+            if (!dropTable(string.Format("tmp_{0}", table.Name), table.Name)) return false;
 
             return true;
         }
@@ -620,7 +618,7 @@ namespace UDTApp.Models
                     oldName, newName);
             else if(UDTDataSet.dbProvider.dbType == DBType.sqlExpress)
             {
-                sqlTxt = string.Format(@"USE [{0}] EXEC sp_rename '{1}', '{2}'", dbName, oldName, newName);
+                sqlTxt = UDTDataSet.dbProvider.adjSQL(string.Format(@"USE [{0}] EXEC sp_rename '{1}', '{2}'", dbName, oldName, newName));
             }
             if (!executeQuery(sqlTxt)) return false;
 
@@ -669,7 +667,7 @@ namespace UDTApp.Models
             DataSet = new System.Data.DataSet(masterItem.Name);
             DataSet.EnforceConstraints = true;
             if (masterItem.dbType != DBType.none)
-                UDTDataSet.dbProvider = new DbProvider(masterItem.dbType);
+                UDTDataSet.dbProvider = new DbProvider(masterItem.dbType, masterItem.conectionString);
             foreach(UDTData table in masterItem.tableData)
             {
                 readTable(DataSet, table, masterItem.Name);
@@ -806,6 +804,7 @@ namespace UDTApp.Models
             {
 
                 //conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
+                UDTDataSet.dbProvider.initialCatalog = string.Format("Initial Catalog = {0}", dbName);
                 conn.ConnectionString = UDTDataSet.dbProvider.ConnectionString;
                 //SqlCommand cmd = new SqlCommand();
                 DbCommand cmd = UDTDataSet.dbProvider.Command;
@@ -823,9 +822,10 @@ namespace UDTApp.Models
                 cmd.Connection = conn;
                 conn.Open();
 
-                reader = cmd.ExecuteReader();
+                //reader = cmd.ExecuteReader();
                 try
                 {
+                    reader = cmd.ExecuteReader();
                     dataTable.Load(reader);
                     //foreach (UDTBase childItem in dataItem.ChildData)
                     foreach (UDTBase childItem in dataItem.tableData)
@@ -870,7 +870,7 @@ namespace UDTApp.Models
                 }
                 finally
                 {
-                    reader.Close();
+                    if(reader != null) reader.Close();
                 }
             }
         }

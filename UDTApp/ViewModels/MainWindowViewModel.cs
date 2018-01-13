@@ -918,7 +918,7 @@ namespace UDTApp.ViewModels
                     projectName = dc.ProjectName;
 
                     AppSettings.appSettings.autoOpenFile = null;
-                    List<UDTBase> newSchmea = UDTXml.UDTXmlData.newProject(dc.ProjectName, dc.dbType);
+                    List<UDTBase> newSchmea = UDTXml.UDTXmlData.newProject(dc.ProjectName, dc.dbType, dc.connectionString);
                     UDTData master = newSchmea[0] as UDTData;
                     master.validationChangedEvent += projectValidationChanged;
                     master.dataChangeEvent += projectDataChanged;
