@@ -5,7 +5,7 @@
         prism:ViewModelLocator.AutoWireViewModel="True"
         xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" 
         Name="newPrjWin"
-        Title="NewProject" Height="300" Width="400">
+        Title="NewProject" Width="400" SizeToContent="Height">
 
     <Window.Resources>
         <Style TargetType="TextBox">
@@ -44,20 +44,64 @@
     </i:Interaction.Triggers>
     
     <Grid>
-        <StackPanel>
-            <WrapPanel HorizontalAlignment="Center" Margin="0,30,0,0">
-                <Label Width="100" HorizontalContentAlignment="Right" Content="Database Type:" />
+        <StackPanel HorizontalAlignment="Center" Width="auto">
+            <WrapPanel HorizontalAlignment="Left" Margin="0,15,0,15">
+                <Label Width="120" HorizontalContentAlignment="Right" Content="Project Name:" />
+                <TextBox Text="{Binding ProjectName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                         Height="20" Width="134"/>
+            </WrapPanel>
+
+            <WrapPanel HorizontalAlignment="Left" Margin="0,0,0,0">
+                <Label Width="120" HorizontalContentAlignment="Right" Content="Database Type:" />
                 <CheckBox Command="{Binding SqliteCommand}" VerticalAlignment="Center" 
                           IsChecked ="{Binding sqliteDb}" Content="Sqlite" Margin="0,0,5,0"></CheckBox>
                 <CheckBox Command="{Binding SqlServerCommand}" VerticalAlignment="Center" 
                           IsChecked ="{Binding sqlServerDb}" Content="Sql Server"></CheckBox>
+            </WrapPanel >
+            <WrapPanel HorizontalAlignment="Left" Margin="0,0,0,0">
+                <Label Width="120" HorizontalContentAlignment="Right" Content="Database Location:" />
+                <CheckBox Command="{Binding LocalCommand}" VerticalAlignment="Center" 
+                          IsChecked ="{Binding localDb}" Content="Local" Margin="0,0,5,0"></CheckBox>
+                <CheckBox Command="{Binding RemoteCommand}" VerticalAlignment="Center" 
+                          IsChecked ="{Binding remoteDb}" Content="Remote"></CheckBox>
             </WrapPanel>
-            <WrapPanel HorizontalAlignment="Center" Margin="0,0,0,0">
-                <Label Width="100" HorizontalContentAlignment="Right" Content="Project Name:" />
-                <TextBox Text="{Binding ProjectName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Height="25" Width="134"/>
-            </WrapPanel>
-            <WrapPanel  HorizontalAlignment="Center" Margin="0,30,0,0">
-                <Button Content="Ok" Command="{Binding OkCommand}" Margin="0,0,20,0" Height="20" Width="60"/>
+
+            <Grid Visibility="{Binding conStrVisible}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="120"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Label Grid.Row="0" Grid.Column="0" HorizontalContentAlignment="Right" Content="Databse Server Url"/>
+                <TextBox Grid.Row="0" Grid.Column="1" Width="150" Height="20"/>
+                <Label Grid.Row="1" Grid.Column="0" HorizontalContentAlignment="Right" Content="User Name: "/>
+                <TextBox Grid.Row="1" Grid.Column="1" Width="100" Height="20" HorizontalAlignment="Left"/>
+                <Label Grid.Row="2" Grid.Column="0" HorizontalContentAlignment="Right" Content="Password: "/>
+                <TextBox Grid.Row="2" Grid.Column="1" Width="100" Height="20" HorizontalAlignment="Left"/>
+                <TextBlock Grid.Row="3" Grid.ColumnSpan="2" Width="30" Text="OR"/>
+                <Label Grid.Row="4" Grid.ColumnSpan="2"  HorizontalContentAlignment="Center" Content="Full Connection String: "/>
+                <TextBox Grid.Row="5" Grid.ColumnSpan="2" Width="260" Height="20"/>
+                <Button Grid.Row="6" Grid.ColumnSpan="2" Width="100" Margin="0,5,0,0" Content="Test Conection"/>
+            </Grid>
+
+            <Border BorderBrush="Black" BorderThickness="2" Background="LightGoldenrodYellow" CornerRadius="3"
+                    Visibility="{Binding progressMsgVisable}">
+                <StackPanel HorizontalAlignment="Center" Margin="0,0,0,0">
+                    <Label Width="auto" HorizontalAlignment="Center" Content="Downloading install package." />
+                    <TextBlock x:Name="loadCount" Width="auto" HorizontalAlignment="Center"
+                               Text="{Binding downLoadCountStr,  Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+            </Border>
+            <WrapPanel  HorizontalAlignment="Center" Margin="0,30,0,10">
+                <Button Content="Ok" Command="{Binding OkCommand}" Margin="0,0,0,0" Height="20" Width="60"/>
                 <Button Content="Cancel" Command="{Binding CancelCommand}" Margin="20,0,0,0" Height="20"  Width="60"/>
             </WrapPanel>
         </StackPanel>       

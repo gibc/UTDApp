@@ -126,9 +126,12 @@ namespace UDTApp.Models
         private List<string> GetColumns(string table)
         {
 
-            string sqlTxt = UDTDataSet.dbProvider.adjSQL(string.Format(@"USE [UDTUser] SELECT * FROM INFORMATION_SCHEMA.COLUMNS
+            //string sqlTxt = UDTDataSet.dbProvider.adjSQL(string.Format(@"USE [UDTUser] SELECT * FROM INFORMATION_SCHEMA.COLUMNS
+            //        WHERE TABLE_NAME = '{0}'
+            //        ORDER BY ORDINAL_POSITION", table));
+            string sqlTxt = string.Format(@"SELECT * FROM INFORMATION_SCHEMA.COLUMNS
                     WHERE TABLE_NAME = '{0}'
-                    ORDER BY ORDINAL_POSITION", table));
+                    ORDER BY ORDINAL_POSITION", table);
 
             List<string> colList = new List<string>();
             using (SqlConnection conn = new SqlConnection())
@@ -184,7 +187,8 @@ namespace UDTApp.Models
         {
             //ALTER TABLE table_name ADD column_name datatype;
 
-            string sqlTxt = UDTDataSet.dbProvider.adjSQL(string.Format(@"USE [UDTUser] ALTER TABLE {0} ", table));
+            //string sqlTxt = UDTDataSet.dbProvider.adjSQL(string.Format(@"USE [UDTUser] ALTER TABLE {0} ", table));
+            string sqlTxt = string.Format(@"ALTER TABLE {0} ", table);
             sqlTxt += string.Format("ADD {0} ", itemDef.Name);
             sqlTxt += string.Format("{0} ", GetDBType(itemDef.Type));
 

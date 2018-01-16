@@ -174,19 +174,15 @@ namespace UDTApp.Models
 
             using (DbConnection conn = UDTDataSet.dbProvider.Conection)
             {
-                UDTDataSet.dbProvider.initialCatalog = "Initial Catalog = MASTER";
-                conn.ConnectionString = UDTDataSet.dbProvider.ConnectionString;
-                UDTDataSet.dbProvider.initialCatalog = string.Format("Initial Catalog = {0}", DBName);
+                conn.ConnectionString = UDTDataSet.dbProvider.MasterCatalogConnnectionString;
                 DbCommand cmd = UDTDataSet.dbProvider.GetCommand(
                     string.Format("select count(*) from (select * from sys.databases where name = '{0}') rows", DBName)
                     ); 
-
 
                 cmd.Connection = conn;
                 conn.Open();
                 try
                 {
-                    // TBD: this fails for azure database
                     int dbCount = (int)cmd.ExecuteScalar();
                     if (dbCount < 1)
                     {
@@ -290,8 +286,10 @@ namespace UDTApp.Models
                 if (!string.IsNullOrEmpty(dataItem.savName) && TableExists(dataItem.savName, dbName))
                 {
                     // table has a new name
-                    string sqlTxt = UDTDataSet.dbProvider.adjSQL(string.Format("USE [{0}]  ALTER TABLE {1} RENAME TO {2}",
-                        dbName, dataItem.savName, dataItem.Name));
+                    //string sqlTxt = UDTDataSet.dbProvider.adjSQL(string.Format("USE [{0}]  ALTER TABLE {1} RENAME TO {2}",
+                    //    dbName, dataItem.savName, dataItem.Name));
+                    string sqlTxt = string.Format("ALTER TABLE {1} RENAME TO {2}",
+                        dbName, dataItem.savName, dataItem.Name);
                     if (!executeQuery(sqlTxt)) return;
                     dataItem.savName = dataItem.Name;  // remove table name mod from schema
                 }
@@ -300,7 +298,8 @@ namespace UDTApp.Models
                     // create new table
                     using (DbConnection conn = UDTDataSet.dbProvider.Conection)
                     {
-                        ddl = UDTDataSet.dbProvider.adjSQL(string.Format("USE [{0}] CREATE TABLE {1} (", dbName, dataItem.Name));
+                        //ddl = UDTDataSet.dbProvider.adjSQL(string.Format("USE [{0}] CREATE TABLE {1} (", dbName, dataItem.Name));
+                        ddl = string.Format("CREATE TABLE {0} (", dataItem.Name);
                         ddl += string.Format("[Id] [uniqueidentifier] NOT NULL, ");
                         foreach (UDTBase item in dataItem.columnData)
                         {
@@ -425,7 +424,8 @@ namespace UDTApp.Models
         bool isTableEmpty(string tableName, string dbName)
         {
             bool retVal = true;
-            string sqlTxt = UDTDataSet.dbProvider.adjSQL(string.Format("USE [{1}] SELECT * from {0}", tableName, dbName));
+            //string sqlTxt = UDTDataSet.dbProvider.adjSQL(string.Format("USE [{1}] SELECT * from {0}", tableName, dbName));
+            string sqlTxt = string.Format("SELECT * from {0}", tableName);
             using (DbConnection conn = UDTDataSet.dbProvider.Conection)
             {
                 conn.ConnectionString = UDTDataSet.dbProvider.ConnectionString;
@@ -483,7 +483,8 @@ namespace UDTApp.Models
         {
             using (DbConnection conn = UDTDataSet.dbProvider.Conection)
             {
-                string ddl = UDTDataSet.dbProvider.adjSQL(string.Format("USE [{0}] CREATE TABLE {1} (", dbName, dataItem.Name));
+                //string ddl = UDTDataSet.dbProvider.adjSQL(string.Format("USE [{0}] CREATE TABLE {1} (", dbName, dataItem.Name));
+                string ddl = string.Format("CREATE TABLE {1} (", dbName, dataItem.Name);
                 ddl += string.Format("[Id] [uniqueidentifier] NOT NULL, ");
                 foreach (UDTBase item in dataItem.columnData)
                 {
@@ -502,8 +503,9 @@ namespace UDTApp.Models
 
         public bool dropTable(string tableName, string dbName)
         {
-            string sqlTxt = 
-                UDTDataSet.dbProvider.adjSQL(string.Format("USE [{0}] DROP TABLE {1}", dbName, tableName));
+            string sqlTxt =
+               // UDTDataSet.dbProvider.adjSQL(string.Format("USE [{0}] DROP TABLE {1}", dbName, tableName));
+                string.Format("DROP TABLE {0}", tableName);
             return executeQuery(sqlTxt);
         }
 
@@ -535,9 +537,12 @@ namespace UDTApp.Models
         private List<string> GetColumns(string table, string dbName)
         {
 
-            string sqlTxt = UDTDataSet.dbProvider.adjSQL(string.Format(@"USE [{0}] SELECT * FROM INFORMATION_SCHEMA.COLUMNS
-                    WHERE TABLE_NAME = '{1}'
-                    ORDER BY ORDINAL_POSITION", dbName, table));
+            //string sqlTxt = UDTDataSet.dbProvider.adjSQL(string.Format(@"USE [{0}] SELECT * FROM INFORMATION_SCHEMA.COLUMNS
+            //        WHERE TABLE_NAME = '{1}'
+            //        ORDER BY ORDINAL_POSITION", dbName, table));
+            string sqlTxt = string.Format(@"SELECT * FROM INFORMATION_SCHEMA.COLUMNS
+                    WHERE TABLE_NAME = '{0}'
+                    ORDER BY ORDINAL_POSITION", table);
 
             if (UDTDataSet.dbProvider.dbType == DBType.sqlLite)
                 sqlTxt = string.Format("PRAGMA table_info({0})", table);
@@ -593,9 +598,11 @@ namespace UDTApp.Models
             createNewTable(table, table.Name, dbName);
 
             //copy the contents of renamed cols across from the original table.
-            string sqlTxt = UDTDataSet.dbProvider.adjSQL(
-                string.Format(@"USE [{0}] INSERT INTO {1}({2}) SELECT {2} FROM tmp_{1}", 
-                dbName, table.Name, getColSql(table), getColSql(table, true)));
+            //string sqlTxt = UDTDataSet.dbProvider.adjSQL(
+            //    string.Format(@"USE [{0}] INSERT INTO {1}({2}) SELECT {2} FROM tmp_{1}",
+            //    dbName, table.Name, getColSql(table), getColSql(table, true)));
+            string sqlTxt = string.Format(@"INSERT INTO {1}({2}) SELECT {2} FROM tmp_{1}",
+                dbName, table.Name, getColSql(table), getColSql(table, true));
             if (!executeQuery(sqlTxt)) return false;
 
             // drop the old table.
@@ -618,7 +625,8 @@ namespace UDTApp.Models
                     oldName, newName);
             else if(UDTDataSet.dbProvider.dbType == DBType.sqlExpress)
             {
-                sqlTxt = UDTDataSet.dbProvider.adjSQL(string.Format(@"USE [{0}] EXEC sp_rename '{1}', '{2}'", dbName, oldName, newName));
+                //sqlTxt = UDTDataSet.dbProvider.adjSQL(string.Format(@"USE [{0}] EXEC sp_rename '{1}', '{2}'", dbName, oldName, newName));
+                sqlTxt = string.Format(@"EXEC sp_rename '{0}', '{1}'", oldName, newName);
             }
             if (!executeQuery(sqlTxt)) return false;
 
@@ -630,7 +638,8 @@ namespace UDTApp.Models
         {
             //ALTER TABLE table_name ADD column_name datatype;
 
-            string sqlTxt = UDTDataSet.dbProvider.adjSQL(string.Format(@"USE [{0}] ALTER TABLE {1}", dbName, table));
+            //string sqlTxt = UDTDataSet.dbProvider.adjSQL(string.Format(@"USE [{0}] ALTER TABLE {1}", dbName, table));
+            string sqlTxt = string.Format(@"ALTER TABLE {0}", table);
             sqlTxt += string.Format(" ADD {0} ", udtItem.Name);
             sqlTxt += string.Format("{0} ", udtItem.Type);
 
@@ -666,7 +675,7 @@ namespace UDTApp.Models
         {
             DataSet = new System.Data.DataSet(masterItem.Name);
             DataSet.EnforceConstraints = true;
-            if (masterItem.dbType != DBType.none)
+            //if (masterItem.dbType != DBType.none)
                 UDTDataSet.dbProvider = new DbProvider(masterItem.dbType, masterItem.conectionString);
             foreach(UDTData table in masterItem.tableData)
             {
@@ -804,7 +813,6 @@ namespace UDTApp.Models
             {
 
                 //conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
-                UDTDataSet.dbProvider.initialCatalog = string.Format("Initial Catalog = {0}", dbName);
                 conn.ConnectionString = UDTDataSet.dbProvider.ConnectionString;
                 //SqlCommand cmd = new SqlCommand();
                 DbCommand cmd = UDTDataSet.dbProvider.Command;
@@ -815,7 +823,8 @@ namespace UDTApp.Models
                 // read all records in table on first call and only call
                 string sqlTxt;
                 //if (parentId == -1)
-                sqlTxt = UDTDataSet.dbProvider.adjSQL(string.Format("USE [{0}] select * from {1} ", dbName, dataItem.Name));
+                //sqlTxt = UDTDataSet.dbProvider.adjSQL(string.Format("USE [{0}] select * from {1} ", dbName, dataItem.Name));
+                sqlTxt = string.Format("select * from {0} ", dataItem.Name);
 
                 cmd.CommandText = sqlTxt;
                 cmd.CommandType = CommandType.Text;
@@ -905,8 +914,10 @@ namespace UDTApp.Models
             //DELETE FROM table_name
             //WHERE condition;
             Guid id = (Guid)row["Id", DataRowVersion.Original];
-            string sqlTxt = UDTDataSet.dbProvider.adjSQL(string.Format("USE [{0}] delete from {1} where Id = '{2}'", 
-                DataSet.DataSetName, row.Table.TableName, id));
+            //string sqlTxt = UDTDataSet.dbProvider.adjSQL(string.Format("USE [{0}] delete from {1} where Id = '{2}'", 
+            //    DataSet.DataSetName, row.Table.TableName, id));
+            string sqlTxt = string.Format("delete from {1} where Id = '{2}'",
+               DataSet.DataSetName, row.Table.TableName, id);
             //using (SqlConnection conn = new SqlConnection())
             using (DbConnection conn = UDTDataSet.dbProvider.Conection)
             {
@@ -936,8 +947,10 @@ namespace UDTApp.Models
         {
             //INSERT INTO table_name (column1, column2, column3, ...)
             //VALUES (value1, value2, value3, ...);
-            string sqlTxt = UDTDataSet.dbProvider.adjSQL(string.Format("USE [{0}] insert into {1} (", 
-                DataSet.DataSetName, row.Table.TableName));
+            //string sqlTxt = UDTDataSet.dbProvider.adjSQL(string.Format("USE [{0}] insert into {1} (",
+            //    DataSet.DataSetName, row.Table.TableName));
+            string sqlTxt = string.Format("insert into {1} (",
+                DataSet.DataSetName, row.Table.TableName);
             foreach (DataColumn col in row.Table.Columns)
             {
                 if(row[col.ColumnName] != DBNull.Value)
@@ -997,7 +1010,9 @@ namespace UDTApp.Models
             //UPDATE table_name
             //SET column1 = value1, column2 = value2, ...
             //WHERE condition;
-            string sqlTxt = UDTDataSet.dbProvider.adjSQL(string.Format("USE [{0}] update {1} set ", DataSet.DataSetName, row.Table.TableName));
+            //string sqlTxt = UDTDataSet.dbProvider.adjSQL(string.Format("USE [{0}] update {1} set ", DataSet.DataSetName, row.Table.TableName));
+            string sqlTxt = string.Format("update {1} set ", 
+                DataSet.DataSetName, row.Table.TableName);
             sqlTxt += " ";
             foreach(DataColumn col in row.Table.Columns)
             {

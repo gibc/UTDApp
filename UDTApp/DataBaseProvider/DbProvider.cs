@@ -16,10 +16,31 @@ namespace UDTApp.DataBaseProvider
     public enum DBType { sqlExpress, sqlLite, none}
     public class DbProvider
     {
-        public DbProvider(DBType _dbType, string remoteConString)
+        public DbProvider(DBType _dbType, string conString)
         {
             dbType = _dbType;
-            remoteConnectionString = remoteConString;
+
+            if (dbType == DBType.none)
+            {
+                dbType = DBType.sqlExpress;
+                string path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                string dataFolder = path + "\\UdtApp";
+                if (Directory.Exists(dataFolder))
+                {
+                    var fl = Directory.GetFiles(dataFolder, string.Format("{0}.db", DbName)).ToList();
+                    if (fl != null && fl.Count > 0)
+                    {
+                        dbType = DBType.sqlLite;
+                    }
+                }
+            }
+
+            if (dbType == DBType.sqlExpress && string.IsNullOrEmpty(conString))
+            {
+                conString = "Data Source=.\\SQLEXPRESS; Integrated Security=True";
+            }
+
+            ConnectionString = conString;
         }
 
         public DbConnection Conection 
@@ -65,52 +86,108 @@ namespace UDTApp.DataBaseProvider
             }
         }
 
-        private string _DbName;
         public string DbName
         {
             get
             {
+                if (UDTXml.UDTXmlData.SchemaData == null) return "";
                 UDTData udtData = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
                 return udtData.Name;
             }
         }
 
-        private List<string> conStrings;
-        private string remoteConnectionString
+        //private string remoteConnectionString
+        //{
+        //    get
+        //    {
+        //        if (conStrings == null) return "";
+        //        if(!string.IsNullOrEmpty(initialCatalog))
+        //        {
+        //            conStrings.Add(initialCatalog);
+        //        }
+        //        string retString = string.Join("; ", conStrings);
+        //        if (!string.IsNullOrEmpty(initialCatalog))
+        //        {
+        //            conStrings.Remove(initialCatalog);
+        //        }
+        //        return retString;
+        //    }
+        //    set
+        //    {
+        //        conStrings = value.Split(';').Where(x => !string.IsNullOrWhiteSpace(x)).Select(p => p.Trim()).ToList();
+        //        string catalog = conStrings.FirstOrDefault(p => p.ToUpper().Contains("CATALOG"));
+        //        if (catalog != null)
+        //        {
+        //            //initialCatalog = catalog;
+        //            conStrings.Remove(catalog);
+        //        }
+        //    }
+        //}
+
+        private string initialCatalog
         {
             get
             {
-                if (conStrings == null) return "";
-                if(!string.IsNullOrEmpty(initialCatalog))
-                {
-                    conStrings.Add(initialCatalog);
-                }
-                string retString = string.Join("; ", conStrings);
-                if (!string.IsNullOrEmpty(initialCatalog))
-                {
-                    conStrings.Remove(initialCatalog);
-                }
-                return retString;
+                return string.Format("Initial Catalog = {0};", DbName);
             }
+        }
+
+        public string MasterCatalogConnnectionString
+        {
+            get
+            {
+                string conStr = "";
+                if (dbType == DBType.sqlLite)
+                    conStr = sqlLiteConnectionString;
+                else
+                {
+                    if (conStrings == null) return "";
+                    string masterCat = string.Format("Initial Catalog = {0};", "MASTER");
+                    conStrings.Add(masterCat);               
+                    conStr = string.Join("; ", conStrings);
+                    conStrings.Remove(masterCat);
+                }
+                return conStr;
+            }
+        }
+
+        private List<string> conStrings;
+        public string ConnectionString
+        {
             set
             {
                 conStrings = value.Split(';').Where(x => !string.IsNullOrWhiteSpace(x)).Select(p => p.Trim()).ToList();
-                string catalog = conStrings.FirstOrDefault(p => p.Contains("Catalog"));
+                string catalog = conStrings.FirstOrDefault(p => p.ToUpper().Contains("CATALOG"));
                 if (catalog != null)
                 {
-                    initialCatalog = catalog;
                     conStrings.Remove(catalog);
                 }
             }
+            get
+            {
+                string conStr = "";
+                if (dbType == DBType.sqlLite)
+                {
+                    return sqlLiteConnectionString;
+                }
+                else if (dbType == DBType.sqlExpress)
+                {
+                    if (conStrings == null) return "";
+                    if (!string.IsNullOrEmpty(initialCatalog))
+                    {
+                        conStrings.Add(initialCatalog);
+                    }
+                    conStr = string.Join("; ", conStrings);
+                    if (!string.IsNullOrEmpty(initialCatalog))
+                    {
+                        conStrings.Remove(initialCatalog);
+                    }
+                }
+                return conStr;
+            }
         }
 
-        public string initialCatalog
-        {
-            get;
-            set;
-        }
-
-        public string ConnectionString
+        private string sqlLiteConnectionString
         {
             get
             {
@@ -118,34 +195,26 @@ namespace UDTApp.DataBaseProvider
                 string dataFolder = path + "\\UdtApp";
                 if (!Directory.Exists(dataFolder))
                     Directory.CreateDirectory(dataFolder);
-                if (dbType == DBType.sqlLite)
-                {
-                    string conStr = string.Format("Data Source={0}\\{1}.db;Version=3;datetimeformat=CurrentCulture;",
-                        dataFolder, DbName);
-                    return conStr;
-                }
-                else if (dbType == DBType.sqlExpress)
-                {
-                    if (!string.IsNullOrEmpty(remoteConnectionString)) return remoteConnectionString;
-                    return ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
-                }
-                return "";
+
+                return string.Format("Data Source={0}\\{1}.db;Version=3;datetimeformat=CurrentCulture;",
+                    dataFolder, DbName);
             }
         }
 
-        public string adjSQL(string sqltxt)
-        {
-            if (dbType == DBType.sqlLite || !string.IsNullOrEmpty(remoteConnectionString))
-            {
-                if(sqltxt.ToUpper().Contains("USE"))
-                {
-                    int off = sqltxt.IndexOf(']');
-                    if (off > 0)
-                        sqltxt = sqltxt.Substring(off + 1).Trim();
-                }
-            }
-            return sqltxt;
-        }
+
+        //public string adjSQL(string sqltxt)
+        //{
+        //    if (dbType == DBType.sqlLite )
+        //    {
+        //        if(sqltxt.ToUpper().Contains("USE"))
+        //        {
+        //            int off = sqltxt.IndexOf(']');
+        //            if (off > 0)
+        //                sqltxt = sqltxt.Substring(off + 1).Trim();
+        //        }
+        //    }
+        //    return sqltxt;
+        //}
 
         public DBType dbType = DBType.sqlExpress;
 
