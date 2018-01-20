@@ -13,6 +13,7 @@ namespace UDTApp.Settings
         public AppSettings()
         {
             fileSettings = new List<FileSetting>();
+            serverSettings = new List<ServerSetting>();
         }
 
         static private AppSettings _appSettings = null;
@@ -38,6 +39,16 @@ namespace UDTApp.Settings
             set { _fileSettings = value; }
         }
 
+        private List<ServerSetting> _serverSettings = null;
+        private List<ServerSetting> serverSettings
+        {
+            get
+            {
+                return _serverSettings;
+            }
+            set { _serverSettings = value; }
+        }
+
         public bool findPojectName(string name)
         {
             foreach(FileSetting setting in fileSettings)
@@ -47,6 +58,24 @@ namespace UDTApp.Settings
             }
             return false;
         }
+
+        public void addServer(string name, string user, string pwd)
+        {
+            serverSettings.Add(new ServerSetting { serverName = name, userId = user, pwd = pwd });
+        }
+
+        public ServerSetting getServer(string name)
+        {
+            return serverSettings.FirstOrDefault(p => p.serverName == name);
+        }
+
+        public void remvoeServer(string name)
+        {
+            ServerSetting sc = serverSettings.FirstOrDefault(p => p.serverName == name);
+            if (sc != null)
+                serverSettings.Remove(sc);
+        }
+
 
         public void addFile(string _filePath)
         {

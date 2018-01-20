@@ -67,8 +67,15 @@
                 </Grid.ColumnDefinitions>
                 <WrapPanel Grid.Column="0">
                     <Button Command="{Binding OpenCommand}"  Content="Open Dateset"/>
-                    <Button Margin="3,0,0,0" Command="{Binding NewCommand}"  Content="New Dataset"/>
-                    <Menu Margin="3,0,0,0">
+                    <!--<Button Margin="3,0,0,0" Command="{Binding NewCommand}"  Content="New Dataset"/>-->
+                    <Menu Margin="3,0,0,0" >
+                        <MenuItem Header="_New Project">
+                            <MenuItem Header="_Sqlite" Command="{Binding NewSqliteCommand}"/>
+                            <MenuItem Header="_Sql Server" Command="{Binding NewSqlServerCommand}"/>
+                            <MenuItem Header="_Sql Server (remote)" Command="{Binding NewSqlServerRemoteCommand}"/>
+                        </MenuItem>
+                    </Menu>
+                    <Menu Margin="3,0,0,0" >
                         <MenuItem Height="20" x:Name="fileMenu" Header="_Recent Datasets" >
                             <i:Interaction.Triggers>
                                 <i:EventTrigger EventName="SubmenuOpened">

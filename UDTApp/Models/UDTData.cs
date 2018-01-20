@@ -63,11 +63,18 @@ namespace UDTApp.Models
             set;
         }
 
-        private string _conectionString = "";
-        public string conectionString
+        //private string _conectionString = "";
+        //public string conectionString
+        //{
+        //    get { return _conectionString; }
+        //    set { _conectionString = value; }
+        //}
+
+        private string _serverName = "";
+        public string serverName
         {
-            get { return _conectionString; }
-            set { _conectionString = value; }
+            get { return _serverName; }
+            set { _serverName = value; }
         }
 
         public delegate void validationChangedDel();

@@ -22,6 +22,7 @@ using System.Threading;
 using System.Windows.Threading;
 using System.Windows.Controls;
 using System.Windows.Media;
+using UDTApp.BlobStorage;
 
 namespace UDTApp.ViewModels
 {
@@ -29,6 +30,7 @@ namespace UDTApp.ViewModels
     {
         public DelegateCommand OkCommand { get; set; }
         public DelegateCommand CancelCommand { get; set; }
+        public DelegateCommand testConnectionCmd { get; set; }
         public DelegateCommand<Window> WindowLoadedCommand { get; set; }
         public DelegateCommand SqliteCommand { get; set; }
         public DelegateCommand SqlServerCommand { get; set; }
@@ -40,6 +42,7 @@ namespace UDTApp.ViewModels
             OkCommand = new DelegateCommand(okCmd, canOk);
             CancelCommand = new DelegateCommand(cancelCmd);
             SqliteCommand = new DelegateCommand(sqliteCmd);
+            testConnectionCmd = new DelegateCommand(testConnection, canTestConnection);
             SqlServerCommand = new DelegateCommand(sqlServerCmd);
             LocalCommand = new DelegateCommand(localCmd);
             RemoteCommand = new DelegateCommand(remoteCmd);
@@ -105,6 +108,45 @@ namespace UDTApp.ViewModels
             set;
         }
 
+        private string _sqlServerUrl = "";
+        public string sqlServerUrl
+        {
+            get { return _sqlServerUrl; }
+            set
+            {
+                SetProperty(ref _sqlServerUrl, value);
+                testConnectionCmd.RaiseCanExecuteChanged();
+            }
+        }
+
+        private string _sqlUser = "";
+        public string sqlUser
+        {
+            get { return _sqlUser; }
+            set
+            {
+                SetProperty(ref _sqlUser, value);
+                testConnectionCmd.RaiseCanExecuteChanged();
+            }
+        }
+
+        private string _sqlPassword = "";
+        public string sqlPassword
+        {
+            get { return passwordBox.Password; }
+        }
+
+        private string _sqlConnString = "";
+        public string sqlConnString
+        {
+            get { return _sqlConnString; }
+            set
+            {
+                SetProperty(ref _sqlConnString, value);
+                testConnectionCmd.RaiseCanExecuteChanged();
+            }
+        }
+
         public string connectionString
         {
             get;
@@ -117,97 +159,109 @@ namespace UDTApp.ViewModels
             set;
         }
 
-        private async Task<bool> installLocalDb()
+        private async Task<bool> installPackage(string fileName, string blobName)
         {
-            string cons = @"DefaultEndpointsProtocol=https;AccountName=udtapp;AccountKey=bdQ/RekPpoYC0RPCtYhOYM4A8mo5Wy3j/0gF4TuuaKrOwTY7rBzL5jGIJsMuprULG9iF4l0UqJKLmaQrhPy8jQ==;";
-            cons = cons.Trim();
-            string blobCon = ConfigurationManager.AppSettings["StorageConnectionString"];
-            CloudStorageAccount storageAccount = CloudStorageAccount.Parse(cons);
-            CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
 
-            // Retrieve a reference to a container.
-            CloudBlobContainer container = blobClient.GetContainerReference("install-downloads");
+            string tempFolder = Path.GetTempPath();
+            tempFolder += "udtsetup";
+            if (!Directory.Exists(tempFolder))
+                Directory.CreateDirectory(tempFolder);
+            string msiFile = tempFolder + "\\" + fileName;
 
-            // Create the container if it doesn't already exist.
-            container.CreateIfNotExists();
-
-            // Retrieve reference to a blob named "local-db-msi".
-            CloudBlockBlob blockBlob = container.GetBlockBlobReference("local-db-msi");
-
-            // Create or overwrite the "local-db-msi" blob with contents from a local file.
-            //using (var fileStream = System.IO.File.OpenRead(@"C:\GibPCStuff\UDTApp\TestApp\SqlLocalDB.msi"))
-            //{
-            //    blockBlob.UploadFromStream(fileStream);
-            //    Stream blobStream = blockBlob.OpenRead();
-            //}
-
-            blockBlob.FetchAttributes();
-            long size = blockBlob.Properties.Length;
-            bool done = false;
-            downloadMsiFile(blockBlob, () => done = true);
-
-            progressMsgVisable = Visibility.Visible;
-            while (!done)
+            int exitVal = 0;
+            //if (Directory.GetFiles(tempFolder, fileName).ToList().Count <= 0)
+            if (true)
             {
-                if(loadCountTxtBlock.Foreground == Brushes.DarkBlue)
-                    loadCountTxtBlock.Foreground = Brushes.DarkGreen;
-                else
-                    loadCountTxtBlock.Foreground = Brushes.DarkBlue;
+                long length = 0;
+                long downloadCount = 0;
+                progressMsgVisable = Visibility.Visible;
+                //new Thread(() => BlobLoader.downloadFile(
+                //   blobName, msiFile,
+                //   (rv) => exitVal = rv,
+                //   (cnt, sz) => { downloadCount = cnt; length = sz; }
+                //   )).Start();
+                BlobLoader.downloadFile(
+                   blobName, msiFile,
+                   (rv) => exitVal = rv,
+                   (cnt, sz) => { downloadCount = cnt; length = sz; },
+                   () => { return false; }
+                   );
 
-                await Task.Delay(1000);
-                loadCountTxtBlock.Text = String.Format("{0:n0} of {1:n0} bytes", downloadCount, size);
-                loadCountTxtBlock.UpdateLayout();
+                while (exitVal == 0)
+                {
+                    if (loadCountTxtBlock.Foreground == Brushes.DarkBlue)
+                        loadCountTxtBlock.Foreground = Brushes.DarkGreen;
+                    else
+                        loadCountTxtBlock.Foreground = Brushes.DarkBlue;
+
+                    await Task.Delay(1000);
+                    loadCountTxtBlock.Text = String.Format("{0:n0} of {1:n0} bytes", downloadCount, length);
+                    loadCountTxtBlock.UpdateLayout();
+                }
+                progressMsgVisable = Visibility.Collapsed;
             }
-            progressMsgVisable = Visibility.Collapsed;
-            if (downloadCount < 0) return false;
 
+            if (exitVal < 0) return false;
+
+            System.Diagnostics.Process installerProcess;
+            //installerProcess = System.Diagnostics.Process.Start(msiFile, "/q");
+            installerProcess = System.Diagnostics.Process.Start(msiFile);
+            while (installerProcess.HasExited == false)
+            {
+                await Task.Delay(1000);
+            }
+            if (installerProcess.ExitCode != 0)
+            {
+                MessageBox.Show("Installation app failed or was cancled", "Install Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return false;
+            }
 
             return true;
         }
 
         int downloadCount = 0;
 
-        private void downloadMsiFile(CloudBlockBlob blockBlob, Action callback)
-        {
-            new Thread(() =>
-            {
-                try
-                {
-                    Thread.CurrentThread.IsBackground = true;
-                    int count = 50000;
-                    byte[] buff = new byte[count];
-                    string tempFolder = Path.GetTempPath();
-                    tempFolder += "udtsetup";
-                    if (!Directory.Exists(tempFolder))
-                        Directory.CreateDirectory(tempFolder);
-                    Directory.CreateDirectory(tempFolder);
-                    string msiFile = tempFolder + "\\SqlLocalDB.msi";
-                    using (var fileStream = System.IO.File.OpenWrite(msiFile))
-                    {
-                        using (Stream blobStream = blockBlob.OpenRead())
-                        {
-                            while (count > 0)
-                            {
-                                count = blobStream.Read(buff, 0, 50000);
-                                fileStream.Write(buff, 0, count);
-                                downloadCount += count;
-                            }
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(string.Format("Insatll package download failed: {0}", ex.Message), 
-                        "Download Error", 
-                        MessageBoxButton.OK, MessageBoxImage.Error);
-                    downloadCount = -1;
-                }
-                finally
-                {
-                    callback();
-                }
-            }).Start();
-        }
+        //private void downloadMsiFile(string msiFilePath, CloudBlockBlob blockBlob, Action callback)
+        //{
+        //    new Thread(() =>
+        //    {
+        //        try
+        //        {
+        //            Thread.CurrentThread.IsBackground = true;
+        //            int count = 50000;
+        //            byte[] buff = new byte[count];
+        //            //string tempFolder = Path.GetTempPath();
+        //            //tempFolder += "udtsetup";
+        //            //if (!Directory.Exists(tempFolder))
+        //            //    Directory.CreateDirectory(tempFolder);
+        //            //Directory.CreateDirectory(tempFolder);
+        //            //string msiFile = tempFolder + "\\SqlLocalDB.msi";
+        //            using (var fileStream = System.IO.File.OpenWrite(msiFilePath))
+        //            {
+        //                using (Stream blobStream = blockBlob.OpenRead())
+        //                {
+        //                    while (count > 0)
+        //                    {
+        //                        count = blobStream.Read(buff, 0, 50000);
+        //                        fileStream.Write(buff, 0, count);
+        //                        downloadCount += count;
+        //                    }
+        //                }
+        //            }
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            MessageBox.Show(string.Format("Insatll package download failed: {0}", ex.Message), 
+        //                "Download Error", 
+        //                MessageBoxButton.OK, MessageBoxImage.Error);
+        //            downloadCount = -1;
+        //        }
+        //        finally
+        //        {
+        //            callback();
+        //        }
+        //    }).Start();
+        //}
 
         private string _downLoadCountStr = "";      
         public string downLoadCountStr
@@ -223,27 +277,53 @@ namespace UDTApp.ViewModels
             set { SetProperty(ref _progressMsgVisable, value); }
         }
 
-        private bool testRemoteConn()
-        {
-            return false;
-        }
 
-        private void okCmd()
+        private async void okCmd()
         {
             dbType = DBType.sqlLite;
             if (sqlServerDb && remoteDb)
             {
-                if (!testRemoteConn()) return;
+                if (!sqlClientInstalled)
+                //if (true)
+                {
+                    //https://udtapp.blob.core.windows.net/install-downloads/sqlncli.msi
+                    string msiName = "sqlncli32.msi";
+                    if (Environment.Is64BitOperatingSystem)
+                    {
+                        msiName = "sqlncli64.msi";
+                    }
+                    if (await installPackage(msiName, msiName) == false) return;
+                    if (!sqlClientInstalled)
+                    {
+                        MessageBox.Show("Cannot connect to remote database server.  Installation failed.", "Install Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
+
+                    MessageBox.Show("Sql client sucessfully installed.", "Install Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    // test user's con string
+                    return;
+                }
             }
             if (sqlServerDb && !remoteDb)
             { 
-                if(!localDbInstalled)
+                //if(!localDbInstalled)
+                if(true)
                 {
                     if(MessageBox.Show(@"The Sql Server local database component is not insalled. Download and install the local database server?", "Install Required.", 
                             MessageBoxButton.OKCancel, MessageBoxImage.Information) == MessageBoxResult.OK)
                     {
-                        //if (!installLocalDb()) return;
-                        installLocalDb(); return;
+                        if(await installPackage("SqlLocalDB.msi", "local-db-msi") == false) return;
+                        if (!localDbInstalled)
+                        {
+                            MessageBox.Show("Cannot connect to local database server.  Installation failed.", "Install Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                            return;
+                        }
+
+                        MessageBox.Show("Local database server sucessfully installed.  Creating new Sql Server local database project.", "Install Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+
                     }
                     else return;
                 }
@@ -270,6 +350,46 @@ namespace UDTApp.ViewModels
         private void sqliteCmd()
         {
             sqlServerDb = !sqliteDb;
+        }
+
+        private bool canTestConnection()
+        {
+            if (!string.IsNullOrEmpty(sqlConnString)) return true;
+            else if (!string.IsNullOrEmpty(sqlServerUrl) && !string.IsNullOrEmpty(sqlUser)
+                && !string.IsNullOrEmpty(sqlPassword)) return true;
+            return false;
+        }
+
+        private void testConnection()
+        {
+            string remoteConStr = "";
+            if (!string.IsNullOrEmpty(sqlConnString))
+            {
+                remoteConStr = sqlConnString;
+            }
+            else if (!string.IsNullOrEmpty(sqlServerUrl) && !string.IsNullOrEmpty(sqlUser)
+                && !string.IsNullOrEmpty(sqlPassword))
+            {
+                remoteConStr = string.Format(
+               "Server = {0}; Initial Catalog = Master; Persist Security Info = False; User ID = {1}; Password = {2}; Connection Timeout = 10;",
+                    sqlServerUrl, sqlUser, sqlPassword);
+            }
+
+            using (SqlConnection sqlCon = new SqlConnection())
+            {
+                sqlCon.ConnectionString = remoteConStr;
+                try
+                {
+                    sqlCon.Open();
+                    MessageBox.Show("Successfully connected to remote server!", "Connection Test", 
+                        MessageBoxButton.OK, MessageBoxImage.Information );
+                }
+                catch
+                {
+                    MessageBox.Show("Connection to remote server failed!", "Connection Test", 
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
         }
 
         private void localCmd()
@@ -317,6 +437,14 @@ namespace UDTApp.ViewModels
             //    string msg = ex.Message;
             //}
 
+            // -- con test log in ---
+            //CREATE USER udtUser WITH PASSWORD = 'ConTester567!';
+            // in database: udtConTest
+            //--EXECUTE sp_set_database_firewall_rule N'Public Test', '0.0.0.0', '255.255.255.255';
+
+            //Server = tcp:metric.database.windows.net,1433; Initial Catalog = Master; User ID = gcard; Password = dbpassme789!; 
+
+
             //using (SqlConnection sqlCon = new SqlConnection())
             //{
             //    string folder = Environment.ExpandEnvironmentVariables("%systemroot%") + "\\system32\\";
@@ -340,15 +468,39 @@ namespace UDTApp.ViewModels
             sqliteDb = !sqlServerDb;
         }
 
+        private bool sqlClientInstalled
+        {
+            get
+            {
+                bool retVal = true;
+                using (SqlConnection sqlCon = new SqlConnection()) //Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=master;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False
+                {
+                    sqlCon.ConnectionString = 
+                        @"Server = tcp:metric.database.windows.net,1433; Initial Catalog = udtConTest; User ID = udtUser; Password = ConTester567!;  Connection Timeout = 10;";
+                    try
+                    {
+                        sqlCon.Open();
+                    }
+                    catch (Exception ex)
+                    {
+                        retVal = false;
+                        string msg = ex.Message;
+                    }
+                }
+                return retVal;
+            }
+        }
+
         private bool localDbInstalled
         {
             get
             {
-                return false;
+                //return false;
                 bool retVal = true;
-                using (SqlConnection sqlCon = new SqlConnection())
+                using (SqlConnection sqlCon = new SqlConnection()) //Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=master;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False
                 {
                     sqlCon.ConnectionString = "Server = (localdb)\\MSSQLLocalDB; Integrated Security = true; Connection Timeout=5";
+                    //sqlCon.ConnectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=master;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
                     try
                     {
                         sqlCon.Open();
@@ -370,10 +522,18 @@ namespace UDTApp.ViewModels
             closeAction = new Action(window.Close);
             newPrjView = window;
             loadCountTxtBlock = newPrjView.FindName("loadCount") as TextBlock;
+            passwordBox = newPrjView.FindName("pwdBox") as PasswordBox;
+            passwordBox.PasswordChanged += PasswordBox_PasswordChanged;
             ProjectName = "";
         }
 
+        private void PasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
+        {
+            testConnectionCmd.RaiseCanExecuteChanged();
+        }
+
         private TextBlock loadCountTxtBlock;
+        private PasswordBox passwordBox;
 
         public static System.ComponentModel.DataAnnotations.ValidationResult CheckDuplicateName(string name, ValidationContext context)
         {

@@ -176,6 +176,7 @@
     </Reference>
     <Reference Include="System.Drawing" />
     <Reference Include="System.Net.Http" />
+    <Reference Include="System.Security" />
     <Reference Include="System.Spatial, Version=5.8.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\Metric\packages\System.Spatial.5.8.2\lib\net40\System.Spatial.dll</HintPath>
     </Reference>
@@ -204,11 +205,13 @@
     </ApplicationDefinition>
     <Compile Include="Behaviour\AlphaOnlycs.cs" />
     <Compile Include="Behaviour\AutoGeneratingColumnEventToCommandBehaviour.cs" />
+    <Compile Include="BlobStorage\BlobLoader.cs" />
     <Compile Include="DataBaseProvider\DbProvider.cs" />
     <Compile Include="EditControlViewModels\DateViewModel.cs" />
     <Compile Include="EditControlViewModels\DecimalViewModel.cs" />
     <Compile Include="EditControlViewModels\NumberViewModel.cs" />
     <Compile Include="EditControlViewModels\TextViewModel.cs" />
+    <Compile Include="Encryption\Secure.cs" />
     <Compile Include="Log\ApiLogMessage.cs" />
     <Compile Include="Log\Log.cs" />
     <Compile Include="Models\DataItem.cs" />
@@ -221,11 +224,14 @@
     <Compile Include="Models\UDTUserData.cs" />
     <Compile Include="Models\UDTXml.cs" />
     <Compile Include="Settings\FileSetting.cs" />
+    <Compile Include="Settings\ServerSetting.cs" />
     <Compile Include="Settings\Settings.cs" />
+    <Compile Include="SetUp\Install.cs" />
     <Compile Include="ViewModels\AboutBoxViewModel.cs" />
     <Compile Include="ViewModels\DataEditViewModel.cs" />
     <Compile Include="ViewModels\DataEntryControls.cs" />
     <Compile Include="ViewModels\DataViewModel.cs" />
+    <Compile Include="ViewModels\InstallViewModel.cs" />
     <Compile Include="ViewModels\ISubPage.cs" />
     <Compile Include="ViewModels\NewProjectViewModel.cs" />
     <Compile Include="ViewModels\PageOneViewModel.cs" />
@@ -248,6 +254,9 @@
     </Compile>
     <Compile Include="Views\DataEditView.xaml.cs">
       <DependentUpon>DataEditView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\InstallView.xaml.cs">
+      <DependentUpon>InstallView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\NewProject.xaml.cs">
       <DependentUpon>NewProject.xaml</DependentUpon>
@@ -285,6 +294,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\DataEditView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\InstallView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

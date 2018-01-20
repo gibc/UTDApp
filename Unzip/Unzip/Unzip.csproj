@@ -8,12 +8,13 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>Unzip</RootNamespace>
     <AssemblyName>Unzip</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -47,9 +48,13 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="UtdAppPublish.zip" />
     <None Include="App.config" />
-    <EmbeddedResource Include="udtinstaller.zip" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\UDTApp\UDTApp.csproj">
+      <Project>{12258de7-49f1-44cd-bfcd-259b0b0e0fae}</Project>
+      <Name>UDTApp</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

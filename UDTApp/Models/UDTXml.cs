@@ -80,12 +80,12 @@ namespace UDTApp.Models
         }
 
 
-        public List<UDTBase> newProject(string ProjectName, DBType dbType, string conStr)
+        public List<UDTBase> newProject(string ProjectName, DBType dbType, string serverName)
         {
             SchemaData = new List<UDTBase>();
             UDTData baseObj = new UDTData();
             baseObj.dbType = dbType;
-            baseObj.conectionString = conStr;
+            baseObj.serverName = serverName;
             baseObj.ToolBoxItem = false;
             baseObj.Name = ProjectName;
             baseObj.parentObj = null;

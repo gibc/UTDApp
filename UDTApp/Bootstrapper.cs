@@ -22,7 +22,7 @@ namespace UDTApp
             base.ConfigureContainer();
 
             Container.RegisterTypeForNavigation<Data>("Data");
-            Container.RegisterTypeForNavigation<SetUp>("SetUp");
+            //Container.RegisterTypeForNavigation<SetUp>("SetUp");
             Container.RegisterTypeForNavigation<DataEditView>("DataEditView");
             Container.RegisterTypeForNavigation<PageZero>("PageZero");
         }

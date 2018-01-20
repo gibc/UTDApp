@@ -22,6 +22,7 @@ using UDTApp.Settings;
 using Microsoft.Win32;
 using System.Windows.Media;
 using System.IO;
+using UDTApp.SetUp;
 
 namespace UDTApp.ViewModels
 {
@@ -38,7 +39,12 @@ namespace UDTApp.ViewModels
         public DelegateCommand SaveCommand { get; set; }
         public DelegateCommand DeleteCommand { get; set; }
         public DelegateCommand CloseCommand { get; set; }
-        public DelegateCommand NewCommand { get; set; }
+
+        //public DelegateCommand NewCommand { get; set; }
+        public DelegateCommand NewSqliteCommand { get; set; }
+        public DelegateCommand NewSqlServerCommand { get; set; }
+        public DelegateCommand NewSqlServerRemoteCommand { get; set; }
+
         public DelegateCommand SaveDataCommand { get; set; }
         public DelegateCommand UndoChangesCommand { get; set; }
         public DelegateCommand AboutCommand { get; set; }
@@ -60,7 +66,12 @@ namespace UDTApp.ViewModels
             DeleteCommand = new DelegateCommand(deleteProject, canDeleteProject);
             CloseCommand = new DelegateCommand(closeProject, canCloseProject);
             UndoChangesCommand = new DelegateCommand(undoChanges);
-            NewCommand = new DelegateCommand(newProject);
+
+            //NewCommand = new DelegateCommand(newProject);
+            NewSqliteCommand = new DelegateCommand(newSqliteProject);
+            NewSqlServerCommand = new DelegateCommand(newSqlServerProject);
+            NewSqlServerRemoteCommand = new DelegateCommand(newSqlServerRemoteProject);
+
             SaveDataCommand = new DelegateCommand(saveData, canSaveData);
             AboutCommand = new DelegateCommand(showAbout);
             SubmenuOpenedCommand = new DelegateCommand<MenuItem>(menuOpen);
@@ -905,20 +916,63 @@ namespace UDTApp.ViewModels
             else return UDTDataSet.udtDataSet.IsModified;
         }
 
-        private void newProject()
+        private void newUdtProject(DBType dbType, bool remote = false)
+        {
+            saveProject();
+            NewProject win = new NewProject();
+            NewProjectViewModel dc = win.DataContext as NewProjectViewModel;
+            dc.dbType = dbType;
+            if(remote) dc.conStrVisible = Visibility.Visible;
+            win.ShowDialog();
+            if ((bool)win.DialogResult)
+            {
+                newProject(dc);
+            }
+        }
+
+        private void newSqliteProject()
+        {
+            newUdtProject(DBType.sqlLite);
+        }
+
+        private void newSqlServerProject()
+        {
+            // check is localDb installed
+            if(!Install.checkInstallLocalDb())
+            {
+                return;
+            }
+            newUdtProject(DBType.sqlExpress);
+        }
+
+        private void newSqlServerRemoteProject()
+        {
+            // check is sqlClient installed
+            if (!Install.checkInstallSqlClient())
+            {
+                return;
+            }
+            newUdtProject(DBType.sqlExpress, true);
+        }
+
+        private void newProject(NewProjectViewModel newProjectViewModel)
         {
             try
             {
-                saveProject();
-                NewProject win = new NewProject();
-                win.ShowDialog();
-                if ((bool)win.DialogResult)
-                {
-                    NewProjectViewModel dc = win.DataContext as NewProjectViewModel;
-                    projectName = dc.ProjectName;
+                //saveProject();
+                //NewProject win = new NewProject();
+                //win.ShowDialog();
+                //if ((bool)win.DialogResult)
+                //{
+                //    NewProjectViewModel dc = win.DataContext as NewProjectViewModel;
+                projectName = newProjectViewModel.ProjectName;
 
-                    AppSettings.appSettings.autoOpenFile = null;
-                    List<UDTBase> newSchmea = UDTXml.UDTXmlData.newProject(dc.ProjectName, dc.dbType, dc.connectionString);
+                AppSettings.appSettings.autoOpenFile = null;
+                    List<UDTBase> newSchmea = UDTXml.UDTXmlData.newProject
+                        (newProjectViewModel.ProjectName, 
+                        newProjectViewModel.dbType, 
+                        newProjectViewModel.sqlServerUrl);
+
                     UDTData master = newSchmea[0] as UDTData;
                     master.validationChangedEvent += projectValidationChanged;
                     master.dataChangeEvent += projectDataChanged;
@@ -929,7 +983,7 @@ namespace UDTApp.ViewModels
                     RaisePropertyChanged("saveRemoveButtonVisibility");
                     DeleteCommand.RaiseCanExecuteChanged();
                     CloseCommand.RaiseCanExecuteChanged();
-                }
+                
             }
             catch (Exception ex)
             {

@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UDTApp.Models;
+using UDTApp.Settings;
 
 // map to slqlite or sql sever ado classes
 namespace UDTApp.DataBaseProvider
@@ -16,7 +17,7 @@ namespace UDTApp.DataBaseProvider
     public enum DBType { sqlExpress, sqlLite, none}
     public class DbProvider
     {
-        public DbProvider(DBType _dbType, string conString)
+        public DbProvider(DBType _dbType, string serverName)
         {
             dbType = _dbType;
 
@@ -35,12 +36,26 @@ namespace UDTApp.DataBaseProvider
                 }
             }
 
-            if (dbType == DBType.sqlExpress && string.IsNullOrEmpty(conString))
+            if (dbType == DBType.sqlExpress && string.IsNullOrEmpty(serverName))
             {
-                conString = "Data Source=.\\SQLEXPRESS; Integrated Security=True";
+                ConnectionString = "Data Source=.\\SQLEXPRESS; Integrated Security=True";
             }
 
-            ConnectionString = conString;
+            if (dbType == DBType.sqlExpress && !string.IsNullOrEmpty(serverName))
+            {
+                ServerSetting svr = AppSettings.appSettings.getServer(serverName);
+                if(svr == null)
+                {
+                    // TBD:  show login dlg
+                    throw new Exception("DbProvider log in not saved in settings and show login dlg not implmented");
+                }
+                string remoteConSrg =
+                    string.Format("Server = {0}; Initial Catalog = Master; User ID = {1}; Password = {2};", 
+                    svr.serverName, svr.userId, svr.pwd);
+                ConnectionString = remoteConSrg;
+            }
+
+            //ConnectionString = conString;
         }
 
         public DbConnection Conection 

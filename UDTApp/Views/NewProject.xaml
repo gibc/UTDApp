@@ -51,7 +51,7 @@
                          Height="20" Width="134"/>
             </WrapPanel>
 
-            <WrapPanel HorizontalAlignment="Left" Margin="0,0,0,0">
+            <!--<WrapPanel HorizontalAlignment="Left" Margin="0,0,0,0">
                 <Label Width="120" HorizontalContentAlignment="Right" Content="Database Type:" />
                 <CheckBox Command="{Binding SqliteCommand}" VerticalAlignment="Center" 
                           IsChecked ="{Binding sqliteDb}" Content="Sqlite" Margin="0,0,5,0"></CheckBox>
@@ -64,7 +64,7 @@
                           IsChecked ="{Binding localDb}" Content="Local" Margin="0,0,5,0"></CheckBox>
                 <CheckBox Command="{Binding RemoteCommand}" VerticalAlignment="Center" 
                           IsChecked ="{Binding remoteDb}" Content="Remote"></CheckBox>
-            </WrapPanel>
+            </WrapPanel>-->
 
             <Grid Visibility="{Binding conStrVisible}">
                 <Grid.ColumnDefinitions>
@@ -81,25 +81,29 @@
                     <RowDefinition/>
                 </Grid.RowDefinitions>
                 <Label Grid.Row="0" Grid.Column="0" HorizontalContentAlignment="Right" Content="Databse Server Url"/>
-                <TextBox Grid.Row="0" Grid.Column="1" Width="150" Height="20"/>
+                <TextBox Grid.Row="0" Grid.Column="1" Width="150" Height="20" 
+                         Text="{Binding sqlServerUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                 <Label Grid.Row="1" Grid.Column="0" HorizontalContentAlignment="Right" Content="User Name: "/>
-                <TextBox Grid.Row="1" Grid.Column="1" Width="100" Height="20" HorizontalAlignment="Left"/>
+                <TextBox Grid.Row="1" Grid.Column="1" Width="100" Height="20" HorizontalAlignment="Left"
+                         Text="{Binding sqlUser, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                 <Label Grid.Row="2" Grid.Column="0" HorizontalContentAlignment="Right" Content="Password: "/>
-                <TextBox Grid.Row="2" Grid.Column="1" Width="100" Height="20" HorizontalAlignment="Left"/>
+                <PasswordBox x:Name="pwdBox"  Grid.Row="2" Grid.Column="1" Width="100" Height="20" HorizontalAlignment="Left"/>
                 <TextBlock Grid.Row="3" Grid.ColumnSpan="2" Width="30" Text="OR"/>
                 <Label Grid.Row="4" Grid.ColumnSpan="2"  HorizontalContentAlignment="Center" Content="Full Connection String: "/>
-                <TextBox Grid.Row="5" Grid.ColumnSpan="2" Width="260" Height="20"/>
-                <Button Grid.Row="6" Grid.ColumnSpan="2" Width="100" Margin="0,5,0,0" Content="Test Conection"/>
+                <TextBox Grid.Row="5" Grid.ColumnSpan="2" Width="260" Height="60" TextWrapping="Wrap"
+                         Text="{Binding sqlConnString, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                <Button Grid.Row="6" Grid.ColumnSpan="2" Width="100" Margin="0,5,0,0" Content="Test Conection"
+                        Command="{Binding testConnectionCmd}"/>
             </Grid>
 
-            <Border BorderBrush="Black" BorderThickness="2" Background="LightGoldenrodYellow" CornerRadius="3"
+            <!--<Border BorderBrush="Black" BorderThickness="2" Background="LightGoldenrodYellow" CornerRadius="3"
                     Visibility="{Binding progressMsgVisable}">
                 <StackPanel HorizontalAlignment="Center" Margin="0,0,0,0">
                     <Label Width="auto" HorizontalAlignment="Center" Content="Downloading install package." />
                     <TextBlock x:Name="loadCount" Width="auto" HorizontalAlignment="Center"
                                Text="{Binding downLoadCountStr,  Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                 </StackPanel>
-            </Border>
+            </Border>-->
             <WrapPanel  HorizontalAlignment="Center" Margin="0,30,0,10">
                 <Button Content="Ok" Command="{Binding OkCommand}" Margin="0,0,0,0" Height="20" Width="60"/>
                 <Button Content="Cancel" Command="{Binding CancelCommand}" Margin="20,0,0,0" Height="20"  Width="60"/>
