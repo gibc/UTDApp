@@ -17,7 +17,7 @@ namespace UDTApp.DataBaseProvider
     public enum DBType { sqlExpress, sqlLite, none}
     public class DbProvider
     {
-        public DbProvider(DBType _dbType, string serverName)
+        public DbProvider(DBType _dbType, string serverName, string userId = "", string password = "")
         {
             dbType = _dbType;
 
@@ -38,7 +38,9 @@ namespace UDTApp.DataBaseProvider
 
             if (dbType == DBType.sqlExpress && string.IsNullOrEmpty(serverName))
             {
-                ConnectionString = "Data Source=.\\SQLEXPRESS; Integrated Security=True";
+                //Server = (localdb)\\MSSQLLocalDB; Integrated Security = true; Connection Timeout = 30
+                //ConnectionString = "Data Source=.\\SQLEXPRESS; Integrated Security=True";
+                ConnectionString = "Server = (localdb)\\MSSQLLocalDB; Integrated Security = true; Connection Timeout = 30";
             }
 
             if (dbType == DBType.sqlExpress && !string.IsNullOrEmpty(serverName))
@@ -46,8 +48,12 @@ namespace UDTApp.DataBaseProvider
                 ServerSetting svr = AppSettings.appSettings.getServer(serverName);
                 if(svr == null)
                 {
-                    // TBD:  show login dlg
-                    throw new Exception("DbProvider log in not saved in settings and show login dlg not implmented");
+                    if(!string.IsNullOrEmpty(userId) && !string.IsNullOrEmpty(password))
+                    {
+                        svr = new ServerSetting() { serverName = serverName, pwd = password, userId = userId };
+                    }
+                    else
+                        throw new Exception("DbProvider login not saved in settings");
                 }
                 string remoteConSrg =
                     string.Format("Server = {0}; Initial Catalog = Master; User ID = {1}; Password = {2};", 

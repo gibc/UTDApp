@@ -14,7 +14,7 @@ namespace UDTApp.SetUp
     {
         public static bool checkInstallLocalDb()
         {
-            //if (localDbInstalled) return true;
+            if (localDbInstalled) return true;
 
             if (MessageBox.Show(
                 @"The Sql Server local database component is not insalled. Download and install the local database server?", "Install Required.",
@@ -48,8 +48,21 @@ namespace UDTApp.SetUp
                     @"The Sql Server client component is not insalled. Download and install the sql server client?", "Install Required.",
                 MessageBoxButton.OKCancel, MessageBoxImage.Information) == MessageBoxResult.OK)
             {
-                //if (await installPackage("SqlLocalDB.msi", "local-db-msi") == false) return false;
-                // TBD: show install dlg
+                InstallView installView = new InstallView();
+                InstallViewModel vm = installView.DataContext as InstallViewModel;
+                string msiName = "sqlncli32.msi";
+                if (Environment.Is64BitOperatingSystem)
+                {
+                    msiName = "sqlncli64.msi";
+                }
+                vm.fileName = msiName;
+                vm.blobName = msiName;
+
+                if (!installView.ShowDialog().Value)
+                {
+                    MessageBox.Show("Installation failed or cancled.  Installation failed.", "Install Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return false;
+                }
                 if (!localDbInstalled)
                 {
                     MessageBox.Show("Cannot connect to local database server.  Installation failed.", "Install Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -66,9 +79,9 @@ namespace UDTApp.SetUp
             get
             {
                 bool retVal = true;
-                using (SqlConnection sqlCon = new SqlConnection()) //Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=master;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False
+                using (SqlConnection sqlCon = new SqlConnection()) 
                 {
-                    sqlCon.ConnectionString = "Server = (localdb)\\MSSQLLocalDB; Integrated Security = true; Connection Timeout=5";
+                    sqlCon.ConnectionString = "Server = (localdb)\\MSSQLLocalDB; Integrated Security = true; Connection Timeout=30";
                     //sqlCon.ConnectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=master;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
 
                     try
@@ -90,7 +103,7 @@ namespace UDTApp.SetUp
             get
             {
                 bool retVal = true;
-                using (SqlConnection sqlCon = new SqlConnection()) //Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=master;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False
+                using (SqlConnection sqlCon = new SqlConnection()) 
                 {
                     sqlCon.ConnectionString =
                         @"Server = tcp:metric.database.windows.net,1433; Initial Catalog = udtConTest; User ID = udtUser; Password = ConTester567!;  Connection Timeout = 10;";

@@ -18,7 +18,7 @@ namespace UDTApp.Encryption
             return Convert.ToBase64String(encryptedData);
         }
 
-        public static SecureString DecryptString(string encryptedData)
+        public static String DecryptString(string encryptedData)
         {
             try
             {
@@ -26,11 +26,13 @@ namespace UDTApp.Encryption
                     Convert.FromBase64String(encryptedData),
                     entropy,
                     System.Security.Cryptography.DataProtectionScope.CurrentUser);
-                return ToSecureString(System.Text.Encoding.Unicode.GetString(decryptedData));
+                //return ToSecureString(System.Text.Encoding.Unicode.GetString(decryptedData));
+                return System.Text.Encoding.Unicode.GetString(decryptedData);
             }
             catch
             {
-                return new SecureString();
+                //return new SecureString();
+                return "";
             }
         }
 

@@ -916,13 +916,18 @@ namespace UDTApp.ViewModels
             else return UDTDataSet.udtDataSet.IsModified;
         }
 
-        private void newUdtProject(DBType dbType, bool remote = false)
+        private void newUdtProject(DBType dbType, LoginViewModel logIn = null)
         {
             saveProject();
             NewProject win = new NewProject();
             NewProjectViewModel dc = win.DataContext as NewProjectViewModel;
             dc.dbType = dbType;
-            if(remote) dc.conStrVisible = Visibility.Visible;
+            if (logIn != null)
+            {
+                dc.sqlServerUrl = logIn.sqlServerUrl;
+                dc.sqlUser = logIn.sqlUser;
+                dc.sqlPassword = logIn.sqlPassword;
+            }
             win.ShowDialog();
             if ((bool)win.DialogResult)
             {
@@ -952,7 +957,13 @@ namespace UDTApp.ViewModels
             {
                 return;
             }
-            newUdtProject(DBType.sqlExpress, true);
+
+            LoginView logView = new LoginView();
+            if(logView.ShowDialog().Value)
+            {
+                LoginViewModel vm = logView.DataContext as LoginViewModel;
+                newUdtProject(DBType.sqlExpress, vm);
+            }
         }
 
         private void newProject(NewProjectViewModel newProjectViewModel)

@@ -25,7 +25,7 @@ namespace UDTApp.ViewModels
         {
             OkCommand = new DelegateCommand(okCmd, canOk);
             CancelCommand = new DelegateCommand(cancelCmd, canCancel);
-            BeginInstallCommand = new DelegateCommand(beginInstalCmd);
+            BeginInstallCommand = new DelegateCommand(beginInstalCmd, canBeginInsatll);
             WindowLoadedCommand = new DelegateCommand<Window>(winLoaded);
 
         }
@@ -35,8 +35,15 @@ namespace UDTApp.ViewModels
         private void winLoaded(Window window)
         {
             installView = window as InstallView;
+            installView.Closing += InstallView_Closing;
             loadCountTxtBlock = installView.FindName("loadCount") as TextBlock;
             packageName = string.Format("Installation Package: {0}", fileName);
+        }
+
+        private void InstallView_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            if (installRunning) e.Cancel = true;
+            else e.Cancel = false;
         }
 
         private string _packageName = "";
@@ -79,6 +86,9 @@ namespace UDTApp.ViewModels
         private bool canCancel()
         { return installRunning; }
 
+        private bool canBeginInsatll()
+        { return !installRunning; }
+
         private bool installOk = false;
         private async void beginInstalCmd()
         {
@@ -99,10 +109,12 @@ namespace UDTApp.ViewModels
                 _installRunning = value;
                 CancelCommand.RaiseCanExecuteChanged();
                 OkCommand.RaiseCanExecuteChanged();
+                BeginInstallCommand.RaiseCanExecuteChanged();
                 if (_installRunning) lableVisibility = Visibility.Visible;
                 else lableVisibility = Visibility.Collapsed;
             }
         }
+
         private bool isCancelled = false;
         private async Task<bool> installPackage(string fileName, string blobName)
         {
@@ -118,6 +130,7 @@ namespace UDTApp.ViewModels
             {
                 long length = 0;
                 long downloadCount = 0;
+                isCancelled = false;
                 installRunning = true;
                 //new Thread(() => BlobLoader.downloadFile(
                 //   blobName, msiFile,
@@ -141,7 +154,6 @@ namespace UDTApp.ViewModels
                     await Task.Delay(1000);
                     loadCountTxtBlock.Text = String.Format("{0:n0} of {1:n0} bytes", downloadCount, length);
                     loadCountTxtBlock.UpdateLayout();
-                    //if (isCancelled) break;
                 }
             }
             installRunning = false;
