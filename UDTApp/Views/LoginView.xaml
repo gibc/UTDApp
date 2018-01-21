@@ -1,0 +1,45 @@
+﻿<Window x:Class="UDTApp.Views.LoginView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:UDTApp.Views"
+        mc:Ignorable="d"
+        xmlns:prism="http://prismlibrary.com/"
+        prism:ViewModelLocator.AutoWireViewModel="True"
+        xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" 
+        Name="loginView"
+        Title="Server Login" SizeToContent="WidthAndHeight">
+
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Loaded">
+            <i:InvokeCommandAction Command="{Binding WindowLoadedCommand}" CommandParameter="{Binding ElementName=loginView}" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
+
+    <Grid Width="auto" Height="auto">
+        <StackPanel HorizontalAlignment="Center" Width="auto" Margin="20">
+            <WrapPanel HorizontalAlignment="Center">
+                <Label Width="150" HorizontalContentAlignment="Right" Content="Databse Server Url"/>
+                <TextBox Width="150" Height="20" 
+                                 Text="{Binding sqlServerUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+            </WrapPanel>
+            <WrapPanel HorizontalAlignment="Center">
+                <Label  Width="150" HorizontalContentAlignment="Right" Content="User Name: "/>
+                <TextBox Width="150" Height="20" HorizontalAlignment="Left"
+                                 Text="{Binding sqlUser, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+            </WrapPanel>
+            <WrapPanel HorizontalAlignment="Center">
+                <Label  Width="150" HorizontalContentAlignment="Right" Content="Password: "/>
+                <PasswordBox x:Name="pwdBox" Width="150" Height="20" HorizontalAlignment="Left"/>
+            </WrapPanel>
+            <!--<TextBlock HorizontalAlignment="Center" Margin="5" Text="a message from the box"/>-->
+            <WrapPanel  HorizontalAlignment="Center" Margin="0,30,0,10">
+                <Button Content="Ok" Command="{Binding OkCommand}" Margin="0,0,0,0" Height="20" Width="60"/>
+                <Button Content="Test Login" Command="{Binding TestLoginCommand}" Margin="20,0,0,0" Height="20" Width="60"/>
+                <Button Content="Cancel" Command="{Binding CancelCommand}" Margin="20,0,0,0" Height="20"  Width="60"/>
+            </WrapPanel>
+        </StackPanel>
+    </Grid>
+    
+</Window>
