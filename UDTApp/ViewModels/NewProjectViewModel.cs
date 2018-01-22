@@ -117,7 +117,6 @@ namespace UDTApp.ViewModels
             closeAction();
         }
 
-
         //    Server = tcp:metric.database.windows.net,1433; 
         //    User ID = gcard;  
         //    Password = dbpassme789!; 

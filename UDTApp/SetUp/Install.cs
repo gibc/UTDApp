@@ -106,7 +106,8 @@ namespace UDTApp.SetUp
                 using (SqlConnection sqlCon = new SqlConnection()) 
                 {
                     sqlCon.ConnectionString =
-                        @"Server = tcp:metric.database.windows.net,1433; Initial Catalog = udtConTest; User ID = udtUser; Password = ConTester567!;  Connection Timeout = 10;";
+                        @"Server = den1.mssql1.gear.host; User ID = testcon; Password = Dr14?_8DpG3u;  Connection Timeout = 30;";
+                        //@"Server = tcp:metric.database.windows.net,1433; Initial Catalog = udtConTest; User ID = udtUser; Password = ConTester567!;  Connection Timeout = 10;";
                     try
                     {
                         sqlCon.Open();

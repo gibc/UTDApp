@@ -23,6 +23,7 @@ using Microsoft.Win32;
 using System.Windows.Media;
 using System.IO;
 using UDTApp.SetUp;
+using UDTApp.Encryption;
 
 namespace UDTApp.ViewModels
 {
@@ -191,7 +192,7 @@ namespace UDTApp.ViewModels
         private void windowLoaded(Window window)
         {
             window.Closing += windowClosing;
-        
+            
             if (AppSettings.appSettings.autoOpenFile != null)
             {
                 if (AppSettings.appSettings.designView) designVisible = true;
@@ -979,12 +980,22 @@ namespace UDTApp.ViewModels
                 projectName = newProjectViewModel.ProjectName;
 
                 AppSettings.appSettings.autoOpenFile = null;
-                    List<UDTBase> newSchmea = UDTXml.UDTXmlData.newProject
-                        (newProjectViewModel.ProjectName, 
-                        newProjectViewModel.dbType, 
-                        newProjectViewModel.sqlServerUrl);
 
-                    UDTData master = newSchmea[0] as UDTData;
+                List<UDTBase> newSchmea = UDTXml.UDTXmlData.newProject
+                    (newProjectViewModel.ProjectName, 
+                    newProjectViewModel.dbType, 
+                    newProjectViewModel.sqlServerUrl);
+
+                if(!string.IsNullOrEmpty(newProjectViewModel.sqlServerUrl))
+                {
+                    Settings.AppSettings.appSettings.addServer(
+                        newProjectViewModel.sqlServerUrl, 
+                        newProjectViewModel.sqlUser, 
+                        newProjectViewModel.sqlPassword
+                        );
+                }
+
+                UDTData master = newSchmea[0] as UDTData;
                     master.validationChangedEvent += projectValidationChanged;
                     master.dataChangeEvent += projectDataChanged;
                     viewDesign();

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
+using UDTApp.Encryption;
 
 namespace UDTApp.Settings
 {
@@ -40,7 +41,7 @@ namespace UDTApp.Settings
         }
 
         private List<ServerSetting> _serverSettings = null;
-        private List<ServerSetting> serverSettings
+        public List<ServerSetting> serverSettings
         {
             get
             {
@@ -59,9 +60,10 @@ namespace UDTApp.Settings
             return false;
         }
 
-        public void addServer(string name, string user, string pwd)
+        public void addServer(string name, string user, string password)
         {
-            serverSettings.Add(new ServerSetting { serverName = name, userId = user, pwd = pwd });
+            //string securePwd = SecureIt.EncryptString(SecureIt.ToSecureString(password)); 
+            serverSettings.Add(new ServerSetting { serverName = name, userId = user, pwd = password });
         }
 
         public ServerSetting getServer(string name)

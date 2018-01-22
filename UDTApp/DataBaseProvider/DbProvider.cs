@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using UDTApp.Models;
 using UDTApp.Settings;
 
@@ -48,20 +49,24 @@ namespace UDTApp.DataBaseProvider
                 ServerSetting svr = AppSettings.appSettings.getServer(serverName);
                 if(svr == null)
                 {
-                    if(!string.IsNullOrEmpty(userId) && !string.IsNullOrEmpty(password))
+                    if (!string.IsNullOrEmpty(userId) && !string.IsNullOrEmpty(password))
                     {
                         svr = new ServerSetting() { serverName = serverName, pwd = password, userId = userId };
                     }
                     else
-                        throw new Exception("DbProvider login not saved in settings");
+                    {
+                        MessageBox.Show("DbProvider: login not saved in settings");
+                        return;
+                    }
                 }
+
+                //Server = tcp:metric.database.windows.net,1433; Initial Catalog = MetricDB; Persist Security Info = False; User ID = { your_username }; Password ={ your_password}; MultipleActiveResultSets = False; Encrypt = True; TrustServerCertificate = False; Connection Timeout = 30;
                 string remoteConSrg =
-                    string.Format("Server = {0}; Initial Catalog = Master; User ID = {1}; Password = {2};", 
+                    string.Format("Server = {0}; Initial Catalog = Master; Persist Security Info = False; User ID = {1}; Password = {2}; MultipleActiveResultSets = False; Encrypt = True; TrustServerCertificate = False; Connection Timeout = 30;", 
                     svr.serverName, svr.userId, svr.pwd);
                 ConnectionString = remoteConSrg;
             }
 
-            //ConnectionString = conString;
         }
 
         public DbConnection Conection 

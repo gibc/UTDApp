@@ -48,6 +48,8 @@ namespace UDTApp.Models
         {
             UDTData tableItem = new UDTData();
             tableItem.Name = Name;
+            tableItem.serverName = serverName;
+            tableItem.dbType = dbType;
             tableItem.editProps = null;
             tableItem.savParentColumnNames = new List<string>(ParentColumnNames);
             tableItem.savColumnData = new ObservableCollection<UDTBase>();
@@ -75,6 +77,14 @@ namespace UDTApp.Models
         {
             get { return _serverName; }
             set { _serverName = value; }
+        }
+
+        [XmlIgnoreAttribute]
+        private string _savServerName = "";
+        public string savServerName
+        {
+            get { return _savServerName; }
+            set { _savServerName = value; }
         }
 
         public delegate void validationChangedDel();
@@ -113,6 +123,8 @@ namespace UDTApp.Models
                 if (string.IsNullOrEmpty(savName))
                     return true;
                 if (savName != Name)
+                    return true;
+                if (savServerName != serverName)
                     return true;
                 //if (columnData.Any(p => p.isNameModified))
                 //    return true;
@@ -229,6 +241,7 @@ namespace UDTApp.Models
         public override void setSavedProps()
         {
             savName = Name;
+            savServerName = serverName;
             savParentColumnNames = new List<string>(ParentColumnNames);
             columnData.ToList().ForEach(p => p.setSavedProps());
             savColumnData = new ObservableCollection<UDTBase>();

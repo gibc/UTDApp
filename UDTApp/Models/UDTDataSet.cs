@@ -80,7 +80,7 @@ namespace UDTApp.Models
         {
             if(masterItem.dbType != DBType.none)
             {
-                UDTDataSet.dbProvider = new DbProvider(masterItem.dbType, masterItem.savName);
+                UDTDataSet.dbProvider = new DbProvider(masterItem.dbType, masterItem.serverName);
             }
             createSQLDatabase(masterItem.Name);
             List<Guid> tableGuids = new List<Guid>();
@@ -140,7 +140,8 @@ namespace UDTApp.Models
                     int dbCount = (int)cmd.ExecuteScalar();
                     if (dbCount < 1)
                     {
-                        cmd.CommandText = string.Format("CREATE DATABASE {0} ", DBName);
+                        cmd.CommandTimeout = 300;
+                        cmd.CommandText = string.Format("CREATE DATABASE {0} (EDITION = 'basic')", DBName); //CREATE DATABASE TestDB2 (EDITION = 'standard');
                         cmd.ExecuteNonQuery();
                     }
                 }
@@ -629,8 +630,7 @@ namespace UDTApp.Models
         {
             DataSet = new System.Data.DataSet(masterItem.Name);
             DataSet.EnforceConstraints = true;
-            //if (masterItem.dbType != DBType.none)
-                UDTDataSet.dbProvider = new DbProvider(masterItem.dbType, masterItem.savName);
+            UDTDataSet.dbProvider = new DbProvider(masterItem.dbType, masterItem.serverName);
             foreach(UDTData table in masterItem.tableData)
             {
                 readTable(DataSet, table, masterItem.Name);
