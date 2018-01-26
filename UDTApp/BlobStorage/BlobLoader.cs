@@ -1,57 +1,59 @@
-﻿using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Blob;
-using System;
-using System.Collections.Generic;
-using System.Configuration;
+﻿using System;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Net;
 using System.Windows;
 
 namespace UDTApp.BlobStorage
 {
     public class BlobLoader
     {
- 
+        static private string baseUrl = "http://metricresearch.org/api/Download";
+        //static private string baseUrl = "http://localhost:54946/api/Download";
+
         static public async void downloadFile(string blobName, string filePath, 
             Action<int> doneCallBack, Action<long, long> downloadCountCallBack,
             Func<bool> isCancled)
         {
+            long fileLength = -1;
             try
             {
-                string blobCon = ConfigurationManager.AppSettings["StorageConnectionString"];
-                CloudStorageAccount storageAccount = CloudStorageAccount.Parse(blobCon);
-                CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
+                fileLength = GetFileLength(blobName);
+                if (fileLength < 0) return;               
+                downloadCountCallBack(0, fileLength);
 
-                // Retrieve a reference to a container.
-                CloudBlobContainer container = blobClient.GetContainerReference("install-downloads");
+                string url = string.Format("{0}/GetFile?fileName={1}", baseUrl, blobName);
+                // Initialize an HttpWebRequest for the current URL.
+                var webReq = (HttpWebRequest)WebRequest.Create(url);
+                webReq.Method = "GET";
 
-                // Retrieve reference to a blob .
-                CloudBlockBlob blockBlob = container.GetBlockBlobReference(blobName);
-                //Thread.CurrentThread.IsBackground = true;
-                blockBlob.FetchAttributes();
-                long size = blockBlob.Properties.Length;
-                downloadCountCallBack(0, size);
+                int count = 5000000;
+                byte[] data = new byte[count];
+                int total = 0;
+                int chunk = 0;
 
-                int count = 50000;
-                long downloadCount = 0;
-                byte[] buff = new byte[count];
-                using (var fileStream = System.IO.File.OpenWrite(filePath))
+                WebResponse response = await webReq.GetResponseAsync();
+                // Get the data stream that is associated with the specified URL.
+                using (Stream responseStream = response.GetResponseStream())
                 {
-                    using (Stream blobStream = blockBlob.OpenRead())
+                    using (var fileStream = System.IO.File.OpenWrite(filePath))
                     {
                         while (count > 0)
                         {
-                            count = await blobStream.ReadAsync(buff, 0, 50000);
-                            fileStream.Write(buff, 0, count);
-                            downloadCount += count;
-                            if (isCancled())
+                            if (isCancled()) break;
+
+                            count = await responseStream.ReadAsync(data, 0, 5000000);
+                            fileStream.Write(data, 0, count);
+                            if (count > 0)
                             {
-                                break;
+                                chunk += count;
+                                total += count;
+                                if (chunk >= 500000)
+                                {
+                                    //Console.WriteLine("Chunk size {0} total {1} KB.", chunk, total / 1000);
+                                    downloadCountCallBack(total, fileLength);
+                                    chunk = 0;
+                                }
                             }
-                            downloadCountCallBack(downloadCount, size);
                         }
                     }
                 }
@@ -66,11 +68,37 @@ namespace UDTApp.BlobStorage
             }
             finally
             {
-                if(isCancled()) doneCallBack(-1);
+                if(isCancled() || fileLength < 0) doneCallBack(-1);
                 else doneCallBack(1);
             }
+        }
 
-            return ;
+        private static long GetFileLength(string fileName)
+        {
+            //string url = "http://localhost:54946/api/Download/FileLength";
+            string url = string.Format("{0}/FileLength?fileName={1}", baseUrl, fileName);
+            var webReq = (HttpWebRequest)WebRequest.Create(url);
+            webReq.Method = "GET";
+            long length = -1;
+            try
+            {
+                WebResponse response = webReq.GetResponse();
+                
+                using (Stream stream = response.GetResponseStream())
+                {
+                    using (StreamReader sr = new StreamReader(stream))
+                    {
+                        length = Int64.Parse(sr.ReadToEnd());
+                    }
+                }
+                //Console.WriteLine("File {0} length = {1}", fileName, length);
+                return length;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(string.Format("BlobLoader::GetFileLength failed: {0}", ex.Message));
+                return -1;
+            }
         }
     }
 }

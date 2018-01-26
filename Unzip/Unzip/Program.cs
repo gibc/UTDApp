@@ -10,8 +10,6 @@ using System.Diagnostics;
 using System.Threading;
 using System.Text.RegularExpressions;
 using UDTApp.BlobStorage;
-//using UDTApp.BlobStorage;
-//using System.IO.Compression.FileSystem;
 
 namespace Unzip
 {
@@ -35,11 +33,6 @@ namespace Unzip
                 int exitVal = 0;
                 long downloadCount = 1000;
                 long length = 0;
-                //new Thread(() => BlobLoader.downloadFile(
-                //       "UtdAppPublish.zip", zipFile,
-                //       (rv) => exitVal = rv,
-                //       (cnt, sz) => { downloadCount = cnt; length = sz; }
-                //       )).Start();
                 BlobLoader.downloadFile(
                    "UtdAppPublish.zip", zipFile,
                    (rv) => exitVal = rv,
@@ -80,35 +73,6 @@ namespace Unzip
                 ZipFile.ExtractToDirectory(zipFile, tempFolder);
                 Console.WriteLine(string.Format("Starting: {0}.", "setup.exe"));
                 Process.Start(tempFolder + "\\setup.exe");
-
-                //Assembly assembly = Assembly.GetExecutingAssembly();
-                //string asnm = assembly.GetName().Name;
-                //List<string> names = new List<string>(assembly.GetManifestResourceNames());
-                //Console.WriteLine("Searching for embedded resource.");
-                //foreach (string nm in names)
-                //{
-                //    //if (nm == asnm + ".udtinstaller.zip")
-                //    if (nm == asnm + ".UtdAppPublish.zip")
-                //    {
-                //        Console.WriteLine(string.Format("Found: {0}.", nm));
-                //        tempFolder = Path.GetTempPath();
-                //        tempFolder += "udtsetup";
-                //        Console.WriteLine(string.Format("Creating setup folder: {0}.", tempFolder));
-                //        if (Directory.Exists(tempFolder))
-                //            Directory.Delete(tempFolder, true);
-                //        Directory.CreateDirectory(tempFolder);
-                //        zipFile = tempFolder + "\\zipfile.zip";
-                //        Console.WriteLine(string.Format("Creating zipfile: {0}.", zipFile));
-                //        var fileStream = File.Create(zipFile);
-                //        Stream stream = assembly.GetManifestResourceStream(nm);
-                //        stream.CopyTo(fileStream);
-                //        fileStream.Close();
-                //        Console.WriteLine(string.Format("Extracting zipfile to: {0}.", tempFolder));
-                //        ZipFile.ExtractToDirectory(zipFile, tempFolder);
-                //        Console.WriteLine(string.Format("Starting: {0}.", "setup.exe"));
-                //        Process.Start(tempFolder + "\\setup.exe");
-                //    }
-                //}
             }
             catch(Exception ex)
             {

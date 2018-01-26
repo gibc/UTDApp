@@ -126,6 +126,9 @@ namespace UDTApp.Models
             //using (SqlConnection conn = new SqlConnection())
             if (UDTDataSet.dbProvider.dbType == DBType.sqlLite) return;
 
+            // TBD: for remote database to check if exists just try to connect so connection to 
+            //      master DB not required (only connections to existing DBs allowed)
+
             using (DbConnection conn = UDTDataSet.dbProvider.Conection)
             {
                 conn.ConnectionString = UDTDataSet.dbProvider.MasterCatalogConnnectionString;
