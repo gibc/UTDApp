@@ -25,6 +25,12 @@
                                  Text="{Binding sqlServerUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
             </WrapPanel>
             <WrapPanel HorizontalAlignment="Center">
+                <Label Width="150" HorizontalContentAlignment="Right" Content="Databse Name"/>
+                <TextBox Width="150" Height="20" 
+                                 Text="{Binding sqlDatabase, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+            </WrapPanel>
+
+            <WrapPanel HorizontalAlignment="Center">
                 <Label  Width="150" HorizontalContentAlignment="Right" Content="User Name: "/>
                 <TextBox Width="150" Height="20" HorizontalAlignment="Left"
                                  Text="{Binding sqlUser, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>

@@ -62,14 +62,16 @@ namespace Unzip
                         dlstr = (downloadCount / 1000).ToString("0000000000");
                         dlstr = Regex.Replace(dlstr, @"\b0+", m => "".PadLeft(m.Value.Length, ' '));
                     }
-                    
-                    string msg = string.Format("\r {0} of {1} KBytes {2}",
-                        dlstr, length/1000, spin);
+
+                    //string msg = string.Format("\r {0} of {1} KBytes {2}",
+                    //    dlstr, length / 1000, spin);
+                    string msg = string.Format("\r {0} of {1} KBytes",
+                        dlstr, length / 1000);
                     Console.Write(msg);
-                    Thread.Sleep(500);
+                    //Thread.Sleep(500);
                 }
 
-                Console.WriteLine(string.Format("Extracting zipfile to: {0}.", tempFolder));
+                Console.WriteLine(string.Format("\nExtracting zipfile to: {0}.", tempFolder));
                 ZipFile.ExtractToDirectory(zipFile, tempFolder);
                 Console.WriteLine(string.Format("Starting: {0}.", "setup.exe"));
                 Process.Start(tempFolder + "\\setup.exe");

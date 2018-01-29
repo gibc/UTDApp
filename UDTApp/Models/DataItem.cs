@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace UDTApp.Models
 {
-    public class DataItem : ModelBase
+    public class DataItem : BindableBase //ModelBase
     {
         public DataItem()
         {

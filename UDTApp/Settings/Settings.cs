@@ -78,6 +78,14 @@ namespace UDTApp.Settings
                 serverSettings.Remove(sc);
         }
 
+        public void removeFile(string _filePath)
+        {
+            FileSetting setting = fileSettings.Find(fs => fs.filePath == _filePath);
+            if (setting != null)
+            {
+                fileSettings.Remove(setting);
+            }
+        }
 
         public void addFile(string _filePath)
         {

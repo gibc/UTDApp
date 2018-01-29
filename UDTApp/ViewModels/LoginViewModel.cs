@@ -37,6 +37,18 @@ namespace UDTApp.ViewModels
             }
         }
 
+        private string _sqlDatabase = "";
+        public string sqlDatabase
+        {
+            get { return _sqlDatabase; }
+            set
+            {
+                SetProperty(ref _sqlDatabase, value);
+                TestLoginCommand.RaiseCanExecuteChanged();
+            }
+        }
+
+
         private string _sqlUser = "";
         public string sqlUser
         {
@@ -104,8 +116,8 @@ namespace UDTApp.ViewModels
                 && !string.IsNullOrEmpty(sqlPassword))
             {
                 remoteConStr = string.Format(
-               "Server = {0}; Initial Catalog = Master; Persist Security Info = False; User ID = {1}; Password = {2}; Connection Timeout = 10;",
-                    sqlServerUrl, sqlUser, sqlPassword);
+               "Server = {0}; Initial Catalog = {1}; Persist Security Info = False; User ID = {2}; Password = {3}; Connection Timeout = 10;",
+                    sqlServerUrl, sqlDatabase, sqlUser, sqlPassword);
             }
 
             using (SqlConnection sqlCon = new SqlConnection())
@@ -129,7 +141,9 @@ namespace UDTApp.ViewModels
 
         private bool canTestConnection()
         {
-            if (!string.IsNullOrEmpty(sqlServerUrl) && !string.IsNullOrEmpty(sqlUser)
+            if (!string.IsNullOrEmpty(sqlServerUrl) 
+                && !string.IsNullOrEmpty(sqlDatabase)
+                && !string.IsNullOrEmpty(sqlUser)
                 && !string.IsNullOrEmpty(sqlPassword)) return true;
             return false;
         }

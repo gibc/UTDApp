@@ -473,7 +473,8 @@ namespace UDTApp.ViewModels
             {
                 string msg = string.Format("openProject failed: {0}", ex.Message);
                 UDTApp.Log.Log.LogMessage(msg);
-                MessageBox.Show(msg);
+                MessageBox.Show(msg, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                AppSettings.appSettings.removeFile(filePath);
             }
         }
 
@@ -928,11 +929,17 @@ namespace UDTApp.ViewModels
                 dc.sqlServerUrl = logIn.sqlServerUrl;
                 dc.sqlUser = logIn.sqlUser;
                 dc.sqlPassword = logIn.sqlPassword;
-            }
-            win.ShowDialog();
-            if ((bool)win.DialogResult)
-            {
+                dc.ProjectName = logIn.sqlDatabase;
                 newProject(dc);
+                win.Close();
+            }
+            else
+            {
+                win.ShowDialog();
+                if ((bool)win.DialogResult)
+                {
+                    newProject(dc);
+                }
             }
         }
 

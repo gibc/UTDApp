@@ -108,8 +108,15 @@ namespace UDTApp.Models
                 }
                 else
                 {
-                    string sqlTxt = string.Format(@"DROP DATABASE {0}", dbName);
-                    if (!executeQuery(sqlTxt)) return;
+                    UDTData master = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
+                    if (!string.IsNullOrEmpty(master.serverName)) return;  // ignore request to delete remove db
+
+                    string sqlTxt =
+                        string.Format("ALTER DATABASE {0} SET SINGLE_USER WITH ROLLBACK IMMEDIATE", dbName);
+                    if (!executeQuery(sqlTxt, true)) return;
+
+                    sqlTxt = string.Format(@"DROP DATABASE {0}", dbName);
+                    if (!executeQuery(sqlTxt, true)) return;
                 }
             }
             catch (Exception ex)
@@ -123,19 +130,48 @@ namespace UDTApp.Models
 
         private void createSQLDatabase(string DBName)
         {
+
             //using (SqlConnection conn = new SqlConnection())
             if (UDTDataSet.dbProvider.dbType == DBType.sqlLite) return;
 
-            // TBD: for remote database to check if exists just try to connect so connection to 
+            // for remote database to check if exists just try to connect so connection to 
             //      master DB not required (only connections to existing DBs allowed)
 
             using (DbConnection conn = UDTDataSet.dbProvider.Conection)
             {
+                // if this is a remote db or if the database already exits we should be
+                // able to connect to it but long time out on local DB
+                // query on master is much faster
+                UDTData mastr = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
+                if (!string.IsNullOrEmpty(mastr.serverName))
+                {
+                    conn.ConnectionString = UDTDataSet.dbProvider.ConnectionString;
+                    try
+                    {
+                        conn.Open();
+                        return;
+                    }
+                    catch
+                    {
+                        conn.Close();
+                        throw new Exception("UDTDataSet::createSQLDatabase failed: Cannot connect to remote sql server database.");
+                    }
+                }
+            
+                // this must be database on localDb so get folder for mdf files
+                string dbPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                string dataFolder = dbPath + "\\UdtLocalDb";
+                if (!Directory.Exists(dataFolder))
+                {
+                    Directory.CreateDirectory(dbPath);
+                }
+
                 conn.ConnectionString = UDTDataSet.dbProvider.MasterCatalogConnnectionString;
                 DbCommand cmd = UDTDataSet.dbProvider.GetCommand(
                     string.Format("select count(*) from (select * from sys.databases where name = '{0}') rows", DBName)
-                    ); 
+                    );
 
+                // query masted DB to see if database exits
                 cmd.Connection = conn;
                 conn.Open();
                 try
@@ -143,8 +179,11 @@ namespace UDTApp.Models
                     int dbCount = (int)cmd.ExecuteScalar();
                     if (dbCount < 1)
                     {
-                        cmd.CommandTimeout = 300;
-                        cmd.CommandText = string.Format("CREATE DATABASE {0} (EDITION = 'basic')", DBName); //CREATE DATABASE TestDB2 (EDITION = 'standard');
+                        // if database does not exits, create in specified folder
+                        cmd.CommandTimeout = 300; //create database foo on(name= 'foo', filename= 'c:\DBs\foo.mdf')
+                        cmd.CommandText = string.Format("create database {1} on(name= '{1}', filename= '{0}')", 
+                            string.Format("{0}\\{1}.mdf", dbPath, DBName), 
+                            DBName); 
                         cmd.ExecuteNonQuery();
                     }
                 }
@@ -467,11 +506,14 @@ namespace UDTApp.Models
             return executeQuery(sqlTxt);
         }
 
-        private bool executeQuery(string sqlTxt)
+        private bool executeQuery(string sqlTxt, bool useMasterDb = false)
         {
             using (DbConnection conn = UDTDataSet.dbProvider.Conection)
             {
-                conn.ConnectionString = UDTDataSet.dbProvider.ConnectionString;
+                if (useMasterDb)
+                    conn.ConnectionString = UDTDataSet.dbProvider.MasterCatalogConnnectionString;
+                else
+                    conn.ConnectionString = UDTDataSet.dbProvider.ConnectionString;
 
                 DbCommand cmd = UDTDataSet.dbProvider.GetCommand(sqlTxt);
 
@@ -786,11 +828,11 @@ namespace UDTApp.Models
                 cmd.CommandText = sqlTxt;
                 cmd.CommandType = CommandType.Text;
                 cmd.Connection = conn;
-                conn.Open();
 
                 //reader = cmd.ExecuteReader();
                 try
                 {
+                    conn.Open();
                     reader = cmd.ExecuteReader();
                     dataTable.Load(reader);
                     //foreach (UDTBase childItem in dataItem.ChildData)

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace UDTApp.Models
 {
-    public class DataSetRelation : ModelBase
+    public class DataSetRelation : BindableBase //ModelBase
     {
         public DataSetRelation()
         {

@@ -2,6 +2,8 @@
 using Amazon.S3.Model;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -22,20 +24,22 @@ namespace Metric.Controllers
 
             try
             {
+                string baseUrl = ConfigurationManager.AppSettings["downloadurl"];
+                string bolbUrl = string.Format("{0}/{1}", baseUrl, fileName);
+
                 response.Content = new PushStreamContent((stream, content, context) =>
                 {
-                    using (AmazonS3Client client = new AmazonS3Client("AKIAIN2WU67HVCNF3UHA",
-                           "MBo7RJp+MwbH/Fy/NcolilC6Q7svoiLjJp5ZCRNP", Amazon.RegionEndpoint.USWest2))
+                    var webReq = (HttpWebRequest)WebRequest.Create(bolbUrl);
+                    webReq.Method = "GET";
+                    WebResponse webResponse = webReq.GetResponse();
+                    byte[] data = new byte[500000];
+                    int count = data.Length;
+                    Stream responseStream = webResponse.GetResponseStream();
+                    while(count > 0)
                     {
-                        GetObjectRequest request = new GetObjectRequest
-                        {
-                            BucketName = "udtdownloads",
-                            Key = fileName
-                        };
-                        using (GetObjectResponse s3response = client.GetObject(request))
-                        {
-                            s3response.ResponseStream.CopyTo(stream, 5000000);
-                        }
+                        count = responseStream.Read(data, 0, data.Length);
+                        stream.Write(data, 0, count);
+                        stream.Flush();
                     }
                     stream.Close();
                 });
@@ -59,31 +63,24 @@ namespace Metric.Controllers
         [Route("api/Download/FileLength")]
         public long FileLength(string fileName)
         {
-            using (AmazonS3Client client = new AmazonS3Client("AKIAIN2WU67HVCNF3UHA",
-                   "MBo7RJp+MwbH/Fy/NcolilC6Q7svoiLjJp5ZCRNP", Amazon.RegionEndpoint.USWest2))
+            string baseUrl = ConfigurationManager.AppSettings["downloadurl"];
+            string bolbUrl = string.Format("{0}/{1}", baseUrl, fileName);
+
+            long length = -1;
+            var webRequest = HttpWebRequest.Create(bolbUrl);
+            webRequest.Method = "HEAD";
+            try
             {
-                GetObjectRequest request = new GetObjectRequest
+                using (var webResponse = webRequest.GetResponse())
                 {
-                    BucketName = "udtdownloads",
-                    Key = fileName
-                };
-                try
-                {
-                    using (GetObjectResponse s3response = client.GetObject(request))
-                    {
-                        return s3response.ContentLength;
-                    }
-                }
-                catch(AmazonS3Exception ex)
-                {
-                    var resp = new HttpResponseMessage(HttpStatusCode.NotFound)
-                    {
-                        Content = new StringContent(ex.Message),
-                        ReasonPhrase = ex.ErrorCode
-                    };
-                    throw new HttpResponseException(resp);
+                    length = Int64.Parse(webResponse.Headers.Get("Content-Length"));
                 }
             }
+            catch
+            {
+                return -1;
+            }
+            return length;
         }
 
         // POST api/<controller>

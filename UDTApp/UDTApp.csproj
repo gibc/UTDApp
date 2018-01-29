@@ -194,8 +194,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Behaviour\AlphaOnlycs.cs" />
-    <Compile Include="Behaviour\AutoGeneratingColumnEventToCommandBehaviour.cs" />
     <Compile Include="BlobStorage\BlobLoader.cs" />
     <Compile Include="DataBaseProvider\DbProvider.cs" />
     <Compile Include="EditControlViewModels\DateViewModel.cs" />
@@ -205,14 +203,8 @@
     <Compile Include="Encryption\Secure.cs" />
     <Compile Include="Log\ApiLogMessage.cs" />
     <Compile Include="Log\Log.cs" />
-    <Compile Include="Models\DataItem.cs" />
-    <Compile Include="Models\DataSet.cs" />
-    <Compile Include="Models\DataSetList.cs" />
-    <Compile Include="Models\DataSetRelation.cs" />
-    <Compile Include="Models\ModelBase.cs" />
     <Compile Include="Models\UDTData.cs" />
     <Compile Include="Models\UDTDataSet.cs" />
-    <Compile Include="Models\UDTUserData.cs" />
     <Compile Include="Models\UDTXml.cs" />
     <Compile Include="Settings\FileSetting.cs" />
     <Compile Include="Settings\ServerSetting.cs" />
@@ -221,26 +213,11 @@
     <Compile Include="ViewModels\AboutBoxViewModel.cs" />
     <Compile Include="ViewModels\DataEditViewModel.cs" />
     <Compile Include="ViewModels\DataEntryControls.cs" />
-    <Compile Include="ViewModels\DataViewModel.cs" />
     <Compile Include="ViewModels\InstallViewModel.cs" />
-    <Compile Include="ViewModels\ISubPage.cs" />
     <Compile Include="ViewModels\LoginViewModel.cs" />
     <Compile Include="ViewModels\NewProjectViewModel.cs" />
-    <Compile Include="ViewModels\PageOneViewModel.cs" />
-    <Compile Include="ViewModels\PageOneViewModelSave.cs" />
-    <Compile Include="ViewModels\PageThreeViewModel.cs" />
-    <Compile Include="ViewModels\PageThreeViewModelSave.cs" />
-    <Compile Include="ViewModels\PageTwoViewModel.cs" />
-    <Compile Include="ViewModels\PageTwoViewModelSave.cs" />
     <Compile Include="ViewModels\PageZeroViewModel.cs" />
-    <Compile Include="ViewModels\SetUpViewModel.cs" />
-    <Compile Include="ViewModels\SubPageOne.cs" />
-    <Compile Include="ViewModels\SubPageThree.cs" />
-    <Compile Include="ViewModels\SubPageTwo.cs" />
-    <Compile Include="ViewModels\UDTButtonGrid.cs" />
-    <Compile Include="ViewModels\UDTDataGrid.cs" />
     <Compile Include="ViewModels\UTDDataColProp.cs" />
-    <Compile Include="ViewModels\ViewModelBase.cs" />
     <Compile Include="Views\AboutBox.xaml.cs">
       <DependentUpon>AboutBox.xaml</DependentUpon>
     </Compile>
@@ -256,35 +233,13 @@
     <Compile Include="Views\NewProject.xaml.cs">
       <DependentUpon>NewProject.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\PageOne.xaml.cs">
-      <DependentUpon>PageOne.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\PageOneSave.xaml.cs">
-      <DependentUpon>PageOneSave.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\PageThree.xaml.cs">
-      <DependentUpon>PageThree.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\PageThreeSave.xaml.cs">
-      <DependentUpon>PageThreeSave.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\PageTwo.xaml.cs">
-      <DependentUpon>PageTwo.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\PageTwoSave.xaml.cs">
-      <DependentUpon>PageTwoSave.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\PageZero.xaml.cs">
       <DependentUpon>PageZero.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\SetUp.xaml.cs">
-      <DependentUpon>SetUp.xaml</DependentUpon>
+    <Compile Include="Views\PleaseWaitView.xaml.cs">
+      <DependentUpon>PleaseWaitView.xaml</DependentUpon>
     </Compile>
     <Page Include="Views\AboutBox.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\Data.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -309,13 +264,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Bootstrapper.cs" />
-    <Compile Include="Models\UDTAppData.cs" />
     <Compile Include="ViewModels\ErrorsContainer.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
     <Compile Include="ViewModels\ValidatableBindableBase.cs" />
-    <Compile Include="Views\Data.xaml.cs">
-      <DependentUpon>Data.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -324,35 +275,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\PageOne.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\PageOneSave.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\PageThree.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\PageThreeSave.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\PageTwo.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\PageTwoSave.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Views\PageZero.xaml">
       <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
+      <Generator>XamlIntelliSenseFileGenerator</Generator>
     </Page>
-    <Page Include="Views\SetUp.xaml">
+    <Page Include="Views\PleaseWaitView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -415,7 +342,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Behaviour\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\System.Data.SQLite.Core.1.0.106.0\build\net46\System.Data.SQLite.Core.targets" Condition="Exists('..\packages\System.Data.SQLite.Core.1.0.106.0\build\net46\System.Data.SQLite.Core.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

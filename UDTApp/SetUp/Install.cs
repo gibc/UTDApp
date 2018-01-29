@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Threading;
 using UDTApp.ViewModels;
 using UDTApp.Views;
 
@@ -74,48 +76,73 @@ namespace UDTApp.SetUp
             return true;
         }
 
+        private static bool _localDbInstalled = false;
         public static bool localDbInstalled
         {
             get
             {
+                if (_localDbInstalled) return true;
+
                 bool retVal = true;
                 using (SqlConnection sqlCon = new SqlConnection()) 
                 {
                     sqlCon.ConnectionString = "Server = (localdb)\\MSSQLLocalDB; Integrated Security = true; Connection Timeout=30";
-                    //sqlCon.ConnectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=master;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
 
                     try
                     {
+                        waitWin = new PleaseWaitView();
+                        waitWin.Show();
                         sqlCon.Open();
+                        _localDbInstalled = true;
                     }
                     catch (Exception ex)
                     {
                         retVal = false;
                         string msg = ex.Message;
+                    }
+                    finally
+                    {
+                        Thread.Sleep(1000);
+                        waitWin.Close();
+                        waitWin = null;
                     }
                 }
                 return retVal;
             }
         }
 
+        static private PleaseWaitView waitWin = null;
+
+        private static bool _sqlClientInstalled = false;
         public static bool sqlClientInstalled
         {
             get
             {
+                if (_sqlClientInstalled) return true;
+
                 bool retVal = true;
                 using (SqlConnection sqlCon = new SqlConnection()) 
                 {
+
                     sqlCon.ConnectionString =
                         @"Server = den1.mssql1.gear.host; User ID = testcon; Password = Dr14?_8DpG3u;  Connection Timeout = 30;";
-                        //@"Server = tcp:metric.database.windows.net,1433; Initial Catalog = udtConTest; User ID = udtUser; Password = ConTester567!;  Connection Timeout = 10;";
                     try
                     {
+                        waitWin = new PleaseWaitView();
+                        waitWin.Show();
                         sqlCon.Open();
+                        _sqlClientInstalled = true;
                     }
                     catch (Exception ex)
                     {
                         retVal = false;
                         string msg = ex.Message;
+                    }
+                    finally
+                    {
+                        Thread.Sleep(1000);
+                        waitWin.Close();
+                        waitWin = null;
                     }
                 }
                 return retVal;
