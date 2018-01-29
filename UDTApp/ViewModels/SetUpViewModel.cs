@@ -51,11 +51,11 @@ namespace UDTApp.ViewModels
         {
             dynamic view = new PageZero();
             _regionManager.AddToRegion(cons.SetUpRegion, view);
-             view = new PageOne();
-            _regionManager.AddToRegion(cons.SetUpRegion, view);
-            view = new PageTwo();
-            _regionManager.AddToRegion(cons.SetUpRegion, view);
-            view = new PageThree();
+            // view = new PageOne();
+            //_regionManager.AddToRegion(cons.SetUpRegion, view);
+            //view = new PageTwo();
+            //_regionManager.AddToRegion(cons.SetUpRegion, view);
+            //view = new PageThree();
             _regionManager.AddToRegion(cons.SetUpRegion, view);
             view = new DataEditView();
             _regionManager.AddToRegion(cons.SetUpRegion, view);

@@ -5,6 +5,11 @@ using System.IO;
 
 namespace s3.amazon.com.docsamples
 {
+  //<appSettings>
+  //  <add key = "AWSAccessKey" value="AKIAIFXLJRFTD2A2IOSQ"/>
+  //  <add key = "AWSSecretKey" value="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"/>
+  //  <add key = "AWSRegion" value="us-west-2"/>
+  //</appSettings>
     class UploadObject
     {
         static string bucketName = "*** bucket name ***";
@@ -15,14 +20,14 @@ namespace s3.amazon.com.docsamples
 
         public static void AWStest(string[] args)
         {
-            // AWSAccessKeyId = AKIAJTUF5W2B4ZDRZNEQ
-            // AWSSecretKey=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
+            //
+            //
+            //_sqlClientInstalled
             //sqlncli64.msi
             //SqlLocalDB.msi
             //UtdAppPublish.zip
             //sqlncli32.msi
-            using (client = new AmazonS3Client("AKIAIN2WU67HVCNF3UHA",
-                "MBo7RJp+MwbH/Fy/NcolilC6Q7svoiLjJp5ZCRNP", Amazon.RegionEndpoint.USWest2))
+            using (client = new AmazonS3Client())
             {
                 GetObjectRequest request = new GetObjectRequest
                 {

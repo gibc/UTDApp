@@ -1,6 +1,7 @@
 ﻿using s3.amazon.com.docsamples;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -10,33 +11,47 @@ using System.Threading.Tasks;
 
 namespace DownloadTest
 {
+    //https://s3-us-west-2.amazonaws.com/udtdownloads/SqlLocalDB.msi
     class Program
     {
-        private static void GetURLFileLength(string url, string fileName)
+        private static long GetURLFileLength(string url, string fileName)
         {
-            url += string.Format("?fileName={0}", fileName);
-            var webReq = (HttpWebRequest)WebRequest.Create(url);
-            webReq.Method = "GET";
-            try
-            {
-                WebResponse response = webReq.GetResponse();
-                long length = 0;
+            long length = -1;
+            var webRequest = HttpWebRequest.Create(
+                string.Format("https://s3-us-west-2.amazonaws.com/udtdownloads/{0}", fileName));
+            webRequest.Method = "HEAD";
 
-                using (Stream stream = response.GetResponseStream())
-                {
-                    using (StreamReader sr = new StreamReader(stream))
-                    {
-                        length = Int64.Parse(sr.ReadToEnd());
-                    }
-                }
-                Console.WriteLine("File {0} length = {1}", fileName, length);
-
-            }
-            catch (Exception ex)
+            using (var webResponse = webRequest.GetResponse())
             {
-                Console.WriteLine("For file '{0}' {1}", fileName, ex.Message);
+                length = Int64.Parse(webResponse.Headers.Get("Content-Length"));
             }
+            Console.WriteLine("File {0} length = {1}", fileName, length);
+            return length;
         }
+
+            //url += string.Format("?fileName={0}", fileName);
+            //var webReq = (HttpWebRequest)WebRequest.Create(url);
+            //webReq.Method = "GET";
+            //try
+            //{
+            //    WebResponse response = webReq.GetResponse();
+            //    long length = 0;
+
+            //    using (Stream stream = response.GetResponseStream())
+            //    {
+            //        using (StreamReader sr = new StreamReader(stream))
+            //        {
+            //            length = Int64.Parse(sr.ReadToEnd());
+            //        }
+            //    }
+            //    Console.WriteLine("File {0} length = {1}", fileName, length);
+
+            //}
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine("For file '{0}' {1}", fileName, ex.Message);
+        //    }
+        //}
 
         private static async Task<bool> GetURLContentsAsync(string url, string fileName)
         {
@@ -44,11 +59,12 @@ namespace DownloadTest
             var content = new MemoryStream();
 
             byte[] data = new byte[5000000];
-
-            url += string.Format("?fileName={0}", fileName);
+            string baseUrl = ConfigurationManager.AppSettings["downloadurl"];
+            //url += string.Format("?fileName={0}", fileName);
+            string bolbUrl = string.Format("{0}/{1}", baseUrl, fileName);
 
             // Initialize an HttpWebRequest for the current URL.
-            var webReq = (HttpWebRequest)WebRequest.Create(url);
+            var webReq = (HttpWebRequest)WebRequest.Create(bolbUrl);
             webReq.Method = "GET";
             
             // **Call GetResponseAsync instead of GetResponse, and await the result.
@@ -101,32 +117,32 @@ namespace DownloadTest
             //UploadObject.AWStest(null);
             //return;
 
-            GetURLFileLength(url, "UtdAppPublish.zip");
-            GetURLFileLength(url, "SqlLocalDB.msi");
-            GetURLFileLength(url, "sqlncli32.msi");
-            GetURLFileLength(url, "sqlncli64.msi");
-            GetURLFileLength(url, "missing");
+            //long length = GetURLFileLength(url, "UtdAppPublish.zip");
+            //length = GetURLFileLength(url, "SqlLocalDB.msi");
+            //length = GetURLFileLength(url, "sqlncli32.msi");
+            //length = GetURLFileLength(url, "sqlncli64.msi");
+            //GetURLFileLength(url, "missing");
 
-            url = "http://localhost:54946/api/Download/GetFile";
+            //url = "http://localhost:54946/api/Download/GetFile";
             Task<bool> t = GetURLContentsAsync(url, "SqlLocalDB.msi");
             t.Wait();
             if (!t.Result) Console.WriteLine("file load failed");
 
-            t = GetURLContentsAsync(url, "UtdAppPublish.zip");
-            t.Wait();
-            if (!t.Result) Console.WriteLine("file load failed");
+            //t = GetURLContentsAsync(url, "UtdAppPublish.zip");
+            //t.Wait();
+            //if (!t.Result) Console.WriteLine("file load failed");
 
-            t = GetURLContentsAsync(url, "sqlncli32.msi");
-            t.Wait();
-            if (!t.Result) Console.WriteLine("file load failed");
+            //t = GetURLContentsAsync(url, "sqlncli32.msi");
+            //t.Wait();
+            //if (!t.Result) Console.WriteLine("file load failed");
 
-            t = GetURLContentsAsync(url, "sqlncli64.msi");
-            t.Wait();
-            if (!t.Result) Console.WriteLine("file load failed");
+            //t = GetURLContentsAsync(url, "sqlncli64.msi");
+            //t.Wait();
+            //if (!t.Result) Console.WriteLine("file load failed");
 
-            t = GetURLContentsAsync(url, "missing");
-            t.Wait();
-            if(!t.Result) Console.WriteLine("file load failed");
+            //t = GetURLContentsAsync(url, "missing");
+            //t.Wait();
+            //if (!t.Result) Console.WriteLine("file load failed");
 
 
             //HttpWebResponse r = t.Result as HttpWebResponse;
