@@ -655,11 +655,27 @@ namespace UDTApp.ViewModels
                 currentEditGrid = grid;
                 editDataBase.editGrids.Add(grid);
                 createDataGrids(grid, table, navBtnClk);
+ 
             }
 
             foreach (DataEditGrid grid in editDataBase.editGrids)
-                grid.localNavButtonClick();
+            {
+                clkNav(grid);
+            }
+
             dataEditDataBase = editDataBase;
+        }
+
+        private void clkNav(DataEditGrid grid)
+        {
+            //if (grid.gridData != null && grid.gridData.Count > 0)
+            //    grid.SelectedItem = grid.gridData[0];
+
+            grid.localNavButtonClick();
+            foreach (DataEditGrid gd in grid.childGrids)
+            {
+                gd.localNavButtonClick();
+            }         
         }
 
         private DataEditDataBase _dataEditDataBase = null;
@@ -691,7 +707,6 @@ namespace UDTApp.ViewModels
 
                 //childGrid.parentGrid = new UDTDataGrid(parentGrid, parentGrid.DataViewName, udtData, navButtonClick
                 //    /*, parentGrid.canClick*/);
-
                 createDataGrids(childGrid, item, navButtonClick);
             }
             parentGrid.detailTab = new UDTDataTab(parentGrid.childGrids);
@@ -807,6 +822,17 @@ namespace UDTApp.ViewModels
 
                 if (editBoxes != null && _selectedItem != null) updateEditBoxes(_selectedItem);
                 if (childGrids != null) updateChildGrids(_selectedItem);
+                if (childGrids != null)
+                {
+                    foreach(DataEditGrid cg in childGrids)
+                    {
+                        if(cg.gridData != null && cg.gridData.Count > 0)
+                        {
+                            cg.SelectedIndex = 0;
+                            cg.SelectedItem = cg.gridData[0];
+                        }
+                    }
+                }
 
                 DeleteRowCommand.RaiseCanExecuteChanged();
             }
@@ -938,6 +964,7 @@ namespace UDTApp.ViewModels
             e.AutoGenerateColumns = false;
             e.AutoGenerateColumns = true;
 
+
             IEnumerable<DataColumn> dataCols = gridData.Table.Columns.Cast<DataColumn>();
             List<DataColumn> colLst = dataCols.Where(x => x.ExtendedProperties.Count > 0).ToList<DataColumn>();
             foreach (DataColumn column in colLst)
@@ -996,6 +1023,12 @@ namespace UDTApp.ViewModels
             {
                 dv = new DataView();
                 dv.Table = UDTDataSet.udtDataSet.DataSet.Tables[dataItem.Name];
+            }
+
+            if (dv != null && dv.Count > 0)
+            {
+                SelectedItem = dv[0];
+                SelectedIndex = 0;
             }
 
             return dv;
@@ -1224,7 +1257,12 @@ namespace UDTApp.ViewModels
             }
             set
             {
-                SetProperty(ref _gridData, value); 
+                SetProperty(ref _gridData, value);
+                //if (value != null && value.Count > 0)
+                //{
+                //    var row = value[0]; ;
+                //    SelectedItem = value[0];
+                //}
             }
         }
 

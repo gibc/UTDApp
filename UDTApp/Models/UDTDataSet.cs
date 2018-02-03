@@ -90,6 +90,47 @@ namespace UDTApp.Models
             }
         }
 
+        public bool dataBaseExists(DBType dbType, string dbName)
+        {
+            try
+            {
+                string dataFolder = "";
+                if (dbType == DBType.sqlLite)
+                {
+                    string path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                    dataFolder = path + "\\UdtApp";
+                    if (Directory.Exists(dataFolder))
+                    {
+                        string filePath = string.Format("{0}\\{1}.db",
+                            dataFolder, dbName);
+                        if (File.Exists(filePath))
+                            return true;
+                    }
+                    return false;
+                }
+
+                UDTData master = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
+                if (!string.IsNullOrEmpty(master.serverName)) return true;
+
+                string dbPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                dataFolder = dbPath + "\\UdtLocalDb";
+                if (Directory.Exists(dataFolder))
+                {
+                    string filePath = string.Format("{0}\\{1}.mdf",
+                        dataFolder, dbName);
+                    if (File.Exists(filePath))
+                        return true;
+                }
+
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
+
+        }
+
         public void deleteSQLDatabase(string dbName)
         {
             try
@@ -197,7 +238,7 @@ namespace UDTApp.Models
             }
         }
 
-        private bool TableExists(string tableName, string dbName)
+        public bool TableExists(string tableName, string dbName)
         {
 
             string sqlTxt = string.Format(@"select count(*) from 
@@ -338,7 +379,7 @@ namespace UDTApp.Models
 
                 // if we have no data then just drop and recreate table with
                 // all column mods
-                if (isTableEmpty(dataItem.Name, dbName))
+                if (isTableEmpty(dataItem, dbName))
                 {
                     //string sqlTxt = string.Format(@"DROP TABLE {0}", dataItem.Name);
                     if (!dropTable(dataItem.Name, dbName)) return;
@@ -347,31 +388,48 @@ namespace UDTApp.Models
                     return;
                 }
 
-                // if we have data check for deleted columns and
-                // save to backup table
+                // if we have data check for deleted columns
                 if(dataItem.isColumnDeleted)
-                { 
-                    UDTData dropedColTable = new UDTData();
-                    dropedColTable.Name = dataItem.Name += "DropedCols";
-
+                {
+                    
                     List<UDTBase> deleted = dataItem.savColumnData.ToList().FindAll
                         (p => dataItem.columnData.FirstOrDefault(a => a.savName == p.Name) == null);
-                    dropedColTable.columnData = 
-                        new System.Collections.ObjectModel.ObservableCollection<UDTBase>(deleted);
 
-                    //createNewTable(dropedColTable, dropedColTable.Name, dbName);
-                    //// copy data from current table to new table SELECT
-                    //string sqlTxt = string.Format(@"INSERT INTO {0}({2}) SELECT {2} FROM {1}",
-                    //    dropedColTable.Name, dataItem.Name,
-                    //    getColSql(dropedColTable));
-                    //if (!executeQuery(sqlTxt)) return;
+                    foreach(UDTBase item in deleted)
+                    {
+                        if (!isColumnEmpty(dataItem.Name, item.Name, dbName))
+                        {
+                            MessageBox.Show("Error: Attempt to delete non-empty column",
+                                "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                            return;
+                        }
+                    }
 
+                    //if (UDTDataSet.dbProvider.dbType == DBType.sqlExpress)
+                    //{
+                    //    foreach (UDTBase item in deleted)
+                    //    {
+
+                    //        if (UDTDataSet.dbProvider.dbType == DBType.sqlExpress)
+                    //        {
+                    //            if (!dropColumn(dataItem.Name, item.Name)) return;
+                    //        }
+                    //    }
+                    //}
+                    //else
+                    //{
+                    //    // add new cols and renamed cols and
+                    //    // drop any deleted cols and
+                    //    // copy over data to renamed cols
+                    //    if (UDTDataSet.dbProvider.dbType == DBType.sqlLite)
+                    //    {
+                    //        if (!RenameColumns(dataItem, dbName)) return;
+                    //    }
+                    //}
                 }
 
-                // add new cols and renamed cols and
-                // drop any deleted cols and
-                // copy over data to renamed cols
                 if (!RenameColumns(dataItem, dbName)) return;
+
               }
         }
 
@@ -418,11 +476,78 @@ namespace UDTApp.Models
             return sqlTxt;
         }
 
-        bool isTableEmpty(string tableName, string dbName)
+        public bool isColumnEmpty(string tableName, string columnName, string dbName)
         {
             bool retVal = true;
-            //string sqlTxt = UDTDataSet.dbProvider.adjSQL(string.Format("USE [{1}] SELECT * from {0}", tableName, dbName));
-            string sqlTxt = string.Format("SELECT * from {0}", tableName);
+            //if (isTableEmpty(tableName, dbName)) return true;
+
+            string sqlTxt = string.Format("SELECT {0} from {1} where {0} <> '' AND {0} IS NOT NULL", columnName, tableName);
+            using (DbConnection conn = UDTDataSet.dbProvider.Conection)
+            {
+                conn.ConnectionString = UDTDataSet.dbProvider.ConnectionString;
+                DbCommand cmd = UDTDataSet.dbProvider.GetCommand(sqlTxt);
+                cmd.Connection = conn;
+                conn.Open();
+                try
+                {
+                    if (UDTDataSet.dbProvider.dbType == DBType.sqlLite)
+                    {
+                        DbDataReader reader = UDTDataSet.dbProvider.Reader;
+                        reader = cmd.ExecuteReader();
+                        retVal = !reader.HasRows;
+                        reader.Close();
+                    }
+                    else
+                    {
+                        DbDataReader reader = UDTDataSet.dbProvider.Reader;
+                        reader = cmd.ExecuteReader();
+                        retVal = !reader.HasRows;
+                        reader.Close();
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    //MessageBox.Show(ex.Message);
+                    retVal = true;
+                }
+                finally
+                {
+                    conn.Close();
+                }
+            }
+            return retVal;
+
+        }
+
+        public bool isTableEmpty(UDTData dataItem, string dbName)
+        {
+            bool retVal = true;
+            string sqlTxt = string.Format("SELECT ");
+            foreach (UDTBase item in dataItem.columnData)
+            {
+                if (item.Name == "Id") continue;
+                if (item.Name != item.savName) continue;
+                sqlTxt += string.Format("{0}", item.Name);
+                //if (item != dataItem.columnData.Last())
+                    sqlTxt += ", ";
+            }
+            int off = sqlTxt.LastIndexOf(',');
+            sqlTxt = sqlTxt.Substring(0, off);
+
+            sqlTxt += string.Format(" FROM {0} WHERE ", dataItem.Name);
+            foreach (UDTBase item in dataItem.columnData)
+            {
+                if (item.Name == "Id") continue;
+                if (item.Name != item.savName) continue;
+                sqlTxt += string.Format("{0} <> '' AND {0} IS NOT NULL", item.Name);
+                //if (item != dataItem.columnData.Last())
+                    sqlTxt += " OR ";
+            }
+            off = sqlTxt.LastIndexOf("OR");
+            sqlTxt = sqlTxt.Substring(0, off);
+
+
             using (DbConnection conn = UDTDataSet.dbProvider.Conection)
             {
                 conn.ConnectionString = UDTDataSet.dbProvider.ConnectionString;
@@ -498,10 +623,16 @@ namespace UDTApp.Models
             }
         }
 
+        //public bool dropColumn(string tableName, string colName)
+        //{
+        //    string sqlTxt = string.Format("ALTER TABLE {0} DROP COLUMN {1};",
+        //        tableName, colName);
+        //    return executeQuery(sqlTxt);
+        //}
+
         public bool dropTable(string tableName, string dbName)
         {
             string sqlTxt =
-               // UDTDataSet.dbProvider.adjSQL(string.Format("USE [{0}] DROP TABLE {1}", dbName, tableName));
                 string.Format("DROP TABLE {0}", tableName);
             return executeQuery(sqlTxt);
         }
@@ -1015,9 +1146,10 @@ namespace UDTApp.Models
             sqlTxt += " ";
             foreach(DataColumn col in row.Table.Columns)
             {
-                if (row[col.ColumnName] == DBNull.Value) continue;
-                
-                if (col.DataType == typeof(String))
+                if (row[col.ColumnName] == DBNull.Value)
+                    sqlTxt += string.Format("{0}={1}, ", col.ColumnName, "NULL");
+
+                else if (col.DataType == typeof(String))
                     sqlTxt += string.Format("{0}='{1}', ", col.ColumnName, row[col.ColumnName]);
                 else if (col.DataType == typeof(decimal) || col.DataType == typeof(int))
                     sqlTxt += string.Format("{0}={1}, ", col.ColumnName, row[col.ColumnName]);

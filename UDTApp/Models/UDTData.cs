@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows;
@@ -153,7 +154,13 @@ namespace UDTApp.Models
             {
                 if (isModified) return true;
                 if (savTableData == null || tableData.Any(p => p.isModified)) return true;
-                if (tableData.Any(p => p.isSchemaModified)) return true;
+                if(savTableData.Where(p => tableData.FirstOrDefault(q => q.Name == p.Name) == null).Any()) return true;
+                //foreach (UDTData dataItem in savTableData)
+                //{
+                //    if (tableData.FirstOrDefault(p => p.Name == dataItem.Name) == null) return true;
+                //}
+                //if (tableData.Any(p => p.isSchemaModified)) return true;
+                if(tableData.Any(p => p.isSchemaModified)) return true;
                 return false;
             }
         }
@@ -815,12 +822,112 @@ namespace UDTApp.Models
             PopUpOpen = false;
         }
 
+        private bool isTableEmpty(UDTData dataItem)
+        {
+            if (!UDTDataSet.udtDataSet.dataBaseExists(MasterGroup.dbType, MasterGroup.Name)) return true;
+
+            if (UDTDataSet.udtDataSet.DataSet != null)
+            {
+                if (!UDTDataSet.udtDataSet.DataSet.Tables.Contains(dataItem.Name)) return true;
+
+                DataTable tb = UDTDataSet.udtDataSet.DataSet.Tables[dataItem.Name];
+                if (tb.Rows.Count <= 0) return true;
+
+                foreach (UDTBase col in dataItem.columnData)
+                {
+                    if (col.Name == "Id") continue;
+
+                    EnumerableRowCollection<DataRow> rows = tb.AsEnumerable().
+                        Where(r => r[col.Name] != DBNull.Value);
+                    if (rows.Any() && col.TypeName == UDTTypeName.Text)
+                    {
+                        rows = rows.Where(r => !string.IsNullOrEmpty((string)r[col.Name]));
+                    }
+                    if (rows.Any()) return false;                      
+                }
+                return true;
+            }
+            else
+            {
+                UDTDataSet.dbProvider = new DbProvider(MasterGroup.dbType, MasterGroup.serverName);
+                return UDTDataSet.udtDataSet.isTableEmpty(dataItem, MasterGroup.Name);
+            }
+
+        }
+
+        private bool isColumnEmpty(UDTData dataItem, UDTBase colItem)
+        {
+            if (isTableEmpty(dataItem)) return true;
+
+            if (UDTDataSet.udtDataSet.DataSet != null)
+            {
+                DataTable tb = UDTDataSet.udtDataSet.DataSet.Tables[dataItem.Name];
+                if (!tb.Columns.Contains(colItem.Name)) return true;
+                if (colItem.TypeName == UDTTypeName.Text)
+                {
+                    EnumerableRowCollection<DataRow> rows = tb.AsEnumerable().Where(r => r[colItem.Name] != DBNull.Value);
+                    if(rows.Any())
+                        rows = rows.Where(r => !string.IsNullOrEmpty((string)r[colItem.Name]));
+                    return !rows.Any();
+                }
+                else
+                {
+                    EnumerableRowCollection<DataRow> rows = tb.AsEnumerable().Where(r => r[colItem.Name] != DBNull.Value);
+                    return !rows.Any();
+                }
+            }
+            else
+            {
+                UDTDataSet.dbProvider = new DbProvider(MasterGroup.dbType, MasterGroup.serverName);
+                return UDTDataSet.udtDataSet.isColumnEmpty(dataItem.Name, colItem.Name, MasterGroup.Name);
+            }
+        }
+
         private void removeItem(UDTData data, UDTBase item)
         {
-            if(item.GetType() == typeof(UDTData))
-                data.tableData.Remove(item as UDTData);
+
+            if (item.GetType() == typeof(UDTData))
+            {
+                if (data.tableData.Contains(item))
+                {
+                    if (item.Name == item.savName && !isTableEmpty(item as UDTData))
+                    {
+                        MessageBox.Show(
+                            string.Format("Review and delete the data stored in the '{0}' group before removing it from the data design.", item.Name),
+                             "Data Alert", MessageBoxButton.OK, MessageBoxImage.Information);
+                        //{
+                        //    data.tableData.Remove(item as UDTData);
+                        //}
+                        return;
+                    }
+                    else
+                    {
+                        data.tableData.Remove(item as UDTData);
+                        MasterGroup.dataChanged();
+                    }
+                }
+            }
             else
-                data.columnData.Remove(item);
+            {
+                if (data.columnData.Contains(item))
+                {
+                    if (item.Name == item.savName && !isColumnEmpty(data, item))
+                    {
+                        MessageBox.Show(string.Format("Review and delete the data stored in the '{0}' item before removing it from the data design.", item.Name),
+                            "Data Alert", MessageBoxButton.OK, MessageBoxImage.Information);
+                        //{
+                        //    data.columnData.Remove(item);
+                        //}
+                        return;
+                    }
+                    else
+                    {
+                        data.columnData.Remove(item);
+                        MasterGroup.dataChanged();
+                    }
+                }
+            }
+
             foreach (UDTData obj in data.tableData)
             {
                 removeItem(obj as UDTData, item);
