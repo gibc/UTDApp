@@ -454,9 +454,12 @@ namespace UDTApp.Models
                     colNameList.Add(col.Name);
             }
 
-            // TBD: need saved parent column names
+            // add parent column names if they are not new
             foreach (string colName in dataItem.ParentColumnNames)
             {
+                if(dataItem.savParentColumnNames.FirstOrDefault(p => p == colName) == null)
+                    continue;
+
                 colNameList.Add(string.Format("{0}", colName));
             }
 
@@ -918,14 +921,22 @@ namespace UDTApp.Models
 
         private void readTable(System.Data.DataSet dataSet, UDTData dataItem, string dbName, string parentColName = "")
         {
+            //foreach (UDTBase childItem in dataItem.tableData)
+            //{
+            //    readTable(dataSet, childItem as UDTData, dbName, dataItem.Name);
+            //}
+
             if (dataSet.Tables.Contains(dataItem.Name)) return;  // read table only once
 
             DataTable tbl = createDataTable(dataItem);
 
             dataSet.Tables.Add(tbl);
 
-            foreach (string colName in dataItem.ParentColumnNames)
+            //foreach (string colName in dataItem.ParentColumnNames)
+            if (parentColName != "")
             {
+                string colName = parentColName;
+                //TBD: what if child table not yet created?? blows exception.  Need to read tables child first
                 string fkName = string.Format("{0}{1}", colName, dataItem.Name);
                 DataColumn pCol = DataSet.Tables[colName].Columns["Id"];
                 ForeignKeyConstraint fKConstrint = new ForeignKeyConstraint(
@@ -938,15 +949,12 @@ namespace UDTApp.Models
             }
 
             DataTable dataTable = dataSet.Tables[dataItem.Name];
-            //using (SqlConnection conn = new SqlConnection())
+
             using (DbConnection conn = UDTDataSet.dbProvider.Conection)
             {
 
-                //conn.ConnectionString = ConfigurationManager.ConnectionStrings["conString"].ConnectionString;
                 conn.ConnectionString = UDTDataSet.dbProvider.ConnectionString;
-                //SqlCommand cmd = new SqlCommand();
                 DbCommand cmd = UDTDataSet.dbProvider.Command;
-                //SqlDataReader reader;
                 DbDataReader reader = UDTDataSet.dbProvider.Reader;
 
 
@@ -969,14 +977,7 @@ namespace UDTApp.Models
                     //foreach (UDTBase childItem in dataItem.ChildData)
                     foreach (UDTBase childItem in dataItem.tableData)
                     {
-                        //if (childItem.GetType() == typeof(UDTData))
-                        //{
-                            // why per row read?? 
-                            //foreach (DataRow row in dataTable.Rows)
-                            //{
-                                readTable(dataSet, childItem as UDTData, dbName, dataItem.Name);
-                            //}
-                        //}
+                        readTable(dataSet, childItem as UDTData, dbName, dataItem.Name);
                     }
 
                     //while (reader.Read())

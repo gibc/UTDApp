@@ -140,6 +140,8 @@ namespace UDTApp.Models
             {
                 if (isAllButColumnModified)
                     return true;
+                if (isParentColModified)
+                    return true;
                 // check col mods NOT including edit prop mods
                 if (columnData.Any(p => p.isNameModified))
                     return true;
@@ -148,18 +150,32 @@ namespace UDTApp.Models
         }
 
         [XmlIgnoreAttribute]
+        public bool isParentColModified
+        {
+            get
+            {
+                // if parent column deleted
+                if (savParentColumnNames != null && 
+                    savParentColumnNames.Any(p => ParentColumnNames.FirstOrDefault(q => p == q) == null)) return true;
+                // if parent column added
+                if (ParentColumnNames != null 
+                    && ParentColumnNames.Any(p => savParentColumnNames.FirstOrDefault(q => p == q) == null)) return true;
+
+                return false;
+            }
+        }
+
+
+        [XmlIgnoreAttribute]
         public bool isSchemaModified
         {
             get
             {
                 if (isModified) return true;
+                if (isParentColModified) return true;
                 if (savTableData == null || tableData.Any(p => p.isModified)) return true;
-                if(savTableData.Where(p => tableData.FirstOrDefault(q => q.Name == p.Name) == null).Any()) return true;
-                //foreach (UDTData dataItem in savTableData)
-                //{
-                //    if (tableData.FirstOrDefault(p => p.Name == dataItem.Name) == null) return true;
-                //}
-                //if (tableData.Any(p => p.isSchemaModified)) return true;
+                // is table deleted
+                if(savTableData.Where(p => tableData.FirstOrDefault(q => q.Name == p.savName) == null).Any()) return true;
                 if(tableData.Any(p => p.isSchemaModified)) return true;
                 return false;
             }
@@ -1050,7 +1066,14 @@ namespace UDTApp.Models
                             udtData.ParentColumnNames.Add(this.Name);
                         if (!parent.tableData.Contains(udtData))
                         {
-                            udtData.Name = getUniqueGroupName(MasterGroup);
+                            // check if table already exits to handle
+                            // more than one reference to same table
+                            bool retVal = false;
+                            findGroupName(MasterGroup, udtData.Name, ref retVal);
+                            if (!retVal)
+                            {
+                                udtData.Name = getUniqueGroupName(MasterGroup);
+                            }
                             parent.tableData.Add(udtData);
                         }
                     }
