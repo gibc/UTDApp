@@ -201,6 +201,7 @@
     <Compile Include="EditControlViewModels\NumberViewModel.cs" />
     <Compile Include="EditControlViewModels\TextViewModel.cs" />
     <Compile Include="Encryption\Secure.cs" />
+    <Compile Include="ListManager\EventList.cs" />
     <Compile Include="Log\ApiLogMessage.cs" />
     <Compile Include="Log\Log.cs" />
     <Compile Include="Models\UDTData.cs" />

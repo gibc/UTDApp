@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -14,8 +15,12 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Xml;
+using System.Xml.Linq;
+using System.Xml.Schema;
 using System.Xml.Serialization;
 using UDTApp.DataBaseProvider;
+using UDTApp.ListManager;
 using UDTApp.ViewModels;
 using UDTApp.ViewModels.DataEntryControls;
 using UDTAppControlLibrary.Controls;
@@ -28,7 +33,7 @@ namespace UDTApp.Models
     {
         public UDTData()
         {
-            tableData = new ObservableCollection<UDTData>();
+            tableData = new ManagedObservableCollection<UDTData>();
             columnData = new ObservableCollection<UDTBase>();
             TypeName = UDTTypeName.Group;
             Name = TypeName.ToString();
@@ -48,7 +53,7 @@ namespace UDTApp.Models
             tableItem.savParentColumnNames = new List<string>(ParentColumnNames);
             tableItem.savColumnData = new ObservableCollection<UDTBase>();
             columnData.ToList().ForEach(p => tableItem.savColumnData.Add(p.Clone()));
-            tableItem.tableData = new ObservableCollection<UDTData>();
+            tableItem.tableData = new ManagedObservableCollection<UDTData>();
             tableData.ToList().ForEach(p => tableItem.tableData.Add(p.Clone() as UDTData));
             return tableItem;
         }
@@ -59,12 +64,6 @@ namespace UDTApp.Models
             set;
         }
 
-        //private string _conectionString = "";
-        //public string conectionString
-        //{
-        //    get { return _conectionString; }
-        //    set { _conectionString = value; }
-        //}
 
         private string _serverName = "";
         public string serverName
@@ -175,9 +174,22 @@ namespace UDTApp.Models
                 if (isParentColModified) return true;
                 if (savTableData == null || tableData.Any(p => p.isModified)) return true;
                 // is table deleted
-                if(savTableData.Where(p => tableData.FirstOrDefault(q => q.Name == p.savName) == null).Any()) return true;
-                if(tableData.Any(p => p.isSchemaModified)) return true;
+                //if(savTableData.Where(p => tableData.FirstOrDefault(q => q.Name == p.savName) == null).Any()) return true;
+                if (isTableDeleted) return true;
+                if (tableData.Any(p => p.isSchemaModified)) return true;
                 return false;
+            }
+        }
+
+        [XmlIgnoreAttribute]
+        public bool isTableDeleted
+        {
+            get
+            {
+                // table is deleted only when it is not referenced in any tableData collection
+                bool retVal = false;
+                findGroupName(MasterGroup, savName, ref retVal);
+                return !retVal;
             }
         }
 
@@ -192,9 +204,9 @@ namespace UDTApp.Models
         }
 
 
-        private ObservableCollection<UDTData> _tableData;
+        private ManagedObservableCollection<UDTData> _tableData;
         //[XmlIgnoreAttribute]
-        public ObservableCollection<UDTData> tableData
+        public ManagedObservableCollection<UDTData> tableData
         {
             get
             {
@@ -286,7 +298,7 @@ namespace UDTApp.Models
     [XmlInclude(typeof(UDTNumberPicker))]
     [XmlInclude(typeof(UDTBaseEditProps))]
     [XmlRoot("UDTBase"), XmlType("UDTBase")]
-    public class UDTBase : ValidatableBindableBase //: ValidatableBindableBase, INotifyDataErrorInfo
+    public class UDTBase : ValidatableBindableBase //, IXmlSerializable 
     {
         public UDTBase()
         {
@@ -1126,9 +1138,9 @@ namespace UDTApp.Models
             return "";
         }
 
-        private void findGroupName(UDTData udtData, string name, ref bool retVal)
+        protected void findGroupName(UDTData udtData, string name, ref bool retVal)
         {
-            if (udtData.Name == name)
+            if (!string.IsNullOrEmpty(udtData.savName) && udtData.savName == name || udtData.Name == name)
             {
                 retVal = true;
                 return;

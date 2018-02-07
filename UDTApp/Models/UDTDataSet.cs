@@ -83,10 +83,10 @@ namespace UDTApp.Models
                 UDTDataSet.dbProvider = new DbProvider(masterItem.dbType, masterItem.serverName);
             }
             createSQLDatabase(masterItem.Name);
-            List<Guid> tableGuids = new List<Guid>();
+            //List<Guid> tableGuids = new List<Guid>();
             foreach(UDTData table in masterItem.tableData)
             {
-                createDBTable(table, masterItem.Name, tableGuids);
+                createDBTable(table, masterItem.Name /*, tableGuids*/);
             }
         }
 
@@ -291,41 +291,55 @@ namespace UDTApp.Models
             return retVal;
         }
 
-        private void createDBTable(UDTData dataItem, string dbName, List<Guid> tableGuids)
+        private void createDBTable(UDTData dataItem, string dbName /*, List<Guid> tableGuids*/)
         {
-            if (dataItem.savTableData != null)
+            //if (dataItem.savTableData != null)
+            //{
+            //    foreach (UDTData item in dataItem.savTableData)
+            //    {
+            //        var c = dataItem.tableData.FirstOrDefault(p => p.Name == item.Name);
+            //        if(c == null)
+            //        {
+            //            c = dataItem.tableData.FirstOrDefault(p => p.savName == item.Name);
+            //            if(c == null)
+            //            {
+            //                // table has been deleted
+            //                //delteDBTable(item, dbName, tableGuids);
+            //            }
+            //        }
+            //    }
+            //}
+
+            if(dataItem.savTableData != null)
             {
-                foreach (UDTData item in dataItem.savTableData)
+                foreach(UDTData item in dataItem.savTableData)
                 {
-                    var c = dataItem.tableData.FirstOrDefault(p => p.Name == item.Name);
-                    if(c == null)
+                    if(item.isTableDeleted)
                     {
-                        c = dataItem.tableData.FirstOrDefault(p => p.savName == item.Name);
-                        if(c == null)
+                        if (!isTableEmpty(dataItem, dbName))
                         {
-                            // table has been deleted
-                            //delteDBTable(item, dbName, tableGuids);
+                            MessageBox.Show("Error: Attempt to delete non-empty table", "Error",
+                                MessageBoxButton.OK, MessageBoxImage.Error);
+                            return;
                         }
+                        dropTable(dataItem.Name, dbName);
                     }
                 }
             }
 
             foreach (UDTData item in dataItem.tableData)
             {
-                createDBTable(item, dbName, tableGuids);
+                createDBTable(item, dbName/*, tableGuids*/);
             }
 
-            string ddl;
+            //if (tableGuids.Contains(dataItem.objId)) return;
 
-            if (tableGuids.Contains(dataItem.objId)) return;
 
             if (!TableExists(dataItem.Name, dbName))
             {
                 if (!string.IsNullOrEmpty(dataItem.savName) && TableExists(dataItem.savName, dbName))
                 {
                     // table has a new name
-                    //string sqlTxt = UDTDataSet.dbProvider.adjSQL(string.Format("USE [{0}]  ALTER TABLE {1} RENAME TO {2}",
-                    //    dbName, dataItem.savName, dataItem.Name));
                     string sqlTxt = string.Format("ALTER TABLE {1} RENAME TO {2}",
                         dbName, dataItem.savName, dataItem.Name);
                     if (!executeQuery(sqlTxt)) return;
@@ -333,55 +347,58 @@ namespace UDTApp.Models
                 }
                 else
                 {
-                    // create new table
-                    using (DbConnection conn = UDTDataSet.dbProvider.Conection)
-                    {
-                        //ddl = UDTDataSet.dbProvider.adjSQL(string.Format("USE [{0}] CREATE TABLE {1} (", dbName, dataItem.Name));
-                        ddl = string.Format("CREATE TABLE {0} (", dataItem.Name);
-                        ddl += string.Format("[Id] [uniqueidentifier] NOT NULL, ");
-                        foreach (UDTBase item in dataItem.columnData)
-                        {
-                            ddl += string.Format("{0} {1}, ", item.Name, item.Type);
-                        }
-                        foreach (string colName in dataItem.ParentColumnNames)
-                        {
-                            ddl += string.Format("{0} [uniqueidentifier], ", colName);
-                        }
-                        ddl = ddl.Substring(0, ddl.Length - 2);
-                        ddl += "); ";
-
-                        tableGuids.Add(dataItem.objId);
-
-                        conn.ConnectionString = UDTDataSet.dbProvider.ConnectionString;
-                        DbCommand cmd = UDTDataSet.dbProvider.GetCommand(ddl);
-
-
-                        cmd.Connection = conn;
-                        conn.Open();
-                        try
-                        {
-                            cmd.ExecuteNonQuery();
-                        }
-                        catch (Exception ex)
-                        {
-                            MessageBox.Show(ex.Message);
-                        }
-                    }
+                    //tableGuids.Add(dataItem.objId);
+                    createNewTable(dataItem, dataItem.Name, dbName);
                     return;
+
+                    //string ddl;
+                    //// create new table
+                    //using (DbConnection conn = UDTDataSet.dbProvider.Conection)
+                    //{
+                    //    //ddl = UDTDataSet.dbProvider.adjSQL(string.Format("USE [{0}] CREATE TABLE {1} (", dbName, dataItem.Name));
+                    //    ddl = string.Format("CREATE TABLE {0} (", dataItem.Name);
+                    //    ddl += string.Format("[Id] [uniqueidentifier] NOT NULL, ");
+                    //    foreach (UDTBase item in dataItem.columnData)
+                    //    {
+                    //        ddl += string.Format("{0} {1}, ", item.Name, item.Type);
+                    //    }
+                    //    foreach (string colName in dataItem.ParentColumnNames)
+                    //    {
+                    //        ddl += string.Format("{0} [uniqueidentifier], ", colName);
+                    //    }
+                    //    ddl = ddl.Substring(0, ddl.Length - 2);
+                    //    ddl += "); ";
+
+                    //    tableGuids.Add(dataItem.objId);
+
+                    //    conn.ConnectionString = UDTDataSet.dbProvider.ConnectionString;
+                    //    DbCommand cmd = UDTDataSet.dbProvider.GetCommand(ddl);
+
+
+                    //    cmd.Connection = conn;
+                    //    conn.Open();
+                    //    try
+                    //    {
+                    //        cmd.ExecuteNonQuery();
+                    //    }
+                    //    catch (Exception ex)
+                    //    {
+                    //        MessageBox.Show(ex.Message);
+                    //    }
+                    //}
+                    //return;
                 }
             }
 
             // if table exits check for added, deleted, renamed columns
             if(dataItem.savColumnData != null)
             {
-                //if (!dataItem.isModified) return; 
                 if (!dataItem.isTableSchemsModified) return; 
 
                 // if we have no data then just drop and recreate table with
                 // all column mods
                 if (isTableEmpty(dataItem, dbName))
                 {
-                    //string sqlTxt = string.Format(@"DROP TABLE {0}", dataItem.Name);
                     if (!dropTable(dataItem.Name, dbName)) return;
 
                     createNewTable(dataItem, dataItem.Name, dbName);
@@ -404,28 +421,6 @@ namespace UDTApp.Models
                             return;
                         }
                     }
-
-                    //if (UDTDataSet.dbProvider.dbType == DBType.sqlExpress)
-                    //{
-                    //    foreach (UDTBase item in deleted)
-                    //    {
-
-                    //        if (UDTDataSet.dbProvider.dbType == DBType.sqlExpress)
-                    //        {
-                    //            if (!dropColumn(dataItem.Name, item.Name)) return;
-                    //        }
-                    //    }
-                    //}
-                    //else
-                    //{
-                    //    // add new cols and renamed cols and
-                    //    // drop any deleted cols and
-                    //    // copy over data to renamed cols
-                    //    if (UDTDataSet.dbProvider.dbType == DBType.sqlLite)
-                    //    {
-                    //        if (!RenameColumns(dataItem, dbName)) return;
-                    //    }
-                    //}
                 }
 
                 if (!RenameColumns(dataItem, dbName)) return;
@@ -914,39 +909,62 @@ namespace UDTApp.Models
             tbl.Columns.Add(idCol);
 
             tbl.RowChanged += new DataRowChangeEventHandler(rowChanged);
+            tbl.RowDeleted += rowDeleted;
             tbl.ColumnChanged += new DataColumnChangeEventHandler(columnChanged);
 
             return tbl;
         }
 
-        private void readTable(System.Data.DataSet dataSet, UDTData dataItem, string dbName, string parentColName = "")
+        private void rowDeleted(object sender, DataRowChangeEventArgs e)
         {
-            //foreach (UDTBase childItem in dataItem.tableData)
-            //{
-            //    readTable(dataSet, childItem as UDTData, dbName, dataItem.Name);
-            //}
+            IsModified = true;
+            if (dataChangeEvent != null) dataChangeEvent();
+        }
 
-            if (dataSet.Tables.Contains(dataItem.Name)) return;  // read table only once
-
-            DataTable tbl = createDataTable(dataItem);
-
-            dataSet.Tables.Add(tbl);
-
-            //foreach (string colName in dataItem.ParentColumnNames)
-            if (parentColName != "")
+        private void addConstraint(DataTable tbl, string parentCol)
+        {
+            if (!string.IsNullOrEmpty(parentCol))
             {
-                string colName = parentColName;
-                //TBD: what if child table not yet created?? blows exception.  Need to read tables child first
-                string fkName = string.Format("{0}{1}", colName, dataItem.Name);
-                DataColumn pCol = DataSet.Tables[colName].Columns["Id"];
+                string fkName = string.Format("{0}{1}", parentCol, tbl.TableName);
+                DataColumn pCol = DataSet.Tables[parentCol].Columns["Id"];
                 ForeignKeyConstraint fKConstrint = new ForeignKeyConstraint(
                       fkName,
                       pCol,  // parent col
-                      tbl.Columns[colName]); // child column
-                fKConstrint.DeleteRule = Rule.Cascade; 
-                if(!tbl.Constraints.Contains(fKConstrint.ConstraintName))
+                      tbl.Columns[parentCol]); // child column
+                fKConstrint.DeleteRule = Rule.Cascade;
+                if (!tbl.Constraints.Contains(fKConstrint.ConstraintName))
                     tbl.Constraints.Add(fKConstrint);
             }
+        }
+
+        private void readTable(System.Data.DataSet dataSet, UDTData dataItem, string dbName, string parentColName = "")
+        {
+            DataTable tbl;
+            if (dataSet.Tables.Contains(dataItem.Name))
+            {
+                tbl = dataSet.Tables[dataItem.Name];
+                addConstraint(tbl, parentColName);
+                return;  // create and read table only once
+            }
+
+            tbl = createDataTable(dataItem);
+
+            dataSet.Tables.Add(tbl);
+
+            //if (parentColName != "")
+            //{
+            addConstraint(tbl, parentColName);
+            //    string colName = parentColName;
+            //    string fkName = string.Format("{0}{1}", colName, dataItem.Name);
+            //    DataColumn pCol = DataSet.Tables[colName].Columns["Id"];
+            //    ForeignKeyConstraint fKConstrint = new ForeignKeyConstraint(
+            //          fkName,
+            //          pCol,  // parent col
+            //          tbl.Columns[colName]); // child column
+            //    fKConstrint.DeleteRule = Rule.Cascade; 
+            //    if(!tbl.Constraints.Contains(fKConstrint.ConstraintName))
+            //        tbl.Constraints.Add(fKConstrint);
+            //}
 
             DataTable dataTable = dataSet.Tables[dataItem.Name];
 
@@ -960,49 +978,22 @@ namespace UDTApp.Models
 
                 // read all records in table on first call and only call
                 string sqlTxt;
-                //if (parentId == -1)
-                //sqlTxt = UDTDataSet.dbProvider.adjSQL(string.Format("USE [{0}] select * from {1} ", dbName, dataItem.Name));
                 sqlTxt = string.Format("select * from {0} ", dataItem.Name);
 
                 cmd.CommandText = sqlTxt;
                 cmd.CommandType = CommandType.Text;
                 cmd.Connection = conn;
 
-                //reader = cmd.ExecuteReader();
                 try
                 {
                     conn.Open();
                     reader = cmd.ExecuteReader();
                     dataTable.Load(reader);
-                    //foreach (UDTBase childItem in dataItem.ChildData)
-                    foreach (UDTBase childItem in dataItem.tableData)
+                    foreach (UDTData childItem in dataItem.tableData)
                     {
-                        readTable(dataSet, childItem as UDTData, dbName, dataItem.Name);
+                        readTable(dataSet, childItem, dbName, dataItem.Name);
                     }
 
-                    //while (reader.Read())
-                    //{
-                    //    DataRow dataRow = dataTable.NewRow();
-                    //    //recId = (int)reader["Id"];
-                    //    dataRow["Id"] = (int)reader["Id"];
-                    //    foreach (UDTBase childItem in dataItem.ChildData)
-                    //    {
-                    //        if (childItem.GetType() != typeof(UDTData))
-                    //        {
-                    //            var data = reader[childItem.Name];
-                    //            dataRow[childItem.Name] = reader[childItem.Name];
-                    //        }
-                    //        else
-                    //        {
-                    //            readTable(dataSet, childItem as UDTData, dbName, dataItem.Name, (int)dataRow["Id"]);
-                    //        }
-                    //    }
-                    //    foreach (string colName in dataItem.ParentColumnNames)
-                    //    {
-                    //        dataRow[colName] = reader[colName];
-                    //    }
-                    //    dataTable.Rows.Add(dataRow);
-                    //}
                 }
                 catch (Exception ex)
                 {

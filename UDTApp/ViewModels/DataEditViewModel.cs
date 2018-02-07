@@ -900,8 +900,56 @@ namespace UDTApp.ViewModels
 
         private void deleteRow()
         {
-            SelectedItem.Delete();
-            //UDTDataSet.udtDataSet.validationChange(HasErrors);
+            // warn if child rows present
+            if (childGrids != null && childGrids.Any(p => p.gridData != null && p.gridData.Count > 0))
+            {
+                if (MessageBox.Show("Delete the selected row and all child rows?", "Delete Rows",
+                    MessageBoxButton.OKCancel, MessageBoxImage.Exclamation) == MessageBoxResult.Cancel)
+                {
+                    return;
+                }
+            }
+
+            // to invoke cascading delete operations
+            // find and delete the row in the dataset corresponding to the seleted dataveiw row
+            DataTable tbl = gridData.Table;
+            Guid pntId = (Guid)SelectedItem["Id"];
+            string filter = string.Format("Id = '{0}'", SelectedItem["Id"]);
+            DataRow[] foundRows = tbl.Select(filter);
+            foundRows[0].Delete();
+
+            //if (childGrids != null)
+            //{
+            //    // tell child grids to re-qurey for now deleted child rows
+            //    foreach (DataEditGrid cg in childGrids)
+            //    {
+            //        if (cg.gridData != null && cg.gridData.Count > 0)
+            //        {
+            //            cg.parentId = pntId;
+            //        }
+            //    }
+            //}
+
+            requeryChildGrids(childGrids);
+
+            if (gridData.Count > 0)
+            {
+                SelectedItem = gridData[0];
+            }
+        }
+
+        void requeryChildGrids(List<DataEditGrid> parentGrid)
+        {
+            if (parentGrid != null)
+            {
+                // tell child grids to re-qurey for now deleted child rows
+                foreach (DataEditGrid cg in parentGrid)
+                {
+                    requeryChildGrids(cg.childGrids);
+
+                    cg.parentId = Guid.Empty;
+                }
+            }
         }
 
         private bool canNav()
