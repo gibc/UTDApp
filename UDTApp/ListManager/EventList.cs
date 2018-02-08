@@ -13,52 +13,43 @@ namespace UDTApp.ListManager
         public void Add(T item)
         {
             // if not present, add to dictionary
-            // else get from dictionary
+            // else get from dictionary and inc ref count
             UDTData dataItem = item as UDTData;
             if(dataItem != null)
             {
-                if (itemDic.ContainsKey(dataItem.objId))
+                if (TableDictionary.itemDic.ContainsKey(dataItem.objId))
                 {
-                    List<UDTData> dataList = null;
-                    if (itemDic.TryGetValue(dataItem.objId, out dataList))
+                    TableRef tableRef = null;
+                    if (TableDictionary.itemDic.TryGetValue(dataItem.objId, out tableRef))
                     {
-                        if (!dataList.Contains(dataItem))
-                            dataList.Add(dataItem);
-                        dataItem = dataList[0];
+                        tableRef.refCount++;
+                        dataItem = tableRef.item;
                     }
                 }
                 else
                 {
-                    List<UDTData> dataList = new List<UDTData>();
-                    dataList.Add(dataItem);
-                    itemDic.Add(dataItem.objId, dataList);
+                    TableRef tableRef = new TableRef { refCount = 1, item = dataItem };
+                    TableDictionary.itemDic.Add(dataItem.objId, tableRef);
                 }
             }
-            if (deletedTableList.Contains(dataItem.Name))
-                deletedTableList.Remove(dataItem.Name);
             base.Add(dataItem);
         }
 
         public void Remove(T item)
         {
-            // remove item only when last reference to the item is removed
+            // remove item from dictionary only when last reference to the item is removed
             UDTData dataItem = item as UDTData;
             if (dataItem != null)
             {
-                if (itemDic.ContainsKey(dataItem.objId))
+                if (TableDictionary.itemDic.ContainsKey(dataItem.objId))
                 {
-                    List<UDTData> dataList = null;
-                    if (itemDic.TryGetValue(dataItem.objId, out dataList))
+                    TableRef tableRef = null;
+                    if (TableDictionary.itemDic.TryGetValue(dataItem.objId, out tableRef))
                     {
-                        if(dataList.Count > 1)
+                        tableRef.refCount--;
+                        if(tableRef.refCount <= 0)
                         {
-                            dataList.Remove(dataList[Count - 1]);
-                            return;
-                        }
-                        else
-                        {
-                            dataList.Clear();
-                            deletedTableList.Add(dataItem.Name);
+                           TableDictionary.itemDic.Remove(dataItem.objId);
                         }
                     }
                 }
@@ -66,9 +57,18 @@ namespace UDTApp.ListManager
             base.Remove(dataItem);
         }
 
-        private static Dictionary<Guid, List<UDTData>> itemDic = new Dictionary<Guid, List<UDTData>>();
-
-        public static List<String> deletedTableList = new List<string>();
     
+    }
+
+    public class TableDictionary
+    {
+        public static Dictionary<Guid, TableRef> itemDic = null;// = new Dictionary<Guid, List<UDTData>>();
+
+    }
+
+    public class TableRef
+    {
+        public int refCount { get; set; }
+        public UDTData item { get; set; }
     }
 }

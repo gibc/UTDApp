@@ -15,6 +15,7 @@ using ADODB;
 using UDTApp.DataBaseProvider;
 using System.Data.Common;
 using System.IO;
+using UDTApp.ListManager;
 
 namespace UDTApp.Models
 {
@@ -314,7 +315,8 @@ namespace UDTApp.Models
             {
                 foreach(UDTData item in dataItem.savTableData)
                 {
-                    if(item.isTableDeleted)
+                    //if(item.isTableDeleted)
+                    if(!TableDictionary.itemDic.ContainsKey(item.objId))
                     {
                         if (!isTableEmpty(dataItem, dbName))
                         {

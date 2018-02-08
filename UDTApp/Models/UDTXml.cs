@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Xml.Serialization;
 using UDTApp.DataBaseProvider;
+using UDTApp.ListManager;
 using UDTApp.Settings;
 
 namespace UDTApp.Models
@@ -166,7 +167,10 @@ namespace UDTApp.Models
                 result = serializer.Deserialize(reader) as List<UDTBase>;
             }
 
-            setParentRefs(result[0] as UDTData);
+            // TBD: put database ref in table dic via TypeName property setting
+            // so parentObj references will return
+            // master item and eliminate the need for parentObj fix up
+            //setParentRefs(result[0] as UDTData);
 
             UDTData schema = result[0] as UDTData;
             schema.setAllSavedProps();

@@ -174,24 +174,25 @@ namespace UDTApp.Models
                 if (isParentColModified) return true;
                 if (savTableData == null || tableData.Any(p => p.isModified)) return true;
                 // is table deleted
-                //if(savTableData.Where(p => tableData.FirstOrDefault(q => q.Name == p.savName) == null).Any()) return true;
-                if (isTableDeleted) return true;
+                if(savTableData.Where(p => tableData.FirstOrDefault(q => q.Name == p.savName) == null).Any()) return true;
+                //if (isTableDeleted) return true;
                 if (tableData.Any(p => p.isSchemaModified)) return true;
                 return false;
             }
         }
 
-        [XmlIgnoreAttribute]
-        public bool isTableDeleted
-        {
-            get
-            {
-                // table is deleted only when it is not referenced in any tableData collection
-                bool retVal = false;
-                findGroupName(MasterGroup, savName, ref retVal);
-                return !retVal;
-            }
-        }
+
+        //[XmlIgnoreAttribute]
+        //public bool isTableDeleted
+        //{
+        //    get
+        //    {
+        //        // table is deleted only when it is not referenced in any tableData collection
+        //        bool retVal = false;
+        //        findGroupName(MasterGroup, savName, ref retVal);
+        //        return !retVal;
+        //    }
+        //}
 
         [XmlIgnoreAttribute]
         public bool isColumnDeleted
@@ -294,7 +295,7 @@ namespace UDTApp.Models
     [XmlInclude(typeof(UDTDateItem))]
     [XmlInclude(typeof(UDTDateEditProps))]
     [XmlInclude(typeof(UDTDecimalItem))]
-    [XmlInclude(typeof(UDTDecimalEditProps))]  
+    [XmlInclude(typeof(UDTDecimalEditProps))]
     [XmlInclude(typeof(UDTNumberPicker))]
     [XmlInclude(typeof(UDTBaseEditProps))]
     [XmlRoot("UDTBase"), XmlType("UDTBase")]
@@ -332,18 +333,19 @@ namespace UDTApp.Models
             UDTBase intItem = new UDTBase();
             intItem.Name = Name;
             intItem.editProps = null;
+            intItem.objId = objId;
             return intItem;
         }
 
         public void editPropValidaionChanged()
         {
-            if(!HasErrors && editProps.HasErrors)
+            if (!HasErrors && editProps.HasErrors)
             {
                 List<string> errLst = new List<string>();
                 errLst.Add("<dummy>");
                 SetErrors(() => this.Name, errLst);
             }
-            else if(!editProps.HasErrors && HasErrors)
+            else if (!editProps.HasErrors && HasErrors)
             {
                 List<string> errLst = (List<string>)GetErrors("Name");
                 errLst.Remove("<dummy>");
@@ -385,15 +387,15 @@ namespace UDTApp.Models
             }
             updateErrorList(e.PropertyName);
 
-            if(UDTXml.UDTXmlData.SchemaData.Count > 0)
-            { 
+            if (UDTXml.UDTXmlData.SchemaData.Count > 0)
+            {
                 UDTData master = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
                 master.validationChanged();
             }
         }
 
 
-        private bool disable(EventArgs eventArgs) 
+        private bool disable(EventArgs eventArgs)
         {
             if (ToolBoxItem) return true;
             if (parentObj == null) return true;
@@ -448,12 +450,14 @@ namespace UDTApp.Models
             set { SetProperty(ref _savEditProps, value); }
         }
 
+        // serializes first so can add objects to table dictionary with ids
+        //[XmlElement(Order = 1)] exception unless used on all fields, proporties
         public Guid objId;
         public Guid dragObjId = Guid.Empty;
 
         private SolidColorBrush _backgroundBrush = null;
         [XmlIgnoreAttribute]
-        public SolidColorBrush backgroundBrush 
+        public SolidColorBrush backgroundBrush
         {
             get
             {
@@ -476,19 +480,19 @@ namespace UDTApp.Models
         }
 
         private int _buttonWidth = 0;
-        public int buttonWidth 
+        public int buttonWidth
         {
-            get 
+            get
             {
                 if (_toolBoxItem) return 54;
-                return _buttonWidth; 
+                return _buttonWidth;
             }
             set { SetProperty(ref _buttonWidth, value); }
         }
 
         private int _buttonHeight = 0;
-        public int buttonHeight 
-        { 
+        public int buttonHeight
+        {
             get
             {
                 if (_toolBoxItem) return 22;
@@ -508,13 +512,35 @@ namespace UDTApp.Models
 
         public string sortOrder { get; set; }
 
+        // serialize this instead of parentObj reference so
+        // parentObj get can find ojbect in dataTable dictionary
+        public Guid parentObjId { get; set; }
+       
         private UDTData _parentObj = null;
         [XmlIgnoreAttribute]
         public UDTData parentObj 
         {
-            get { return _parentObj; }
-            set { SetProperty(ref _parentObj, value); }
+            get
+            {
+                if(_parentObj == null && parentObjId != Guid.Empty && TableDictionary.itemDic.ContainsKey(parentObjId))
+                {
+                    TableRef tableRef = null;
+                    if (TableDictionary.itemDic.TryGetValue(parentObjId, out tableRef))
+                    {
+                        _parentObj = tableRef.item;
+                    }
+
+                }
+                return _parentObj;
+            }
+            set
+            {
+                SetProperty(ref _parentObj, value);
+                if (_parentObj != null)
+                    parentObjId = _parentObj.objId;
+            }
         }
+
         private bool newDrop = false;
 
         [XmlIgnoreAttribute]
@@ -806,6 +832,11 @@ namespace UDTApp.Models
                     dragButtonVisibility = Visibility.Collapsed;
                     editButtonVisibility = Visibility.Collapsed;
                     backgroundBrush = Brushes.SandyBrown;
+                    TableDictionary.itemDic = new Dictionary<Guid, TableRef>();
+                    // TBD: put database ref in table dic so parentOjb references will return
+                    // master item and eliminate the need for parentObj fix up
+                    TableRef tableRef = new TableRef() { refCount = 1, item = (UDTData)this };
+                    TableDictionary.itemDic.Add(this.objId, tableRef);
                 }
             }
         }
@@ -911,9 +942,8 @@ namespace UDTApp.Models
             }
         }
 
-        private void removeItem(UDTData data, UDTBase item)
+        private bool isTreeBranchEmpty(UDTData data, UDTBase item)
         {
-
             if (item.GetType() == typeof(UDTData))
             {
                 if (data.tableData.Contains(item))
@@ -923,15 +953,7 @@ namespace UDTApp.Models
                         MessageBox.Show(
                             string.Format("Review and delete the data stored in the '{0}' group before removing it from the data design.", item.Name),
                              "Data Alert", MessageBoxButton.OK, MessageBoxImage.Information);
-                        //{
-                        //    data.tableData.Remove(item as UDTData);
-                        //}
-                        return;
-                    }
-                    else
-                    {
-                        data.tableData.Remove(item as UDTData);
-                        MasterGroup.dataChanged();
+                        return false;
                     }
                 }
             }
@@ -943,28 +965,82 @@ namespace UDTApp.Models
                     {
                         MessageBox.Show(string.Format("Review and delete the data stored in the '{0}' item before removing it from the data design.", item.Name),
                             "Data Alert", MessageBoxButton.OK, MessageBoxImage.Information);
-                        //{
-                        //    data.columnData.Remove(item);
-                        //}
-                        return;
+                        return false;
                     }
-                    else
+                }
+            }
+            foreach (UDTData obj in data.tableData)
+            {
+                if (!isTreeBranchEmpty(obj as UDTData, item)) return false;
+            }
+
+            return true;
+        }
+
+        private void removeItem(UDTData data, UDTBase item)
+        {
+
+            if (item.GetType() == typeof(UDTData))
+            {
+                if (data.tableData.Contains(item))
+                {
+                    //if (item.Name == item.savName && !isTableEmpty(item as UDTData))
+                    //{
+                    //    MessageBox.Show(
+                    //        string.Format("Review and delete the data stored in the '{0}' group before removing it from the data design.", item.Name),
+                    //         "Data Alert", MessageBoxButton.OK, MessageBoxImage.Information);
+                    //    //{
+                    //    //    data.tableData.Remove(item as UDTData);
+                    //    //}
+                    //    return false;
+                    //}
+                    //else
+                    {
+                        data.tableData.Remove(item as UDTData);
+                        MasterGroup.dataChanged();
+                    }
+                }
+            }
+            else
+            {
+                if (data.columnData.Contains(item))
+                {
+                    //if (item.Name == item.savName && !isColumnEmpty(data, item))
+                    //{
+                    //    MessageBox.Show(string.Format("Review and delete the data stored in the '{0}' item before removing it from the data design.", item.Name),
+                    //        "Data Alert", MessageBoxButton.OK, MessageBoxImage.Information);
+                    //    //{
+                    //    //    data.columnData.Remove(item);
+                    //    //}
+                    //    return false;
+                    //}
+                    //else
                     {
                         data.columnData.Remove(item);
                         MasterGroup.dataChanged();
                     }
                 }
             }
-
             foreach (UDTData obj in data.tableData)
             {
                 removeItem(obj as UDTData, item);
             }
+            //return true;
         }
 
         private void deleteItem(EventArgs eventArgs)
         {
-            removeItem(MasterGroup, this);
+            // cant remove top, database otj
+            if (parentObj != null) return;
+
+            // don't remove obj if it or items lower in tree have data in database
+            if (!isTreeBranchEmpty(parentObj, this)) return;
+
+            // remove only this item and items below this item in the obj tree
+            removeItem(parentObj, this);
+
+            parentObj.ParentColumnNames.Remove(this.Name);
+            
             this.parentObj.ValidateProperty("Name");
             if(parentObj.groupBox != null)
             {
@@ -1319,6 +1395,7 @@ namespace UDTApp.Models
 
         private bool findGroupName(UDTData dataItem, Guid currentObjId, string name)
         {
+            if (dataItem == null) return false;
             foreach (UDTBase item in dataItem.tableData)
             {
                 if(item.GetType() == typeof(UDTData))
