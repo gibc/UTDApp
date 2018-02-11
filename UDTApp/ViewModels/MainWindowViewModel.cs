@@ -24,6 +24,7 @@ using System.Windows.Media;
 using System.IO;
 using UDTApp.SetUp;
 using UDTApp.Encryption;
+using UDTApp.SchemaModels;
 
 namespace UDTApp.ViewModels
 {

@@ -7,7 +7,6 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -15,12 +14,10 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Xml;
-using System.Xml.Linq;
-using System.Xml.Schema;
 using System.Xml.Serialization;
 using UDTApp.DataBaseProvider;
 using UDTApp.ListManager;
+using UDTApp.SchemaModels;
 using UDTApp.ViewModels;
 using UDTApp.ViewModels.DataEntryControls;
 using UDTAppControlLibrary.Controls;
@@ -41,6 +38,7 @@ namespace UDTApp.Models
             ParentColumnNames = new List<string>();
             dbType = DBType.none;
             sortOrder = "zzz";
+            schemaVersion = -1;  // set to version from config file right before serilaization
         }
 
         public override UDTBase Clone()
@@ -57,6 +55,9 @@ namespace UDTApp.Models
             tableData.ToList().ForEach(p => tableItem.tableData.Add(p.Clone() as UDTData));
             return tableItem;
         }
+
+        public int schemaVersion
+        { get; set; }
 
         public DBType dbType
         {
@@ -513,7 +514,7 @@ namespace UDTApp.Models
         public string sortOrder { get; set; }
 
         // serialize this instead of parentObj reference so
-        // parentObj get can find ojbect in dataTable dictionary
+        // parentObj get can find parentObj in dataTable dictionary
         public Guid parentObjId { get; set; }
        
         private UDTData _parentObj = null;
@@ -522,16 +523,20 @@ namespace UDTApp.Models
         {
             get
             {
-                if(_parentObj == null && parentObjId != Guid.Empty && TableDictionary.itemDic.ContainsKey(parentObjId))
+                if (_parentObj == null && parentObjId != Guid.Empty && TableDictionary.itemDic.ContainsKey(parentObjId))
                 {
                     TableRef tableRef = null;
                     if (TableDictionary.itemDic.TryGetValue(parentObjId, out tableRef))
                     {
-                        _parentObj = tableRef.item;
+                        _parentObj = tableRef.tables[0];
                     }
 
                 }
-                return _parentObj;
+                //if (_parentObj == null)
+                    //{
+                    //    _parentObj = getParent(this);
+                    //}
+               return _parentObj;
             }
             set
             {
@@ -785,6 +790,8 @@ namespace UDTApp.Models
                                 EXIT PROC".Split(' ')
                                     .Where(x => !string.IsNullOrWhiteSpace(x)).Select(s => s.Trim()).ToList();
 
+        //private string _name = "";
+        public SharedUDTTable sharedTable { get; set; }
         private string _name = "";
         [Required]
         [StringLength(15, MinimumLength = 4, ErrorMessage = "Name must be between 4 and 15 characters.")]
@@ -802,6 +809,7 @@ namespace UDTApp.Models
                 if (!string.IsNullOrEmpty(_name) && _name != value && MasterGroup != null)
                     MasterGroup.dataChanged();
                 SetProperty(ref _name, value);
+                if (sharedTable != null) sharedTable.Name = value;
                 if (HasErrors)
                     PopUpOpen = true;
                 else
@@ -833,9 +841,10 @@ namespace UDTApp.Models
                     editButtonVisibility = Visibility.Collapsed;
                     backgroundBrush = Brushes.SandyBrown;
                     TableDictionary.itemDic = new Dictionary<Guid, TableRef>();
-                    // TBD: put database ref in table dic so parentOjb references will return
+                    // put database ref in table dic so parentOjb references will return
                     // master item and eliminate the need for parentObj fix up
-                    TableRef tableRef = new TableRef() { refCount = 1, item = (UDTData)this };
+                    TableRef tableRef = new TableRef() { refCount = 1};
+                    tableRef.tables.Add(this as UDTData);
                     TableDictionary.itemDic.Add(this.objId, tableRef);
                 }
             }
@@ -1028,10 +1037,46 @@ namespace UDTApp.Models
             //return true;
         }
 
+        private UDTData findParent(UDTData parentItem, ref UDTData item)
+        {
+            if (parentItem.tableData.Contains(item))
+                return parentItem;
+            foreach (UDTData child in parentItem.tableData)
+            {
+                UDTData parent = findParent(child, ref item);
+                if (parent != null) return parent;
+            }
+            return null;
+        }
+
+        private UDTData findColParent(UDTData parentItem, ref UDTBase item)
+        {
+            if (parentItem.columnData.Contains(item))
+                return parentItem;
+            foreach (UDTData child in parentItem.tableData)
+            {
+                UDTData parent = findColParent(child, ref item);
+                if (parent != null) return parent;
+            }
+            return null;
+        }
+
+        private UDTData getParent(UDTBase item)
+        {
+            if (MasterGroup == null) return null;
+            if (item.GetType() == typeof(UDTData))
+            {
+                UDTData dataItem = item as UDTData;
+                return findParent(MasterGroup, ref dataItem);
+            }
+            else
+                return findColParent(MasterGroup, ref item);
+        }
+
         private void deleteItem(EventArgs eventArgs)
         {
-            // cant remove top, database otj
-            if (parentObj != null) return;
+            // can't remove top, database obj
+            if (parentObj == null) return;
 
             // don't remove obj if it or items lower in tree have data in database
             if (!isTreeBranchEmpty(parentObj, this)) return;

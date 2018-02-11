@@ -13,6 +13,7 @@ using System.Windows.Media;
 using UDTApp.BlobStorage;
 using System.Data.Common;
 using System.Linq;
+using UDTApp.SchemaModels;
 
 namespace UDTApp.ViewModels
 {

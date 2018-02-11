@@ -12,6 +12,7 @@ using System.Windows;
 using System.Windows.Controls;
 using UDTApp.EditControlViewModels;
 using UDTApp.Models;
+using UDTApp.SchemaModels;
 using UDTApp.ViewModels.DataEntryControls;
 using UDTAppControlLibrary.Controls;
 
@@ -879,6 +880,7 @@ namespace UDTApp.ViewModels
             foreach (string colName in currentDataItem.ParentColumnNames)
             {
                 if (colName == currentDataItem.parentObj.Name)
+                //if (colName == parentGrid.currentDataItem.parentObj.Name)
                     row[colName] = parentId;
                 else
                     row[colName] = DBNull.Value;
@@ -1064,6 +1066,7 @@ namespace UDTApp.ViewModels
             {
                 DataTable childTbl = UDTDataSet.udtDataSet.DataSet.Tables[dataItem.Name];
                 string filter = string.Format("{0} = '{1}'", dataItem.parentObj.Name, parentId);
+                //string filter = string.Format("{0} = '{1}'", parentTableName, parentId);
                 dv = new DataView(childTbl,
                     filter, "", DataViewRowState.CurrentRows);
             }
@@ -1145,7 +1148,17 @@ namespace UDTApp.ViewModels
                 SetProperty(ref _parentId, value);
                 NavBtnCommand.RaiseCanExecuteChanged();
                 AddRowCommand.RaiseCanExecuteChanged();
+                //// if no parent grid then this is child of single database obj so parentObj name is
+                //// correct
+                //if(parentGrid == null)
+                //    gridData = getGridData(currentDataItem.parentObj.Name, currentDataItem, parentId);
+                //// else grid may be child of multiple parent grids so parentGrid's dataItem name is
+                //// correct
+                //else
+                //    gridData = getGridData(parentGrid.currentDataItem.Name, currentDataItem, parentId);
+
                 gridData = getGridData(currentDataItem, parentId);
+
 
             }
         }

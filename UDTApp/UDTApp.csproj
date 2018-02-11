@@ -204,9 +204,10 @@
     <Compile Include="ListManager\EventList.cs" />
     <Compile Include="Log\ApiLogMessage.cs" />
     <Compile Include="Log\Log.cs" />
-    <Compile Include="Models\UDTData.cs" />
     <Compile Include="Models\UDTDataSet.cs" />
     <Compile Include="Models\UDTXml.cs" />
+    <Compile Include="SchemaModels\SharedUDTTable.cs" />
+    <Compile Include="SchemaModels\UDTData.cs" />
     <Compile Include="Settings\FileSetting.cs" />
     <Compile Include="Settings\ServerSetting.cs" />
     <Compile Include="Settings\Settings.cs" />

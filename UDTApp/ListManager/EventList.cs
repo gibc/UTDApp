@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UDTApp.Models;
+using UDTApp.SchemaModels;
 
 namespace UDTApp.ListManager
 {
@@ -22,13 +23,22 @@ namespace UDTApp.ListManager
                     TableRef tableRef = null;
                     if (TableDictionary.itemDic.TryGetValue(dataItem.objId, out tableRef))
                     {
+                        if(tableRef.refCount == 1)
+                        {
+                            tableRef.sharedTable = new SharedUDTTable() { sharedTables = tableRef.tables };
+                            dataItem.sharedTable = tableRef.sharedTable;
+                            tableRef.tables[0].sharedTable = tableRef.sharedTable;
+                        }
                         tableRef.refCount++;
-                        dataItem = tableRef.item;
+                        tableRef.tables.Add(dataItem);
+                        dataItem.sharedTable = tableRef.sharedTable;
+                        dataItem.columnData = tableRef.tables[0].columnData;
                     }
                 }
                 else
                 {
-                    TableRef tableRef = new TableRef { refCount = 1, item = dataItem };
+                    TableRef tableRef = new TableRef { refCount = 1 };
+                    tableRef.tables.Add(dataItem);
                     TableDictionary.itemDic.Add(dataItem.objId, tableRef);
                 }
             }
@@ -46,6 +56,7 @@ namespace UDTApp.ListManager
                     TableRef tableRef = null;
                     if (TableDictionary.itemDic.TryGetValue(dataItem.objId, out tableRef))
                     {
+                        tableRef.tables.Remove(dataItem);
                         tableRef.refCount--;
                         if(tableRef.refCount <= 0)
                         {
@@ -69,6 +80,11 @@ namespace UDTApp.ListManager
     public class TableRef
     {
         public int refCount { get; set; }
-        public UDTData item { get; set; }
+        private List<UDTData> _tables = new List<UDTData>();
+        public List<UDTData> tables
+        {
+            get { return _tables; }
+        }
+        public SharedUDTTable sharedTable { get; set; }
     }
 }

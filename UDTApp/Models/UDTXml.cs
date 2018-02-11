@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -10,6 +11,7 @@ using System.Windows;
 using System.Xml.Serialization;
 using UDTApp.DataBaseProvider;
 using UDTApp.ListManager;
+using UDTApp.SchemaModels;
 using UDTApp.Settings;
 
 namespace UDTApp.Models
@@ -62,7 +64,8 @@ namespace UDTApp.Models
         public bool saveToXml(List<UDTBase> SchemaList, string filePath)
         {
             try
-            { 
+            {
+                (SchemaList[0] as UDTData).schemaVersion = Int32.Parse(ConfigurationManager.AppSettings["SchemaVersion"]);
                 string xml = SerializeToString(SchemaList);
                 FileStream xmlFile = File.Open(filePath, FileMode.Create);
                 Byte[] info = new UTF8Encoding(true).GetBytes(xml);
@@ -106,13 +109,6 @@ namespace UDTApp.Models
             if (openFileDialog.ShowDialog().Value)
             {
                 AppSettings.appSettings.addFile(openFileDialog.FileName);
-                //StreamReader xmlFile = File.OpenText(openFileDialog.FileName);
-                //string xml = xmlFile.ReadToEnd();
-                //xmlFile.Close();
-
-                //List<UDTBase> schema = readFromXml(xml);
-                //SchemaData = schema;
-                //return SchemaData;
                 return openProject(openFileDialog.FileName);
             }
             return null;
@@ -167,10 +163,11 @@ namespace UDTApp.Models
                 result = serializer.Deserialize(reader) as List<UDTBase>;
             }
 
-            // TBD: put database ref in table dic via TypeName property setting
+            // After Version 0 database ref in table dic via TypeName property setting
             // so parentObj references will return
             // master item and eliminate the need for parentObj fix up
-            //setParentRefs(result[0] as UDTData);
+            //if((result[0] as UDTData).schemaVersion < 0)
+                setParentRefs(result[0] as UDTData);
 
             UDTData schema = result[0] as UDTData;
             schema.setAllSavedProps();

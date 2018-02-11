@@ -8,6 +8,7 @@ using UDTApp.Models;
 using UDTApp.ViewModels;
 using UDTAppControlLibrary.Controls;
 using System.Windows.Controls;
+using UDTApp.SchemaModels;
 
 namespace UDTApp.EditControlViewModels
 {

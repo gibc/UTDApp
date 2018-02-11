@@ -16,6 +16,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Xml.Serialization;
 using UDTApp.Models;
+using UDTApp.SchemaModels;
 //using UDTApp.Models;
 
 namespace UDTApp.ViewModels
