@@ -9,14 +9,14 @@ using UDTApp.SchemaModels;
 
 namespace UDTApp.ListManager
 {
-    public class ManagedObservableCollection<T> : ObservableCollection<UDTData>
+    public class ManagedObservableCollection<T> : ObservableCollection<T>
     {
-        public void Add(T item)
+        public new void Add(T item)
         {
             // if not present, add to dictionary
             // else get from dictionary and inc ref count
-            UDTData dataItem = item as UDTData;
-            if(dataItem != null)
+            UDTBase dataItem = item as UDTBase;
+            if (dataItem != null)
             {
                 if (TableDictionary.itemDic.ContainsKey(dataItem.objId))
                 {
@@ -32,7 +32,18 @@ namespace UDTApp.ListManager
                         tableRef.refCount++;
                         tableRef.tables.Add(dataItem);
                         dataItem.sharedTable = tableRef.sharedTable;
-                        dataItem.columnData = tableRef.tables[0].columnData;
+                        // for each added table, set edit props to common instance
+                        if (dataItem is UDTData && tableRef.refCount >= 1)
+                        {
+                            UDTData tbl = dataItem as UDTData;
+                            UDTData shTbl = tableRef.tables[0] as UDTData;
+                            foreach (UDTBase col in shTbl.columnData)
+                            {
+                                tbl.columnData.FirstOrDefault(p => p.Name == col.Name).editProps = col.editProps;
+                            }
+                            tbl.ParentColumnNames = shTbl.ParentColumnNames;
+                        }
+                        //dataItem.ParentColumnNames = tableRef.tables[0].ParentColumnNames;  TBD:  how handel this??
                     }
                 }
                 else
@@ -42,10 +53,10 @@ namespace UDTApp.ListManager
                     TableDictionary.itemDic.Add(dataItem.objId, tableRef);
                 }
             }
-            base.Add(dataItem);
+            base.Add(item);
         }
 
-        public void Remove(T item)
+        public new void Remove(T item)
         {
             // remove item from dictionary only when last reference to the item is removed
             UDTData dataItem = item as UDTData;
@@ -65,7 +76,7 @@ namespace UDTApp.ListManager
                     }
                 }
             }
-            base.Remove(dataItem);
+            base.Remove(item);
         }
 
     
@@ -80,8 +91,10 @@ namespace UDTApp.ListManager
     public class TableRef
     {
         public int refCount { get; set; }
-        private List<UDTData> _tables = new List<UDTData>();
-        public List<UDTData> tables
+        //private List<UDTData> _tables = new List<UDTData>();
+        //public List<UDTData> tables
+        private List<UDTBase> _tables = new List<UDTBase>();
+        public List<UDTBase> tables
         {
             get { return _tables; }
         }

@@ -33,7 +33,7 @@ namespace UDTApp.SchemaModels
         public UDTData()
         {
             tableData = new ManagedObservableCollection<UDTData>();
-            columnData = new ObservableCollection<UDTBase>();
+            columnData = new ManagedObservableCollection<UDTBase>();
             TypeName = UDTTypeName.Group;
             Name = TypeName.ToString();
             backgroundBrush = Brushes.White;
@@ -236,9 +236,10 @@ namespace UDTApp.SchemaModels
             }
         }
 
-        private ObservableCollection<UDTBase> _columnData;
-        //[XmlIgnoreAttribute]
-        public ObservableCollection<UDTBase> columnData
+        //private ObservableCollection<UDTBase> _columnData;
+        //public ObservableCollection<UDTBase> columnData
+        private ManagedObservableCollection<UDTBase> _columnData;
+        public ManagedObservableCollection<UDTBase> columnData
         {
             get
             {
@@ -442,7 +443,8 @@ namespace UDTApp.SchemaModels
         public UDTBaseEditProps editProps
         {
             get { return _editProps; }
-            set { SetProperty(ref _editProps, value); }
+            //set { SetProperty(ref _editProps, value); }  // this takes copy of obj instead of setting ref to obj
+            set { _editProps = value; }
         }
 
         private UDTBaseEditProps _savEditProps = null;
@@ -530,7 +532,7 @@ namespace UDTApp.SchemaModels
                     TableRef tableRef = null;
                     if (TableDictionary.itemDic.TryGetValue(parentObjId, out tableRef))
                     {
-                        _parentObj = tableRef.tables[0];
+                        _parentObj = tableRef.tables[0] as UDTData; // TBD: will this work??
                     }
 
                 }
@@ -792,8 +794,9 @@ namespace UDTApp.SchemaModels
                                 EXIT PROC".Split(' ')
                                     .Where(x => !string.IsNullOrWhiteSpace(x)).Select(s => s.Trim()).ToList();
 
-        //private string _name = "";
+        [XmlIgnoreAttribute]
         public SharedUDTTable sharedTable { get; set; }
+
         private string _name = "";
         [Required]
         [StringLength(15, MinimumLength = 4, ErrorMessage = "Name must be between 4 and 15 characters.")]
@@ -809,7 +812,10 @@ namespace UDTApp.SchemaModels
             {
                 DisplayName = value;
                 if (!string.IsNullOrEmpty(_name) && _name != value && MasterGroup != null)
+                {
                     MasterGroup.dataChanged();
+                    MasterGroup.validationChanged();
+                }
                 SetProperty(ref _name, value);
                 if (sharedTable != null) sharedTable.Name = value;
                 if (HasErrors)
@@ -817,8 +823,8 @@ namespace UDTApp.SchemaModels
                 else
                     PopUpOpen = false;
                 ErrorTextVisable = HasErrors;
-                if (MasterGroup != null) SetAnyErrorAll(MasterGroup, HasErrors);
-                if (MasterGroup != null) MasterGroup.validationChanged();
+                //if (MasterGroup != null) SetAnyErrorAll(MasterGroup, HasErrors);
+                //if (MasterGroup != null) MasterGroup.validationChanged();
 
                 newDrop = HasErrors;
                 //RaisePropertyChanged("EditBoxEnabled");
@@ -892,29 +898,46 @@ namespace UDTApp.SchemaModels
             PopUpOpen = false;
         }
 
+        
+        public string unEditedName
+        {
+            get
+            {
+                return !string.IsNullOrEmpty(savName) ? savName : Name;
+            }
+        }
+
         private bool isTableEmpty(UDTData dataItem)
         {
             if (!UDTDataSet.udtDataSet.dataBaseExists(MasterGroup.dbType, MasterGroup.Name)) return true;
 
             if (UDTDataSet.udtDataSet.DataSet != null)
             {
-                if (!UDTDataSet.udtDataSet.DataSet.Tables.Contains(dataItem.Name)) return true;
+                if (!UDTDataSet.udtDataSet.DataSet.Tables.Contains(dataItem.unEditedName)) return true;
+                if (dataItem.savColumnData == null || dataItem.savColumnData.Count <= 0) return true;
 
-                DataTable tb = UDTDataSet.udtDataSet.DataSet.Tables[dataItem.Name];
+                DataTable tb = UDTDataSet.udtDataSet.DataSet.Tables[dataItem.unEditedName];
                 if (tb.Rows.Count <= 0) return true;
 
-                foreach (UDTBase col in dataItem.columnData)
+                foreach (UDTBase col in dataItem.savColumnData)
                 {
-                    if (col.Name == "Id") continue;
+                    if (!tb.Columns.Contains(col.Name)) continue;
 
                     EnumerableRowCollection<DataRow> rows = tb.AsEnumerable().
                         Where(r => r[col.Name] != DBNull.Value);
                     if (rows.Any() && col.TypeName == UDTTypeName.Text)
                     {
-                        rows = rows.Where(r => !string.IsNullOrEmpty((string)r[col.Name]));
+                        rows = rows.Where(r => !string.IsNullOrEmpty((string)r[col.unEditedName]));
                     }
-                    if (rows.Any()) return false;
+                    // if we have non null data columns, check if any parent column id field not null
+                    if (rows.Any())
+                    {
+                        rows = rows.Where(r => r[dataItem.parentObj.unEditedName] != DBNull.Value);
+                        if(rows.Any()) return false;
+                    }
                 }
+                // if all data columns (not id columns) are null or id columns for this parent are null, 
+                // [table is empty
                 return true;
             }
             else
@@ -953,40 +976,40 @@ namespace UDTApp.SchemaModels
             }
         }
 
-        private bool isTreeBranchEmpty(UDTData data, UDTBase item)
-        {
-            if (item.GetType() == typeof(UDTData))
-            {
-                if (data.tableData.Contains(item))
-                {
-                    if (item.Name == item.savName && !isTableEmpty(item as UDTData))
-                    {
-                        MessageBox.Show(
-                            string.Format("Review and delete the data stored in the '{0}' group before removing it from the data design.", item.Name),
-                             "Data Alert", MessageBoxButton.OK, MessageBoxImage.Information);
-                        return false;
-                    }
-                }
-            }
-            else
-            {
-                if (data.columnData.Contains(item))
-                {
-                    if (item.Name == item.savName && !isColumnEmpty(data, item))
-                    {
-                        MessageBox.Show(string.Format("Review and delete the data stored in the '{0}' item before removing it from the data design.", item.Name),
-                            "Data Alert", MessageBoxButton.OK, MessageBoxImage.Information);
-                        return false;
-                    }
-                }
-            }
-            foreach (UDTData obj in data.tableData)
-            {
-                if (!isTreeBranchEmpty(obj as UDTData, item)) return false;
-            }
+        //private bool isTreeBranchEmpty(UDTData data, UDTBase item)
+        //{
+        //    if (item.GetType() == typeof(UDTData))
+        //    {
+        //        if (data.tableData.Contains(item))
+        //        {
+        //            if (item.Name == item.savName && !isTableEmpty(item as UDTData))
+        //            {
+        //                MessageBox.Show(
+        //                    string.Format("Review and delete the data stored in the '{0}' group before removing it from the data design.", item.Name),
+        //                     "Data Alert", MessageBoxButton.OK, MessageBoxImage.Information);
+        //                return false;
+        //            }
+        //        }
+        //    }
+        //    else
+        //    {
+        //        if (data.columnData.Contains(item))
+        //        {
+        //            if (item.Name == item.savName && !isColumnEmpty(data, item))
+        //            {
+        //                MessageBox.Show(string.Format("Review and delete the data stored in the '{0}' item before removing it from the data design.", item.Name),
+        //                    "Data Alert", MessageBoxButton.OK, MessageBoxImage.Information);
+        //                return false;
+        //            }
+        //        }
+        //    }
+        //    foreach (UDTData obj in data.tableData)
+        //    {
+        //        if (!isTreeBranchEmpty(obj as UDTData, item)) return false;
+        //    }
 
-            return true;
-        }
+        //    return true;
+        //}
 
         private void removeItem(UDTData data, UDTBase item)
         {
@@ -1081,12 +1104,46 @@ namespace UDTApp.SchemaModels
             if (parentObj == null) return;
 
             // don't remove obj if it or items lower in tree have data in database
-            if (!isTreeBranchEmpty(parentObj, this)) return;
+            //if (!isTreeBranchEmpty(parentObj, this)) return;
 
             // remove only this item and items below this item in the obj tree
-            removeItem(parentObj, this);
+            //removeItem(parentObj, this);
+            if(this is UDTData)
+            {
+                // check if this table is empty or has rows where parent column field is not null
+                if (!isTableEmpty(this as UDTData))
+                {
+                    MessageBox.Show(
+                        string.Format("Review and delete the data stored in the '{0}' group before removing it from the data design.", this.Name),
+                         "Data Alert", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+                parentObj.ParentColumnNames.Remove(this.Name);
+                parentObj.tableData.Remove(this as UDTData);
+            }
+            else if(this is UDTBase)
+            {
+                // check if this col has data in parent table
+                if (!isColumnEmpty(parentObj, this))
+                {
+                    MessageBox.Show(
+                        string.Format("Review and delete the data stored in the '{0}' item before removing it from the data design.", this.Name),
+                         "Data Alert", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+                if(parentObj.sharedTable != null)
+                {
+                    foreach(UDTData tbl in parentObj.sharedTable.sharedTables)
+                    {
+                        UDTBase col = tbl.columnData.FirstOrDefault(p => p.objId == this.objId);
+                        tbl.columnData.Remove(col);
+                    }
+                }
+                else
+                    parentObj.columnData.Remove(this);
+            }
 
-            parentObj.ParentColumnNames.Remove(this.Name);
+            //parentObj.ParentColumnNames.Remove(this.Name);
 
             this.parentObj.ValidateProperty("Name");
             if (parentObj.groupBox != null)
@@ -1178,7 +1235,6 @@ namespace UDTApp.SchemaModels
             TextBox box = dragArgs.Source as TextBox;
             if (!dragArgs.Handled && btn != null || box != null)
             {
-                //ObservableCollection<UDTBase> col = Ex.GetSecurityId(btn);
 
                 UDTBase udtItem = getItemFromDragArgs(dragArgs);
                 UDTBase udtBase = udtItem as UDTBase;
@@ -1186,38 +1242,81 @@ namespace UDTApp.SchemaModels
                 // prevent copy to self
                 if (udtBase.dragObjId == this.objId) return;
 
-                //if(udtItem.Name == "") udtItem.Name = "<Name>";
-
                 UDTData udtData;
                 if (udtItem != null)
                 {
                     UDTData parent = this as UDTData;
-                    udtItem.parentObj = parent;
+                    //udtItem.parentObj = parent;
                     if (udtItem.GetType() == typeof(UDTData))
                     {
                         udtData = udtItem as UDTData;
-                        // database item is not parent column in child items
+                        // database item is not parent column for child items
                         if (parent.TypeName == UDTTypeName.Group)
                             udtData.ParentColumnNames.Add(this.Name);
                         if (!parent.tableData.Contains(udtData))
                         {
                             // check if table already exits to handle
                             // more than one reference to same table
-                            bool retVal = false;
-                            findGroupName(MasterGroup, udtData.Name, ref retVal);
-                            if (!retVal)
+                            //bool retVal = false;
+                            //findGroupName(MasterGroup, udtData.Name, ref retVal);
+
+                            //if (!retVal)
+                            if(!TableDictionary.itemDic.ContainsKey(udtData.objId))
                             {
+                                udtData.parentObj = parent;
                                 udtData.Name = getUniqueGroupName(MasterGroup);
+                                parent.tableData.Add(udtData);
                             }
-                            parent.tableData.Add(udtData);
+                            else
+                            {
+                                // this is a shared table def so create new table with same objId to
+                                // be linked with exiting instances of this table by the Add method
+                                // in the list manager
+                                UDTData sharedTable = new UDTData()
+                                {
+                                    Name = udtData.Name, objId = udtData.objId, parentObj = parent,
+                                    SchemaItem = true, ToolBoxItem = false
+                                };
+                                foreach (UDTBase col in udtData.columnData)
+                                {
+                                    // calls overriden vitrual method to create correct udt type
+                                    UDTBase obj = col.Clone(); 
+                                    obj.SchemaItem = true;
+                                    obj.ToolBoxItem = false;
+                                    obj.objId = col.objId;
+                                    obj.editProps = col.editProps;
+                                    obj.parentObj = sharedTable;
+                                    sharedTable.columnData.Add(obj);
+                                    //sharedTable.columnData.Add(col.Clone().parentObj = sharedTable);
+                                }
+                                parent.tableData.Add(sharedTable);
+                            }
                         }
                     }
                     else
                     {
+                        // if this is a new column, clone if being added to a 
+                        // shared table and then add to all instances of
+                        // parent table
                         if (!parent.columnData.Contains(udtItem))
                         {
+                            udtItem.parentObj = parent;
                             udtItem.Name = getUniqueColumnName(parent.columnData);
-                            parent.columnData.Add(udtItem);
+                            if(parent.sharedTable != null)
+                            {
+                                foreach(UDTData tbl in parent.sharedTable.sharedTables)
+                                {
+                                    UDTBase obj = udtItem.Clone();
+                                    obj.SchemaItem = true;
+                                    obj.ToolBoxItem = false;
+                                    obj.objId = udtItem.objId;
+                                    obj.editProps = udtItem.editProps;
+                                    obj.parentObj = tbl;
+                                    tbl.columnData.Add(udtItem);
+                                }
+                            }
+                            else
+                                parent.columnData.Add(udtItem);
                         }
 
                     }

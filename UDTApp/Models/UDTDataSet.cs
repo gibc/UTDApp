@@ -85,10 +85,10 @@ namespace UDTApp.Models
                 UDTDataSet.dbProvider = new DbProvider(masterItem.dbType, masterItem.serverName);
             }
             createSQLDatabase(masterItem.Name);
-            //List<Guid> tableGuids = new List<Guid>();
+            List<Guid> tableGuids = new List<Guid>();
             foreach(UDTData table in masterItem.tableData)
             {
-                createDBTable(table, masterItem.Name /*, tableGuids*/);
+                createDBTable(table, masterItem.Name, tableGuids);
             }
         }
 
@@ -293,8 +293,10 @@ namespace UDTApp.Models
             return retVal;
         }
 
-        private void createDBTable(UDTData dataItem, string dbName /*, List<Guid> tableGuids*/)
+        private void createDBTable(UDTData dataItem, string dbName , List<Guid> tableGuids)
         {
+            if (tableGuids.Contains(dataItem.objId)) return;
+
             //if (dataItem.savTableData != null)
             //{
             //    foreach (UDTData item in dataItem.savTableData)
@@ -328,11 +330,12 @@ namespace UDTApp.Models
                         dropTable(dataItem.Name, dbName);
                     }
                 }
+                tableGuids.Add(dataItem.dragObjId);
             }
 
             foreach (UDTData item in dataItem.tableData)
             {
-                createDBTable(item, dbName/*, tableGuids*/);
+                createDBTable(item, dbName, tableGuids);
             }
 
             //if (tableGuids.Contains(dataItem.objId)) return;
@@ -521,33 +524,63 @@ namespace UDTApp.Models
 
         }
 
-        public bool isTableEmpty(UDTData dataItem, string dbName)
+        public bool childRowsEmpty(UDTData dataItem)
         {
             bool retVal = true;
-            string sqlTxt = string.Format("SELECT ");
-            foreach (UDTBase item in dataItem.columnData)
+            string sqlTxt = string.Format("SELECT {0} FROM {1} WHERE {0} IS NOT NULL", 
+                dataItem.parentObj.unEditedName, dataItem.unEditedName);
+
+            using (DbConnection conn = UDTDataSet.dbProvider.Conection)
             {
-                if (item.Name == "Id") continue;
-                if (item.Name != item.savName) continue;
-                sqlTxt += string.Format("{0}", item.Name);
-                //if (item != dataItem.columnData.Last())
+                conn.ConnectionString = UDTDataSet.dbProvider.ConnectionString;
+                DbCommand cmd = UDTDataSet.dbProvider.GetCommand(sqlTxt);
+                cmd.Connection = conn;
+                conn.Open();
+                try
+                {                 
+                    DbDataReader reader = UDTDataSet.dbProvider.Reader;
+                    reader = cmd.ExecuteReader();
+                    retVal = !reader.HasRows;
+                    reader.Close();                   
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+                finally
+                {
+                    conn.Close();
+                }
+            }
+            return retVal;
+        }
+
+        public bool isTableEmpty(UDTData dataItem, string dbName)
+        {
+            if (dataItem.savColumnData == null || dataItem.savColumnData.Count <= 0) return true;
+
+            bool retVal = true;
+            List<string> colList = new List<string>();
+            foreach (UDTBase item in dataItem.savColumnData)
+            {
+                colList.Add(item.Name);
+            }
+
+            string sqlTxt = string.Format("SELECT ");
+            foreach(string colName in colList)
+            {
+                sqlTxt += string.Format("{0}", colName);
+                if (colName != colList.Last())
                     sqlTxt += ", ";
             }
-            int off = sqlTxt.LastIndexOf(',');
-            sqlTxt = sqlTxt.Substring(0, off);
 
-            sqlTxt += string.Format(" FROM {0} WHERE ", dataItem.Name);
-            foreach (UDTBase item in dataItem.columnData)
+            sqlTxt += string.Format(" FROM {0} WHERE ", dataItem.unEditedName);
+            foreach (string colName in colList)
             {
-                if (item.Name == "Id") continue;
-                if (item.Name != item.savName) continue;
-                sqlTxt += string.Format("{0} <> '' AND {0} IS NOT NULL", item.Name);
-                //if (item != dataItem.columnData.Last())
+                sqlTxt += string.Format("{0} <> '' AND {0} IS NOT NULL", colName);
+                if (colName != colList.Last())
                     sqlTxt += " OR ";
             }
-            off = sqlTxt.LastIndexOf("OR");
-            sqlTxt = sqlTxt.Substring(0, off);
-
 
             using (DbConnection conn = UDTDataSet.dbProvider.Conection)
             {
@@ -582,6 +615,8 @@ namespace UDTApp.Models
                     conn.Close();
                 }
             }
+            if (!retVal)
+                return childRowsEmpty(dataItem);
             return retVal;
         }
 

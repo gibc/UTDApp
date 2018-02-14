@@ -13,7 +13,8 @@ namespace UDTApp.SchemaModels
         {
             set
             {
-                foreach(UDTData table in sharedTables)
+                //foreach (UDTData table in sharedTables)
+                foreach (UDTBase table in sharedTables)
                 {
                     if (table.Name != value)
                     {
@@ -23,7 +24,8 @@ namespace UDTApp.SchemaModels
             }
         }
 
-        public List<UDTData> sharedTables
+        //public List<UDTData> sharedTables       
+        public List<UDTBase> sharedTables
         { get; set; }
     }
 }

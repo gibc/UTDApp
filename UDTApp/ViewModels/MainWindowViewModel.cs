@@ -230,7 +230,7 @@ namespace UDTApp.ViewModels
         {
             get
             {
-                if (findDesignValidationError())
+                if (hasValidationErrors)
                     return Visibility.Visible;
                 else if (projectDataModified)
                     return Visibility.Visible;
@@ -279,7 +279,7 @@ namespace UDTApp.ViewModels
         {
             get
             {
-                if (findDesignValidationError())
+                if (hasValidationErrors)
                     return projectSatausEnum.error;
                 else if (projectDataModified)
                     return projectSatausEnum.modifed;
@@ -288,7 +288,7 @@ namespace UDTApp.ViewModels
             }
             set
             {
-                if (findDesignValidationError())
+                if (hasValidationErrors)
                     value = projectSatausEnum.error;
                 else if (projectDataModified)
                     value = projectSatausEnum.modifed;
@@ -327,7 +327,7 @@ namespace UDTApp.ViewModels
         {
             get
             {
-                if (findDesignValidationError())
+                if (hasValidationErrors)
                     return new SolidColorBrush(Colors.Red);
                 else if (projectDataModified)
                     return new SolidColorBrush(Colors.Orange);
@@ -360,11 +360,12 @@ namespace UDTApp.ViewModels
 
         private void projectValidationChanged()
         {
+            findDesignValidationError();
             SaveCommand.RaiseCanExecuteChanged();
-            RaisePropertyChanged("projectStatus");
-            RaisePropertyChanged("projectStatusVisibility");
-            RaisePropertyChanged("projectStatusColor");
-            RaisePropertyChanged("saveRemoveButtonVisibility");
+            //RaisePropertyChanged("projectStatus");
+            //RaisePropertyChanged("projectStatusVisibility");
+            //RaisePropertyChanged("projectStatusColor");
+            //RaisePropertyChanged("saveRemoveButtonVisibility");
         }
 
         private void projectDataChanged()
@@ -803,11 +804,26 @@ namespace UDTApp.ViewModels
             return true;
         }
 
-        private bool findDesignValidationError()
+        private bool _hasValidationErrors = false;
+        private bool hasValidationErrors
+        {
+            get { return _hasValidationErrors; } 
+            set
+            {
+                _hasValidationErrors = value;
+                RaisePropertyChanged("projectStatus");
+                RaisePropertyChanged("projectStatusVisibility");
+                RaisePropertyChanged("projectStatusColor");
+                RaisePropertyChanged("saveRemoveButtonVisibility");
+            }
+        }
+
+        private void findDesignValidationError()
         {
             if (UDTXml.UDTXmlData.SchemaData.Count <= 0)
-                return false;
-            else return findValidationError(UDTXml.UDTXmlData.SchemaData[0]);
+                return;
+            //else return findValidationError(UDTXml.UDTXmlData.SchemaData[0]);
+            hasValidationErrors =  findValidationError(UDTXml.UDTXmlData.SchemaData[0]);
         }
 
         private bool findValidationError(UDTBase udtItem)

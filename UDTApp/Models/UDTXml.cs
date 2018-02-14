@@ -167,7 +167,7 @@ namespace UDTApp.Models
             // so parentObj references will return
             // master item and eliminate the need for parentObj fix up
             //if((result[0] as UDTData).schemaVersion < 0)
-                setParentRefs(result[0] as UDTData);
+            //    setParentRefs(result[0] as UDTData);
 
             UDTData schema = result[0] as UDTData;
             schema.setAllSavedProps();
