@@ -113,7 +113,7 @@
                     Visibility="{Binding SchemaItem, Converter={StaticResource BoolToVis}}"
                     BorderThickness="1,1,1,1" 
                     BorderBrush="Black" 
-                    Background="{Binding backgroundBrush}"
+                    Background="{Binding backgroundBrush, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                     Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                     HorizontalAlignment="Stretch" VerticalContentAlignment="Bottom" 
                     HorizontalContentAlignment="Center" 
@@ -179,7 +179,7 @@
         <ControlTemplate x:Key="ButtonDrag">
             <Button Height="{Binding  buttonHeight}" vm:Ex.SecurityId ="{Binding ChildData}" 
                     AllowDrop="False" Visibility="{Binding dragButtonVisibility}"
-                    Background="{Binding backgroundBrush}" 
+                    Background="{Binding backgroundBrush, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                     Width="{Binding buttonWidth}" HorizontalAlignment="Center" 
                     VerticalContentAlignment="Center"
                     HorizontalContentAlignment="Center"  BorderThickness="1,1,1,1" BorderBrush="Black"
@@ -313,7 +313,7 @@
 
                             <TextBox Name="NameEdit" Height="30"  Margin="0,0,0,0" Padding="0,2,0,0"
                                 Visibility="{Binding SchemaItem, Converter={StaticResource BoolToVis}}"
-                                BorderThickness="1" BorderBrush="Black" Background="{Binding backgroundBrush}"
+                                BorderThickness="1" BorderBrush="Black" Background="{Binding backgroundBrush, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                 Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                                 HorizontalAlignment="Stretch" 
                                 VerticalContentAlignment="Top" 
@@ -688,7 +688,7 @@
                 </GroupBox.Header>
                 <StackPanel Background="{Binding currentEditItem.backgroundBrush}">
                     <ContentControl Content="{Binding currentEditItem.editProps}" 
-                                    Background="{Binding currentEditItem.backgroundBrush}"/>
+                                    Background="{Binding currentEditItem.backgroundBrush, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                 </StackPanel>
             </GroupBox>
             <!--<Button Content="SaveToXml">

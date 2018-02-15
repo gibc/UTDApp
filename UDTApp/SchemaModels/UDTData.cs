@@ -471,6 +471,10 @@ namespace UDTApp.SchemaModels
                     var color = (Color)ColorConverter.ConvertFromString(brushColor);
                     _backgroundBrush = new SolidColorBrush(color);
                 }
+                if(this is UDTData)
+                {
+                    if(this.sharedTable != null) return Brushes.WhiteSmoke;
+                }
                 return _backgroundBrush;
             }
 
@@ -795,7 +799,17 @@ namespace UDTApp.SchemaModels
                                     .Where(x => !string.IsNullOrWhiteSpace(x)).Select(s => s.Trim()).ToList();
 
         [XmlIgnoreAttribute]
-        public SharedUDTTable sharedTable { get; set; }
+        private SharedUDTTable _sharedTable = null;
+        [XmlIgnoreAttribute]
+        public SharedUDTTable sharedTable
+        {
+            get { return _sharedTable; }
+            set
+            {
+                SetProperty(ref _sharedTable, value);
+                RaisePropertyChanged("backgroundBrush");
+            }
+        }
 
         private string _name = "";
         [Required]
@@ -1250,9 +1264,15 @@ namespace UDTApp.SchemaModels
                     if (udtItem.GetType() == typeof(UDTData))
                     {
                         udtData = udtItem as UDTData;
-                        // database item is not parent column for child items
+                        // if this is table, not database item add parent column name
+                        // if not already in parent col name list
                         if (parent.TypeName == UDTTypeName.Group)
-                            udtData.ParentColumnNames.Add(this.Name);
+                        {
+                            if (!udtData.ParentColumnNames.Contains(this.Name))
+                            {
+                                udtData.ParentColumnNames.Add(this.Name);
+                            }
+                        }
                         if (!parent.tableData.Contains(udtData))
                         {
                             // check if table already exits to handle

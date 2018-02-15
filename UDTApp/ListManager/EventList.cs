@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Windows.Media;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -69,7 +70,11 @@ namespace UDTApp.ListManager
                     {
                         tableRef.tables.Remove(dataItem);
                         tableRef.refCount--;
-                        if(tableRef.refCount <= 0)
+                        if(tableRef.refCount == 1)
+                        {
+                            tableRef.tables[0].sharedTable = null;
+                        }
+                        if (tableRef.refCount <= 0)
                         {
                            TableDictionary.itemDic.Remove(dataItem.objId);
                         }

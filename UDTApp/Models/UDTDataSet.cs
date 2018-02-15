@@ -1,17 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Data;
-using System.Data.SqlClient;
-using System.Data.SQLite;
-using System.Data.SqlTypes;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using UDTApp.ViewModels;
 using UDTAppControlLibrary.Controls;
-using ADODB;
 using UDTApp.DataBaseProvider;
 using System.Data.Common;
 using System.IO;
@@ -318,16 +311,16 @@ namespace UDTApp.Models
             {
                 foreach(UDTData item in dataItem.savTableData)
                 {
-                    //if(item.isTableDeleted)
+                    // table is deleleted when last reference is removed from item dictionary
                     if(!TableDictionary.itemDic.ContainsKey(item.objId))
                     {
-                        if (!isTableEmpty(dataItem, dbName))
+                        if (!isTableEmpty(item, dbName))
                         {
                             MessageBox.Show("Error: Attempt to delete non-empty table", "Error",
                                 MessageBoxButton.OK, MessageBoxImage.Error);
                             return;
                         }
-                        dropTable(dataItem.Name, dbName);
+                        dropTable(item.Name, dbName);
                     }
                 }
                 tableGuids.Add(dataItem.dragObjId);
@@ -345,10 +338,8 @@ namespace UDTApp.Models
             {
                 if (!string.IsNullOrEmpty(dataItem.savName) && TableExists(dataItem.savName, dbName))
                 {
-                    // table has a new name
-                    string sqlTxt = string.Format("ALTER TABLE {1} RENAME TO {2}",
-                        dbName, dataItem.savName, dataItem.Name);
-                    if (!executeQuery(sqlTxt)) return;
+                    // table is renamed
+                    if (!renameTable(dataItem.savName, dataItem.Name, dbName)) return;
                     dataItem.savName = dataItem.Name;  // remove table name mod from schema
                 }
                 else
