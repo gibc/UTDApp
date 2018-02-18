@@ -943,15 +943,16 @@ namespace UDTApp.SchemaModels
                     {
                         rows = rows.Where(r => !string.IsNullOrEmpty((string)r[col.unEditedName]));
                     }
-                    // if we have non null data columns, check if any parent column id field not null
-                    if (rows.Any())
+                    // if we dont have non null data columns, check if any parent column id field not null
+                    if (!rows.Any() && dataItem.parentObj.ParentColumnNames != null 
+                        && dataItem.parentObj.ParentColumnNames.Count > 0)
                     {
                         rows = rows.Where(r => r[dataItem.parentObj.unEditedName] != DBNull.Value);
                         if(rows.Any()) return false;
                     }
+                    if (rows.Any()) return false;
                 }
                 // if all data columns (not id columns) are null or id columns for this parent are null, 
-                // [table is empty
                 return true;
             }
             else

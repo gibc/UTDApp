@@ -199,8 +199,10 @@ namespace UDTAppControlLibrary.Controls
             }
             else if (decimalVal != null && decimalVal != parsedNumber) 
             { 
-                DecimalValue = null;
-                DecimalValue = decimalVal;
+                //DecimalValue = null;
+                //DecimalValue = decimalVal;
+                OnDecimalValuePropertyChange(this,
+                    new DependencyPropertyChangedEventArgs(DecimalValueProperty, null, decimalVal));
             }
         }
 

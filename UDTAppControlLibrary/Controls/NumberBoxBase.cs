@@ -81,6 +81,7 @@ namespace UDTAppControlLibrary.Controls
             updateTextBox();
 
             base.OnApplyTemplate();
+
         }
 
         virtual protected void setParsedNumber(dynamic value)

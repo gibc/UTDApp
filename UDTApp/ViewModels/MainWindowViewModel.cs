@@ -451,6 +451,7 @@ namespace UDTApp.ViewModels
                     master.validationChangedEvent += projectValidationChanged;
                     master.dataChangeEvent += projectDataChanged;
                     //projectDataModified = false;
+                    UDTDataSet.dbProvider = new DbProvider(master.dbType, master.serverName);
 
                     //Navigate("DataEditView");
                     if (dataSetVisible)
@@ -561,8 +562,25 @@ namespace UDTApp.ViewModels
                 }
             }
         }
+
         private void deleteProject()
         {
+            if (UDTXml.UDTXmlData.SchemaData != null && UDTXml.UDTXmlData.SchemaData.Count > 0)
+            {
+                UDTData master = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
+                if (!UDTDataSet.udtDataSet.isDatabaseEmpty(master, projectName))
+                {
+                    MessageBox.Show(
+                        string.Format("To prevent lose of critial data, before deleting the {0} project please review and delete the data currently stored the project.", projectName),
+                        "Delete Project?", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                    return;
+                }
+            }
+            else
+            {
+                MessageBox.Show("Error: deleteProject called with no schema currently loaded.");
+            }
+
             if (MessageBox.Show(
                 string.Format("Are you SURE you want to PERMANENTLY delete the '{0}' project and ALL related files?", projectName),
                 "Delete Project?", MessageBoxButton.OKCancel, MessageBoxImage.Exclamation) == MessageBoxResult.OK)

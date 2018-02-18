@@ -141,10 +141,13 @@ namespace UDTAppControlLibrary.Controls
                 NumberDefault = null;
                 NumberDefault = defalutVal;
             }
+
             else if (numberVal != null && numberVal != parsedNumber)
             {
-                NumberValue = null;
-                NumberValue = numberVal;
+                //NumberValue = null;
+                //NumberValue = numberVal;
+                NumberValuePropertyChange(this, 
+                    new DependencyPropertyChangedEventArgs(NumberValueProperty, null, numberVal));
             }
         }
 

@@ -104,6 +104,7 @@ namespace UDTApp.Models
                     return false;
                 }
 
+                // remote db must exist before project in created
                 UDTData master = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
                 if (!string.IsNullOrEmpty(master.serverName)) return true;
 
@@ -163,22 +164,16 @@ namespace UDTApp.Models
             }
         }
 
-
         private void createSQLDatabase(string DBName)
         {
 
-            //using (SqlConnection conn = new SqlConnection())
+            // sqlite db created on first connection
             if (UDTDataSet.dbProvider.dbType == DBType.sqlLite) return;
-
-            // for remote database to check if exists just try to connect so connection to 
-            //      master DB not required (only connections to existing DBs allowed)
 
             using (DbConnection conn = UDTDataSet.dbProvider.Conection)
             {
-                // if this is a remote db or if the database already exits we should be
-                // able to connect to it but long time out on local DB
-                // query on master is much faster
                 UDTData mastr = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
+                // if remote db must exits before project is created
                 if (!string.IsNullOrEmpty(mastr.serverName))
                 {
                     conn.ConnectionString = UDTDataSet.dbProvider.ConnectionString;
@@ -194,20 +189,20 @@ namespace UDTApp.Models
                     }
                 }
             
-                // this must be database on localDb so get folder for mdf files
-                string dbPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-                string dataFolder = dbPath + "\\UdtLocalDb";
+                // must be sql server database on localDb so get folder for mdf files
+                string dataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\UdtLocalDb";
                 if (!Directory.Exists(dataFolder))
                 {
-                    Directory.CreateDirectory(dbPath);
+                    Directory.CreateDirectory(dataFolder);
                 }
 
+                // test if db exits and create in db folder if not
                 conn.ConnectionString = UDTDataSet.dbProvider.MasterCatalogConnnectionString;
                 DbCommand cmd = UDTDataSet.dbProvider.GetCommand(
                     string.Format("select count(*) from (select * from sys.databases where name = '{0}') rows", DBName)
                     );
 
-                // query masted DB to see if database exits
+                // query master DB to see if database exits
                 cmd.Connection = conn;
                 conn.Open();
                 try
@@ -218,7 +213,7 @@ namespace UDTApp.Models
                         // if database does not exits, create in specified folder
                         cmd.CommandTimeout = 300; //create database foo on(name= 'foo', filename= 'c:\DBs\foo.mdf')
                         cmd.CommandText = string.Format("create database {1} on(name= '{1}', filename= '{0}')", 
-                            string.Format("{0}\\{1}.mdf", dbPath, DBName), 
+                            string.Format("{0}\\{1}.mdf", dataFolder, DBName), 
                             DBName); 
                         cmd.ExecuteNonQuery();
                     }
@@ -517,6 +512,8 @@ namespace UDTApp.Models
 
         public bool childRowsEmpty(UDTData dataItem)
         {
+            if (dataItem.ParentColumnNames == null || dataItem.ParentColumnNames.Count <= 0) return true;
+
             bool retVal = true;
             string sqlTxt = string.Format("SELECT {0} FROM {1} WHERE {0} IS NOT NULL", 
                 dataItem.parentObj.unEditedName, dataItem.unEditedName);
@@ -544,6 +541,24 @@ namespace UDTApp.Models
                 }
             }
             return retVal;
+        }
+
+        private bool dbEmpty(UDTData table, string dbName)
+        {
+            foreach (UDTData chTbl in table.tableData)
+            {
+                if (!dbEmpty(chTbl, dbName)) return false;
+            }
+
+            if (!isTableEmpty(table, dbName))
+                return false;
+            else
+                return true;
+        }
+
+        public bool isDatabaseEmpty(UDTData master, string dbName)
+        {
+            return dbEmpty(master, dbName);
         }
 
         public bool isTableEmpty(UDTData dataItem, string dbName)
@@ -606,7 +621,9 @@ namespace UDTApp.Models
                     conn.Close();
                 }
             }
-            if (!retVal)
+
+            // if data rows are empty, check fornien key (child) rows
+            if (retVal)
                 return childRowsEmpty(dataItem);
             return retVal;
         }
@@ -853,6 +870,8 @@ namespace UDTApp.Models
 
         private void columnChanged(object sender, DataColumnChangeEventArgs e)
         {
+            //if (e.ProposedValue == e.Row[e.Column.ColumnName]) return;
+
             IsModified = true;
             if (dataChangeEvent != null) dataChangeEvent();
         }
@@ -1017,7 +1036,9 @@ namespace UDTApp.Models
                 {
                     conn.Open();
                     reader = cmd.ExecuteReader();
+                    dataTable.RowChanged -= rowChanged;
                     dataTable.Load(reader);
+                    dataTable.RowChanged += rowChanged;
                     foreach (UDTData childItem in dataItem.tableData)
                     {
                         readTable(dataSet, childItem, dbName, dataItem.Name);

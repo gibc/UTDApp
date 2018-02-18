@@ -1058,20 +1058,22 @@ namespace UDTApp.ViewModels
         {
             DataView dv = null;
 
-            if(parentId == Guid.Empty)
+            if(parentId == Guid.Empty && dataItem.ParentColumnNames.Count == 0)
             {
-                dv = new DataView(UDTDataSet.udtDataSet.DataSet.Tables[dataItem.Name]);
+                // if this is top level table, return all rows
+                dv = new DataView(UDTDataSet.udtDataSet.DataSet.Tables[dataItem.Name]);     
             }
             else if (UDTDataSet.udtDataSet.DataSet.Tables[dataItem.Name].Rows.Count > 0)
             {
+                // if child table that has rows, return rows that match parent row id
                 DataTable childTbl = UDTDataSet.udtDataSet.DataSet.Tables[dataItem.Name];
                 string filter = string.Format("{0} = '{1}'", dataItem.parentObj.Name, parentId);
-                //string filter = string.Format("{0} = '{1}'", parentTableName, parentId);
                 dv = new DataView(childTbl,
                     filter, "", DataViewRowState.CurrentRows);
             }
             else
             {
+                // else return empty dataset
                 dv = new DataView();
                 dv.Table = UDTDataSet.udtDataSet.DataSet.Tables[dataItem.Name];
             }
@@ -1085,59 +1087,6 @@ namespace UDTApp.ViewModels
             return dv;
         }
 
-        //public void DisplayTable(UDTData dataItem)
-        //{
-        //    parentId = parentId;
-        //    //currentDataItem = dataItem;
-        //    //updateChildButtons(dataItem);
-        //    //SelectedIndex = 0;
-        //    //SelectedItem = null;
-        //    //return;
-
-        //    if (parentGrid != null)
-        //    { 
-        //        parentGrid.parentId = parentGrid.parentId;
-        //        //parentGrid.raiseCanExecuteChanged();
-        //    }
-
-        //    //if (SelectedItem != null) parentIds.Push( (Guid)SelectedItem["Id"]);
-        //    //else parentIds.Push(Guid.Empty);
-
-        //    //if (dataItem.parentObj != null)
-        //    //{
-        //    //    DataTable childTbl = UDTDataSet.udtDataSet.DataSet.Tables[dataItem.Name];
-        //    //    DataView dv;
-        //    //    if (childTbl.Rows.Count > 0)
-        //    //    {
-        //    //        string filter = string.Format("{0} = '{1}'", currentDataItem.Name, SelectedItem["Id"]);
-        //    //        dv = new DataView(childTbl,
-        //    //            filter, "", DataViewRowState.CurrentRows);
-        //    //    }
-        //    //    else
-        //    //    {
-        //    //        dv = new DataView();
-        //    //        dv.Table = childTbl;
-        //    //    }
-        //    //    gridData = dv;
-        //    //}
-        //    //else
-        //    //    gridData = new DataView(UDTDataSet.udtDataSet.DataSet.Tables[dataItem.Name]);
-
-        //    //if (SelectedItem != null)
-        //    //    gridData = getGridData(dataItem, (Guid)SelectedItem["Id"]);
-        //    //else
-        //    //    gridData = getGridData(dataItem, Guid.Empty);
-
-        //    //gridData = getGridData(dataItem, parentId);
-
-        //    currentDataItem = dataItem;
-
-        //    updateChildButtons(dataItem);
-
-        //    SelectedIndex = 0;
-        //    SelectedItem = null;
-
-        //}
 
         private Guid _parentId = Guid.Empty;
         public Guid parentId
@@ -1158,7 +1107,6 @@ namespace UDTApp.ViewModels
                 //    gridData = getGridData(parentGrid.currentDataItem.Name, currentDataItem, parentId);
 
                 gridData = getGridData(currentDataItem, parentId);
-
 
             }
         }
