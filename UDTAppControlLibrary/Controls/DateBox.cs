@@ -227,8 +227,10 @@ namespace UDTAppControlLibrary.Controls
             }
             else if (dateVal != null && dateVal != parsedNumber)
             {
-                DateTimeValue = null;
-                DateTimeValue = dateVal;
+                //DateTimeValue = null;
+                //DateTimeValue = dateVal;
+                DateTimeValuePropertyChange(this, 
+                    new DependencyPropertyChangedEventArgs(DateTimeValueProperty, null, dateVal));
             }
         }
 

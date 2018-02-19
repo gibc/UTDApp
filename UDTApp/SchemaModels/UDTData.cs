@@ -933,6 +933,9 @@ namespace UDTApp.SchemaModels
                 DataTable tb = UDTDataSet.udtDataSet.DataSet.Tables[dataItem.unEditedName];
                 if (tb.Rows.Count <= 0) return true;
 
+                // table is not empty if any data cols not null AND if id cols for this parent table are not null
+
+                // check all data cols
                 foreach (UDTBase col in dataItem.savColumnData)
                 {
                     if (!tb.Columns.Contains(col.Name)) continue;
@@ -943,16 +946,16 @@ namespace UDTApp.SchemaModels
                     {
                         rows = rows.Where(r => !string.IsNullOrEmpty((string)r[col.unEditedName]));
                     }
-                    // if we dont have non null data columns, check if any parent column id field not null
-                    if (!rows.Any() && dataItem.parentObj.ParentColumnNames != null 
-                        && dataItem.parentObj.ParentColumnNames.Count > 0)
+                    // if we have non null data column, check if this is child table and
+                    // any parent column id field not null
+                    if (rows.Any() && dataItem.ParentColumnNames != null 
+                        && dataItem.ParentColumnNames.Count > 0)
                     {
                         rows = rows.Where(r => r[dataItem.parentObj.unEditedName] != DBNull.Value);
-                        if(rows.Any()) return false;
+                        return !rows.Any();
                     }
-                    if (rows.Any()) return false;
                 }
-                // if all data columns (not id columns) are null or id columns for this parent are null, 
+                // if all data columns are null table is empty
                 return true;
             }
             else
@@ -1118,11 +1121,6 @@ namespace UDTApp.SchemaModels
             // can't remove top, database obj
             if (parentObj == null) return;
 
-            // don't remove obj if it or items lower in tree have data in database
-            //if (!isTreeBranchEmpty(parentObj, this)) return;
-
-            // remove only this item and items below this item in the obj tree
-            //removeItem(parentObj, this);
             if(this is UDTData)
             {
                 // check if this table is empty or has rows where parent column field is not null

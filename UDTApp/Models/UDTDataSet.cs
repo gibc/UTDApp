@@ -512,7 +512,7 @@ namespace UDTApp.Models
 
         public bool childRowsEmpty(UDTData dataItem)
         {
-            if (dataItem.ParentColumnNames == null || dataItem.ParentColumnNames.Count <= 0) return true;
+            if (dataItem.ParentColumnNames == null || dataItem.ParentColumnNames.Count <= 0) return false;
 
             bool retVal = true;
             string sqlTxt = string.Format("SELECT {0} FROM {1} WHERE {0} IS NOT NULL", 
@@ -596,14 +596,14 @@ namespace UDTApp.Models
                 conn.Open();
                 try
                 {
-                    if (UDTDataSet.dbProvider.dbType == DBType.sqlLite)
-                    {
-                        DbDataReader reader = UDTDataSet.dbProvider.Reader;
-                        reader = cmd.ExecuteReader();
-                        retVal = !reader.HasRows;
-                        reader.Close();
-                    }
-                    else
+                    //if (UDTDataSet.dbProvider.dbType == DBType.sqlLite)
+                    //{
+                    //    DbDataReader reader = UDTDataSet.dbProvider.Reader;
+                    //    reader = cmd.ExecuteReader();
+                    //    retVal = !reader.HasRows;
+                    //    reader.Close();
+                    //}
+                    //else
                     {
                         DbDataReader reader = UDTDataSet.dbProvider.Reader;
                         reader = cmd.ExecuteReader();
@@ -622,8 +622,8 @@ namespace UDTApp.Models
                 }
             }
 
-            // if data rows are empty, check fornien key (child) rows
-            if (retVal)
+            // if data rows are not empty, check fornien key (child) rows if this is child table
+            if (!retVal)
                 return childRowsEmpty(dataItem);
             return retVal;
         }
