@@ -103,7 +103,7 @@ namespace UDTApp.ViewModels
                 // also set epanded grid views parent id
                 dataEditGrid.parentId = value;
 
-                DataTable childTbl = UDTDataSet.udtDataSet.DataSet.Tables[childDef.Name];
+                DataTable childTbl = DBModel.Service.DataSet.Tables[childDef.Name];
                 DataView dv;
                 if (childTbl.Rows.Count > 0 && _parentId != Guid.Empty  && parentColName.Length > 0)
                 {
@@ -145,7 +145,7 @@ namespace UDTApp.ViewModels
         private bool canExecutNavBtn()
         {
             if( childDef.parentObj != null && parentId == Guid.Empty) return false;
-            return !UDTDataSet.udtDataSet.HasEditErrors;
+            return !DBModel.Service.HasEditErrors;
         }
 
         public void createColumns(System.Windows.Controls.DataGridAutoGeneratingColumnEventArgs e)
@@ -592,7 +592,7 @@ namespace UDTApp.ViewModels
             if (UDTXml.UDTXmlData.SchemaData == null || UDTXml.UDTXmlData.SchemaData.Count <= 0)
                 return;
             UDTData curentSchem = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
-            if (UDTDataSet.udtDataSet.DataSet == null || curentSchem.Name != UDTDataSet.udtDataSet.DataSet.DataSetName)
+            if (DBModel.Service.DataSet == null || curentSchem.Name != DBModel.Service.DataSet.DataSetName)
                 loadDataSet();
 
             //    UDTDataSet.udtDataSet.readDatabase(UDTXml.UDTXmlData.SchemaData[0] as UDTData);
@@ -622,9 +622,9 @@ namespace UDTApp.ViewModels
         public void loadDataSet()
         {
             // load database from currently loaded schema
- 
-            UDTDataSet.udtDataSet.readDatabase(UDTXml.UDTXmlData.SchemaData[0] as UDTData);
-            UDTDataSet.udtDataSet.IsModified = false;
+
+            DBModel.Service.readDatabase(UDTXml.UDTXmlData.SchemaData[0] as UDTData);
+            DBModel.Service.IsModified = false;
 
             loadDataGrid();
 
@@ -851,7 +851,7 @@ namespace UDTApp.ViewModels
 
         private void updateDataset()
         {
-            UDTDataSet.udtDataSet.saveDataset();
+            DBModel.Service.saveDataset();
         }
 
         private void listBoxResize(SizeChangedEventArgs e)
@@ -894,7 +894,7 @@ namespace UDTApp.ViewModels
 
         private bool canAddRow()
         {
-            if (UDTDataSet.udtDataSet.HasEditErrors) return false;
+            if (DBModel.Service.HasEditErrors) return false;
             if (currentDataItem.parentObj == null) return true;
             if (currentDataItem.parentObj.TypeName == UDTTypeName.DataBase) return true;
             return (parentId != null && parentId != Guid.Empty);
@@ -1061,12 +1061,12 @@ namespace UDTApp.ViewModels
             if(parentId == Guid.Empty && dataItem.ParentColumnNames.Count == 0)
             {
                 // if this is top level table, return all rows
-                dv = new DataView(UDTDataSet.udtDataSet.DataSet.Tables[dataItem.Name]);     
+                dv = new DataView(DBModel.Service.DataSet.Tables[dataItem.Name]);     
             }
-            else if (UDTDataSet.udtDataSet.DataSet.Tables[dataItem.Name].Rows.Count > 0)
+            else if (DBModel.Service.DataSet.Tables[dataItem.Name].Rows.Count > 0)
             {
                 // if child table that has rows, return rows that match parent row id
-                DataTable childTbl = UDTDataSet.udtDataSet.DataSet.Tables[dataItem.Name];
+                DataTable childTbl = DBModel.Service.DataSet.Tables[dataItem.Name];
                 string filter = string.Format("{0} = '{1}'", dataItem.parentObj.Name, parentId);
                 dv = new DataView(childTbl,
                     filter, "", DataViewRowState.CurrentRows);
@@ -1075,7 +1075,7 @@ namespace UDTApp.ViewModels
             {
                 // else return empty dataset
                 dv = new DataView();
-                dv.Table = UDTDataSet.udtDataSet.DataSet.Tables[dataItem.Name];
+                dv.Table = DBModel.Service.DataSet.Tables[dataItem.Name];
             }
 
             if (dv != null && dv.Count > 0)
@@ -1191,7 +1191,7 @@ namespace UDTApp.ViewModels
         public bool canClick()
         {
             if( SelectedItem == null ) return false;
-            return !UDTDataSet.udtDataSet.HasEditErrors;
+            return !DBModel.Service.HasEditErrors;
         }
 
         //private void childBtnClick(UDTData dataItem)
@@ -1424,13 +1424,13 @@ namespace UDTApp.ViewModels
             foreach(UDTDataBoxBase editBox in editBoxes)
             {
                 if(editBox.HasErrors)
-                { 
-                    UDTDataSet.udtDataSet.validationChange(true);
+                {
+                    DBModel.Service.validationChange(true);
                     AddRowCommand.RaiseCanExecuteChanged();
                     //return;
                 }
             }
-            UDTDataSet.udtDataSet.validationChange(false);
+            DBModel.Service.validationChange(false);
             AddRowCommand.RaiseCanExecuteChanged();
         }
 

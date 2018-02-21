@@ -247,7 +247,7 @@ namespace UDTApp.ViewModels
             {
                 if (findDataSetError())
                     return Visibility.Visible;
-                else if (UDTDataSet.udtDataSet.IsModified)
+                else if (DBModel.Service != null && DBModel.Service.IsModified)
                     return Visibility.Visible;
                 else return Visibility.Collapsed;
             }
@@ -306,7 +306,7 @@ namespace UDTApp.ViewModels
             {
                 if (findDataSetError())
                     return projectSatausEnum.error;
-                else if (UDTDataSet.udtDataSet.IsModified)
+                else if (DBModel.Service != null && DBModel.Service.IsModified)
                     return projectSatausEnum.modifed;
                 return projectSatausEnum.normal;
             }
@@ -314,7 +314,7 @@ namespace UDTApp.ViewModels
             {
                 if (findDataSetError())
                     value = projectSatausEnum.error;
-                else if (UDTDataSet.udtDataSet.IsModified)
+                else if (DBModel.Service.IsModified)
                     value = projectSatausEnum.modifed;
                 else value = projectSatausEnum.normal;
 
@@ -347,7 +347,7 @@ namespace UDTApp.ViewModels
             {
                 if (findDataSetError())
                     return new SolidColorBrush(Colors.Red);
-                else if (UDTDataSet.udtDataSet.IsModified)
+                else if (DBModel.Service != null && DBModel.Service.IsModified)
                     return new SolidColorBrush(Colors.DarkOrange);
                 else return new SolidColorBrush(Colors.Black);
             }
@@ -389,8 +389,8 @@ namespace UDTApp.ViewModels
                     List<UDTBase> schema = UDTXml.UDTXmlData.readFromXml();
                     if (schema == null) return;
                 }
-                UDTDataSet.udtDataSet.dataChangeEvent += dataChanged;
-                UDTDataSet.udtDataSet.validationChangedEvent += dataValidationChanged;
+                DBModel.Service.dataChangeEvent += dataChanged;
+                DBModel.Service.validationChangedEvent += dataValidationChanged;
                 Navigate("DataEditView");
             }
             catch (Exception ex)
@@ -434,24 +434,29 @@ namespace UDTApp.ViewModels
         {
             try
             {
-
                 List<UDTBase> schema = UDTXml.UDTXmlData.openProject(filePath);
                 if (schema != null)
                 {
                     projectName = schema[0].Name;
                     UDTXml.UDTXmlData.SchemaData = schema;
 
-                    AppSettings.appSettings.addFile(filePath);
-                    UDTDataSet.udtDataSet.dataChangeEvent -= dataChanged;
-                    UDTDataSet.udtDataSet.dataChangeEvent += dataChanged;
-                    UDTDataSet.udtDataSet.validationChangedEvent -= dataValidationChanged;
-                    UDTDataSet.udtDataSet.validationChangedEvent += dataValidationChanged;
+                    new DBModel(schema[0] as UDTData);
 
-                    UDTData master = schema[0] as UDTData;
-                    master.validationChangedEvent += projectValidationChanged;
-                    master.dataChangeEvent += projectDataChanged;
+                    AppSettings.appSettings.addFile(filePath);
+                    DBModel.Service.dataChangeEvent -= dataChanged;
+                    DBModel.Service.dataChangeEvent += dataChanged;
+                    DBModel.Service.validationChangedEvent -= dataValidationChanged;
+                    DBModel.Service.validationChangedEvent += dataValidationChanged;
+
+                    //UDTData master = schema[0] as UDTData;
+
+                    DBModel.Service.dataChangeEvent += projectValidationChanged;
+
+                    DBModel.Service.dbSchema.validationChangedEvent += projectValidationChanged;
+                    //master.dataChangeEvent += projectDataChanged;
                     //projectDataModified = false;
-                    UDTDataSet.dbProvider = new DbProvider(master.dbType, master.serverName);
+                    // TBD: put back
+                    //DBModel.dbProvider = new DbProvider(master.dbType, master.serverName);
 
                     //Navigate("DataEditView");
                     if (dataSetVisible)
@@ -531,7 +536,9 @@ namespace UDTApp.ViewModels
         {
             projectName = "none";
             UDTXml.UDTXmlData.SchemaData.Clear();
-            UDTDataSet.udtDataSet.DataSet = null;
+            //UDTDataSet.udtDataSet.DataSet = null;
+            // TBD: take out
+            DBModel.Service.DataSet = null;
             raiseDataSetChangeEvents();
             raiseProjectChangeEvents();
             ViewDatasetCommand.RaiseCanExecuteChanged();
@@ -568,7 +575,7 @@ namespace UDTApp.ViewModels
             if (UDTXml.UDTXmlData.SchemaData != null && UDTXml.UDTXmlData.SchemaData.Count > 0)
             {
                 UDTData master = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
-                if (!UDTDataSet.udtDataSet.isDatabaseEmpty(master, projectName))
+                if (!DBModel.Service.isDatabaseEmpty(master, projectName))
                 {
                     MessageBox.Show(
                         string.Format("To prevent lose of critial data, before deleting the {0} project please review and delete the data currently stored the project.", projectName),
@@ -586,7 +593,7 @@ namespace UDTApp.ViewModels
                 "Delete Project?", MessageBoxButton.OKCancel, MessageBoxImage.Exclamation) == MessageBoxResult.OK)
             {
 
-                UDTDataSet.udtDataSet.deleteSQLDatabase(projectName);
+                DBModel.Service.deleteSQLDatabase(projectName);
                 // TBD:  delete the project file, clear the design and dataset views
                 if (AppSettings.appSettings.autoOpenFile != null && 
                     File.Exists(AppSettings.appSettings.autoOpenFile.filePath))
@@ -675,7 +682,7 @@ namespace UDTApp.ViewModels
                     if (MessageBox.Show(msg, 
                         "Dataset Changes", MessageBoxButton.OKCancel, MessageBoxImage.Question) == MessageBoxResult.OK)
                     {
-                        UDTDataSet.udtDataSet.saveDataset();
+                        DBModel.Service.saveDataset();
                     }
                     else if (saveType != SaveType.appExit)
                     {
@@ -770,8 +777,8 @@ namespace UDTApp.ViewModels
 
         private void discardDataSetChanges()
         {
-            UDTDataSet.udtDataSet.DataSet.RejectChanges();
-            UDTDataSet.udtDataSet.IsModified = false;
+            DBModel.Service.DataSet.RejectChanges();
+            DBModel.Service.IsModified = false;
             DataEditViewModel.dataEditViewModel.loadDataGrid();
             raiseDataSetChangeEvents();        
         }
@@ -802,7 +809,9 @@ namespace UDTApp.ViewModels
                 try
                 {
                     // update or create database from saved xml definition
-                    UDTDataSet.udtDataSet.createDatabase(UDTXml.UDTXmlData.SchemaData[0] as UDTData);
+                    // TBD: put back
+                    //UDTDataSet.udtDataSet.createDatabase(UDTXml.UDTXmlData.SchemaData[0] as UDTData);
+                    DBModel.Service.createDatabase();
                     UDTData master = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
                     master.setAllSavedProps();
                     // create DataEditView if not already created
@@ -872,7 +881,7 @@ namespace UDTApp.ViewModels
 
         private void saveData()
         {
-            UDTDataSet.udtDataSet.saveDataset();
+            DBModel.Service.saveDataset();
         }
 
         private void showAbout()
@@ -948,9 +957,9 @@ namespace UDTApp.ViewModels
         private bool canSaveData()
         {
             if (currentView != "DataEditView") return false;
-            else if (UDTDataSet.udtDataSet.DataSet == null) return false;
-            else if (UDTDataSet.udtDataSet.HasEditErrors) return false;
-            else return UDTDataSet.udtDataSet.IsModified;
+            else if (DBModel.Service.DataSet == null) return false;
+            else if (DBModel.Service.HasEditErrors) return false;
+            else return DBModel.Service.IsModified;
         }
 
         private void newUdtProject(DBType dbType, LoginViewModel logIn = null)
@@ -1013,12 +1022,6 @@ namespace UDTApp.ViewModels
         {
             try
             {
-                //saveProject();
-                //NewProject win = new NewProject();
-                //win.ShowDialog();
-                //if ((bool)win.DialogResult)
-                //{
-                //    NewProjectViewModel dc = win.DataContext as NewProjectViewModel;
                 projectName = newProjectViewModel.ProjectName;
 
                 AppSettings.appSettings.autoOpenFile = null;
@@ -1037,16 +1040,22 @@ namespace UDTApp.ViewModels
                         );
                 }
 
+
                 UDTData master = newSchmea[0] as UDTData;
-                    master.validationChangedEvent += projectValidationChanged;
-                    master.dataChangeEvent += projectDataChanged;
-                    viewDesign();
-                    RaisePropertyChanged("projectStatus");
-                    RaisePropertyChanged("projectStatusVisibility");
-                    RaisePropertyChanged("projectStatusColor");
-                    RaisePropertyChanged("saveRemoveButtonVisibility");
-                    DeleteCommand.RaiseCanExecuteChanged();
-                    CloseCommand.RaiseCanExecuteChanged();
+
+                // TBD: take out?
+                new DBModel(master);
+                DBModel.Service.dataChangeEvent += projectValidationChanged;
+
+                master.validationChangedEvent += projectValidationChanged;
+                //master.dataChangeEvent += projectDataChanged;
+                viewDesign();
+                RaisePropertyChanged("projectStatus");
+                RaisePropertyChanged("projectStatusVisibility");
+                RaisePropertyChanged("projectStatusColor");
+                RaisePropertyChanged("saveRemoveButtonVisibility");
+                DeleteCommand.RaiseCanExecuteChanged();
+                CloseCommand.RaiseCanExecuteChanged();
                 
             }
             catch (Exception ex)

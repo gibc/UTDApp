@@ -489,7 +489,7 @@ namespace UDTApp.Models
                     }
                     else
                     {
-                        DbDataReader reader = UDTDataSet.dbProvider.Reader;
+                        DbDataReader reader = dbProvider.Reader;
                         reader = cmd.ExecuteReader();
                         retVal = !reader.HasRows;
                         reader.Close();
@@ -1233,6 +1233,87 @@ namespace UDTApp.Models
                 {
                 }
             }
+        }
+
+        public bool canRemoveTable(UDTData masterItem, UDTData dataItem)
+        {
+            if (string.IsNullOrEmpty(dataItem.savName)) return true;
+            if (!dataBaseExists(masterItem.dbType, masterItem.Name)) return true;
+            if (udtDataSet.DataSet != null)
+            {
+                return isDataSetTableEmpty(masterItem, dataItem);
+            }
+            else
+            {
+                dbProvider = new DbProvider(masterItem.dbType, masterItem.serverName);
+                return udtDataSet.isTableEmpty(dataItem, masterItem.Name);
+            }
+        }
+
+        public bool canRemoveCol(UDTData masterItem, UDTData tableItem, UDTBase colItem)
+        {
+            if (string.IsNullOrEmpty(tableItem.savName)) return true;
+            if (udtDataSet.DataSet != null)
+            {
+                return isDataSetColumnEmpty(tableItem, colItem);
+            }
+            else
+            {
+                UDTDataSet.dbProvider = new DbProvider(masterItem.dbType, masterItem.serverName);
+                return UDTDataSet.udtDataSet.isColumnEmpty(tableItem.Name, colItem.Name, masterItem.Name);
+            }
+        }
+
+        private bool isDataSetColumnEmpty(UDTData tableItem, UDTBase colItem)
+        {
+            DataTable tb = UDTDataSet.udtDataSet.DataSet.Tables[tableItem.Name];
+            if (!tb.Columns.Contains(colItem.Name)) return true;
+            if (colItem.TypeName == UDTTypeName.Text)
+            {
+                EnumerableRowCollection<DataRow> rows = tb.AsEnumerable().Where(r => r[colItem.Name] != DBNull.Value);
+                if (rows.Any())
+                    rows = rows.Where(r => !string.IsNullOrEmpty((string)r[colItem.Name]));
+                return !rows.Any();
+            }
+            else
+            {
+                EnumerableRowCollection<DataRow> rows = tb.AsEnumerable().Where(r => r[colItem.Name] != DBNull.Value);
+                return !rows.Any();
+            }
+        }
+
+        private bool isDataSetTableEmpty(UDTData masterItem, UDTData dataItem)
+        {
+            if (!udtDataSet.DataSet.Tables.Contains(dataItem.unEditedName)) return true;
+            if (dataItem.savColumnData == null || dataItem.savColumnData.Count <= 0) return true;
+
+            DataTable tb = udtDataSet.DataSet.Tables[dataItem.unEditedName];
+            if (tb.Rows.Count <= 0) return true;
+
+            // table is not empty if any data cols not null AND if id cols for this parent table are not null
+
+            // check all data cols
+            foreach (UDTBase col in dataItem.savColumnData)
+            {
+                if (!tb.Columns.Contains(col.Name)) continue;
+
+                EnumerableRowCollection<DataRow> rows = tb.AsEnumerable().
+                    Where(r => r[col.Name] != DBNull.Value);
+                if (rows.Any() && col.TypeName == UDTTypeName.Text)
+                {
+                    rows = rows.Where(r => !string.IsNullOrEmpty((string)r[col.unEditedName]));
+                }
+                // if we have non null data column, check if this is child table and
+                // any parent column id field not null
+                if (rows.Any() && dataItem.ParentColumnNames != null
+                    && dataItem.ParentColumnNames.Count > 0)
+                {
+                    rows = rows.Where(r => r[dataItem.parentObj.unEditedName] != DBNull.Value);
+                    return !rows.Any();
+                }
+            }
+            // if all data columns are null table is empty
+            return true;
         }
     }
 }

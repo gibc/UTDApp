@@ -921,78 +921,78 @@ namespace UDTApp.SchemaModels
             }
         }
 
-        private bool isTableEmpty(UDTData dataItem)
-        {
-            if (!UDTDataSet.udtDataSet.dataBaseExists(MasterGroup.dbType, MasterGroup.Name)) return true;
+        //private bool isTableEmpty(UDTData dataItem)
+        //{
+        //    if (!UDTDataSet.udtDataSet.dataBaseExists(MasterGroup.dbType, MasterGroup.Name)) return true;
 
-            if (UDTDataSet.udtDataSet.DataSet != null)
-            {
-                if (!UDTDataSet.udtDataSet.DataSet.Tables.Contains(dataItem.unEditedName)) return true;
-                if (dataItem.savColumnData == null || dataItem.savColumnData.Count <= 0) return true;
+        //    if (UDTDataSet.udtDataSet.DataSet != null)
+        //    {
+        //        if (!UDTDataSet.udtDataSet.DataSet.Tables.Contains(dataItem.unEditedName)) return true;
+        //        if (dataItem.savColumnData == null || dataItem.savColumnData.Count <= 0) return true;
 
-                DataTable tb = UDTDataSet.udtDataSet.DataSet.Tables[dataItem.unEditedName];
-                if (tb.Rows.Count <= 0) return true;
+        //        DataTable tb = UDTDataSet.udtDataSet.DataSet.Tables[dataItem.unEditedName];
+        //        if (tb.Rows.Count <= 0) return true;
 
-                // table is not empty if any data cols not null AND if id cols for this parent table are not null
+        //        // table is not empty if any data cols not null AND if id cols for this parent table are not null
 
-                // check all data cols
-                foreach (UDTBase col in dataItem.savColumnData)
-                {
-                    if (!tb.Columns.Contains(col.Name)) continue;
+        //        // check all data cols
+        //        foreach (UDTBase col in dataItem.savColumnData)
+        //        {
+        //            if (!tb.Columns.Contains(col.Name)) continue;
 
-                    EnumerableRowCollection<DataRow> rows = tb.AsEnumerable().
-                        Where(r => r[col.Name] != DBNull.Value);
-                    if (rows.Any() && col.TypeName == UDTTypeName.Text)
-                    {
-                        rows = rows.Where(r => !string.IsNullOrEmpty((string)r[col.unEditedName]));
-                    }
-                    // if we have non null data column, check if this is child table and
-                    // any parent column id field not null
-                    if (rows.Any() && dataItem.ParentColumnNames != null 
-                        && dataItem.ParentColumnNames.Count > 0)
-                    {
-                        rows = rows.Where(r => r[dataItem.parentObj.unEditedName] != DBNull.Value);
-                        return !rows.Any();
-                    }
-                }
-                // if all data columns are null table is empty
-                return true;
-            }
-            else
-            {
-                UDTDataSet.dbProvider = new DbProvider(MasterGroup.dbType, MasterGroup.serverName);
-                return UDTDataSet.udtDataSet.isTableEmpty(dataItem, MasterGroup.Name);
-            }
+        //            EnumerableRowCollection<DataRow> rows = tb.AsEnumerable().
+        //                Where(r => r[col.Name] != DBNull.Value);
+        //            if (rows.Any() && col.TypeName == UDTTypeName.Text)
+        //            {
+        //                rows = rows.Where(r => !string.IsNullOrEmpty((string)r[col.unEditedName]));
+        //            }
+        //            // if we have non null data column, check if this is child table and
+        //            // any parent column id field not null
+        //            if (rows.Any() && dataItem.ParentColumnNames != null 
+        //                && dataItem.ParentColumnNames.Count > 0)
+        //            {
+        //                rows = rows.Where(r => r[dataItem.parentObj.unEditedName] != DBNull.Value);
+        //                return !rows.Any();
+        //            }
+        //        }
+        //        // if all data columns are null table is empty
+        //        return true;
+        //    }
+        //    else
+        //    {
+        //        UDTDataSet.dbProvider = new DbProvider(MasterGroup.dbType, MasterGroup.serverName);
+        //        return UDTDataSet.udtDataSet.isTableEmpty(dataItem, MasterGroup.Name);
+        //    }
 
-        }
+        //}
 
-        private bool isColumnEmpty(UDTData dataItem, UDTBase colItem)
-        {
-            if (isTableEmpty(dataItem)) return true;
+        //private bool isColumnEmpty(UDTData dataItem, UDTBase colItem)
+        //{
+        //    if (isTableEmpty(dataItem)) return true;
 
-            if (UDTDataSet.udtDataSet.DataSet != null)
-            {
-                DataTable tb = UDTDataSet.udtDataSet.DataSet.Tables[dataItem.Name];
-                if (!tb.Columns.Contains(colItem.Name)) return true;
-                if (colItem.TypeName == UDTTypeName.Text)
-                {
-                    EnumerableRowCollection<DataRow> rows = tb.AsEnumerable().Where(r => r[colItem.Name] != DBNull.Value);
-                    if (rows.Any())
-                        rows = rows.Where(r => !string.IsNullOrEmpty((string)r[colItem.Name]));
-                    return !rows.Any();
-                }
-                else
-                {
-                    EnumerableRowCollection<DataRow> rows = tb.AsEnumerable().Where(r => r[colItem.Name] != DBNull.Value);
-                    return !rows.Any();
-                }
-            }
-            else
-            {
-                UDTDataSet.dbProvider = new DbProvider(MasterGroup.dbType, MasterGroup.serverName);
-                return UDTDataSet.udtDataSet.isColumnEmpty(dataItem.Name, colItem.Name, MasterGroup.Name);
-            }
-        }
+        //    if (UDTDataSet.udtDataSet.DataSet != null)
+        //    {
+        //        DataTable tb = UDTDataSet.udtDataSet.DataSet.Tables[dataItem.Name];
+        //        if (!tb.Columns.Contains(colItem.Name)) return true;
+        //        if (colItem.TypeName == UDTTypeName.Text)
+        //        {
+        //            EnumerableRowCollection<DataRow> rows = tb.AsEnumerable().Where(r => r[colItem.Name] != DBNull.Value);
+        //            if (rows.Any())
+        //                rows = rows.Where(r => !string.IsNullOrEmpty((string)r[colItem.Name]));
+        //            return !rows.Any();
+        //        }
+        //        else
+        //        {
+        //            EnumerableRowCollection<DataRow> rows = tb.AsEnumerable().Where(r => r[colItem.Name] != DBNull.Value);
+        //            return !rows.Any();
+        //        }
+        //    }
+        //    else
+        //    {
+        //        UDTDataSet.dbProvider = new DbProvider(MasterGroup.dbType, MasterGroup.serverName);
+        //        return UDTDataSet.udtDataSet.isColumnEmpty(dataItem.Name, colItem.Name, MasterGroup.Name);
+        //    }
+        //}
 
         //private bool isTreeBranchEmpty(UDTData data, UDTBase item)
         //{
@@ -1124,7 +1124,7 @@ namespace UDTApp.SchemaModels
             if(this is UDTData)
             {
                 // check if this table is empty or has rows where parent column field is not null
-                if (!isTableEmpty(this as UDTData))
+                if(DBModel.Service.canRemoveTable(MasterGroup, this as UDTData))
                 {
                     MessageBox.Show(
                         string.Format("Review and delete the data stored in the '{0}' group before removing it from the data design.", this.Name),
@@ -1137,7 +1137,8 @@ namespace UDTApp.SchemaModels
             else if(this is UDTBase)
             {
                 // check if this col has data in parent table
-                if (!isColumnEmpty(parentObj, this))
+                //if (!string.IsNullOrEmpty(savName) && !isColumnEmpty(parentObj, this))
+                if(DBModel.Service.canRemoveCol(MasterGroup, parentObj, this))
                 {
                     MessageBox.Show(
                         string.Format("Review and delete the data stored in the '{0}' item before removing it from the data design.", this.Name),

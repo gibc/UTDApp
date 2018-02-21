@@ -198,7 +198,9 @@ namespace UDTApp.ViewModels
             //List<Guid> tableGuids = new List<Guid>();
             //createDBTable(SchemaList[0] as UDTData, SchemaList[0].Name, tableGuids);
 
-            UDTDataSet.udtDataSet.createDatabase(SchemaList[0] as UDTData);
+            //UDTDataSet.udtDataSet.createDatabase(SchemaList[0] as UDTData);
+            // TBD: put back
+            DBModel.Service.createDatabase();
         }
        
 
@@ -348,7 +350,7 @@ namespace UDTApp.ViewModels
             //System.Data.DataSet dataSet = new System.Data.DataSet(SchemaList[0].Name);
             //readTable(dataSet, SchemaList[0] as UDTData, SchemaList[0].Name);
 
-            UDTDataSet.udtDataSet.readDatabase(SchemaList[0] as UDTData);
+            DBModel.Service.readDatabase(SchemaList[0] as UDTData);
         }
 
         DataTable createDataTable(UDTData dataItem)
