@@ -61,7 +61,7 @@ namespace UDTApp.ViewModels
 
             NavigateCommand = new DelegateCommand<string>(Navigate);
             WindowLoadedCommand = new DelegateCommand<Window>(windowLoaded);
-            EditCommand = new DelegateCommand(editProject);
+            //EditCommand = new DelegateCommand(editProject);
             RunCommand = new DelegateCommand(runProject, canRun);
             OpenCommand = new DelegateCommand(openProject);
             SaveCommand = new DelegateCommand(saveProject, canSavePorjext);
@@ -83,7 +83,8 @@ namespace UDTApp.ViewModels
 
         private bool canChangeView()
         {
-            if (UDTXml.UDTXmlData.SchemaData == null || UDTXml.UDTXmlData.SchemaData.Count == 0) return false;
+            //if (UDTXml.UDTXmlData.SchemaData == null || UDTXml.UDTXmlData.SchemaData.Count == 0) return false;
+            if (XMLModel.Service == null) return false;
             return true;
         }
 
@@ -203,27 +204,27 @@ namespace UDTApp.ViewModels
             }
         }
 
-        private void editProject()
-        {
-            try
-            {
-                List<UDTBase> schema = UDTXml.UDTXmlData.readFromXml();
-                if (schema != null)
-                {
-                    UDTData master = schema[0] as UDTData;
-                    master.validationChangedEvent += projectValidationChanged;
-                    master.dataChangeEvent += projectDataChanged;
-                    //projectDataModified = false;
-                    Navigate("PageZero");
-                }
-            }
-            catch (Exception ex)
-            {
-                string msg = string.Format("editProject failed: {0}", ex.Message);
-                UDTApp.Log.Log.LogMessage(msg);
-                MessageBox.Show(msg);
-            }
-        }
+        //private void editProject()
+        //{
+        //    try
+        //    {
+        //        List<UDTBase> schema = UDTXml.UDTXmlData.readFromXml();
+        //        if (schema != null)
+        //        {
+        //            UDTData master = schema[0] as UDTData;
+        //            master.validationChangedEvent += projectValidationChanged;
+        //            master.dataChangeEvent += projectDataChanged;
+        //            //projectDataModified = false;
+        //            Navigate("PageZero");
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        string msg = string.Format("editProject failed: {0}", ex.Message);
+        //        UDTApp.Log.Log.LogMessage(msg);
+        //        MessageBox.Show(msg);
+        //    }
+        //}
 
         private Visibility _projectStatusVisibility = Visibility.Collapsed;
         public Visibility projectStatusVisibility
@@ -384,14 +385,18 @@ namespace UDTApp.ViewModels
         {
             try
             {
-                if (UDTXml.UDTXmlData.SchemaData.Count == 0)
+                //if (UDTXml.UDTXmlData.SchemaData.Count == 0)
+                //{
+                //    List<UDTBase> schema = UDTXml.UDTXmlData.readFromXml();
+                //    if (schema == null) return;
+                //}
+                if (XMLModel.Service.dbSchema != null)
                 {
-                    List<UDTBase> schema = UDTXml.UDTXmlData.readFromXml();
-                    if (schema == null) return;
+                    List<UDTBase> schema = XMLModel.Service.readFromXml();
+                    DBModel.Service.dataChangeEvent += dataChanged;
+                    DBModel.Service.validationChangedEvent += dataValidationChanged;
+                    Navigate("DataEditView");
                 }
-                DBModel.Service.dataChangeEvent += dataChanged;
-                DBModel.Service.validationChangedEvent += dataValidationChanged;
-                Navigate("DataEditView");
             }
             catch (Exception ex)
             {
@@ -404,7 +409,8 @@ namespace UDTApp.ViewModels
 
         private bool canRun()
         {
-            if (UDTXml.UDTXmlData.SchemaData.Count == 0) return true;
+            //if (UDTXml.UDTXmlData.SchemaData.Count == 0) return true;
+            if (XMLModel.Service.dbSchema != null) return true;
             else return currentView != "DataEditView";
         }
 
@@ -434,13 +440,14 @@ namespace UDTApp.ViewModels
         {
             try
             {
-                List<UDTBase> schema = UDTXml.UDTXmlData.openProject(filePath);
+                //List<UDTBase> schema = UDTXml.UDTXmlData.openProject(filePath);
+                List<UDTBase> schema = XMLModel.openProject(filePath);
                 if (schema != null)
                 {
                     projectName = schema[0].Name;
-                    UDTXml.UDTXmlData.SchemaData = schema;
+                    //UDTXml.UDTXmlData.SchemaData = schema;
 
-                    new DBModel(schema[0] as UDTData);
+                    //new DBModel(schema[0] as UDTData);
 
                     AppSettings.appSettings.addFile(filePath);
                     DBModel.Service.dataChangeEvent -= dataChanged;
@@ -448,11 +455,8 @@ namespace UDTApp.ViewModels
                     DBModel.Service.validationChangedEvent -= dataValidationChanged;
                     DBModel.Service.validationChangedEvent += dataValidationChanged;
 
-                    //UDTData master = schema[0] as UDTData;
-
-                    DBModel.Service.dataChangeEvent += projectValidationChanged;
-
-                    DBModel.Service.dbSchema.validationChangedEvent += projectValidationChanged;
+                    XMLModel.Service.dbSchema.dataChangeEvent += projectDataChanged;
+                    XMLModel.Service.dbSchema.validationChangedEvent += projectValidationChanged;
                     //master.dataChangeEvent += projectDataChanged;
                     //projectDataModified = false;
                     // TBD: put back
@@ -535,9 +539,8 @@ namespace UDTApp.ViewModels
         private void closeProjectNoSave()
         {
             projectName = "none";
-            UDTXml.UDTXmlData.SchemaData.Clear();
-            //UDTDataSet.udtDataSet.DataSet = null;
-            // TBD: take out
+            //UDTXml.UDTXmlData.SchemaData.Clear();
+            XMLModel.Service.dbSchema = null;
             DBModel.Service.DataSet = null;
             raiseDataSetChangeEvents();
             raiseProjectChangeEvents();
@@ -572,10 +575,11 @@ namespace UDTApp.ViewModels
 
         private void deleteProject()
         {
-            if (UDTXml.UDTXmlData.SchemaData != null && UDTXml.UDTXmlData.SchemaData.Count > 0)
+            //if (UDTXml.UDTXmlData.SchemaData != null && UDTXml.UDTXmlData.SchemaData.Count > 0)
+            if (XMLModel.Service.dbSchema != null)
             {
-                UDTData master = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
-                if (!DBModel.Service.isDatabaseEmpty(master, projectName))
+                //UDTData master = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
+                if (!DBModel.Service.isDatabaseEmpty())
                 {
                     MessageBox.Show(
                         string.Format("To prevent lose of critial data, before deleting the {0} project please review and delete the data currently stored the project.", projectName),
@@ -759,16 +763,20 @@ namespace UDTApp.ViewModels
                 discardNewProjct();
             else
             {
+                //List<UDTBase> schema =
+                //    UDTXml.UDTXmlData.openProject(AppSettings.appSettings.autoOpenFile.filePath);
                 List<UDTBase> schema =
-                    UDTXml.UDTXmlData.openProject(AppSettings.appSettings.autoOpenFile.filePath);
+                    XMLModel.openProject(AppSettings.appSettings.autoOpenFile.filePath);
                 if (schema != null)
                 {
-                    projectName = schema[0].Name;
-                    UDTXml.UDTXmlData.SchemaData = schema;
-                    UDTData master = schema[0] as UDTData;
-                    master.validationChangedEvent += projectValidationChanged;
-                    master.dataChangeEvent += projectDataChanged;
-                    //projectDataModified = false;
+                    //projectName = schema[0].Name;
+                    projectName = XMLModel.Service.dbSchema.Name;
+                    //UDTXml.UDTXmlData.SchemaData = schema;
+                    //UDTData master = schema[0] as UDTData;
+                    //master.validationChangedEvent += projectValidationChanged;
+                    //master.dataChangeEvent += projectDataChanged;
+                    XMLModel.Service.dbSchema.validationChangedEvent += projectValidationChanged;
+                    XMLModel.Service.dbSchema.dataChangeEvent += projectDataChanged;
                     PageZeroViewModel.viewModel.windowLoaded();
                     raiseProjectChangeEvents();
                 }
@@ -796,24 +804,25 @@ namespace UDTApp.ViewModels
                 System.Windows.Forms.DialogResult res = dlg.ShowDialog();
                 if (res == System.Windows.Forms.DialogResult.OK)
                 {
-                    string filePath = dlg.SelectedPath + "\\" + UDTXml.UDTXmlData.SchemaData[0].Name + ".xml";
+                    //string filePath = dlg.SelectedPath + "\\" + UDTXml.UDTXmlData.SchemaData[0].Name + ".xml";
+                    string filePath = dlg.SelectedPath + "\\" + XMLModel.Service.dbSchema.Name + ".xml";
                     FileSetting fileSetting = new FileSetting() { filePath = filePath, dateTime = DateTime.Now.ToString() };
                     AppSettings.appSettings.autoOpenFile = fileSetting;
                 }
                 else return false; // stop exit, project mods not saved
             }
             // save project
-            if (UDTXml.UDTXmlData.saveToXml(UDTXml.UDTXmlData.SchemaData, 
+            //if (UDTXml.UDTXmlData.saveToXml(UDTXml.UDTXmlData.SchemaData,
+            //    AppSettings.appSettings.autoOpenFile.filePath))
+            if (XMLModel.Service.saveToXml(XMLModel.Service.dbSchema,
                 AppSettings.appSettings.autoOpenFile.filePath))
             {
                 try
                 {
-                    // update or create database from saved xml definition
-                    // TBD: put back
-                    //UDTDataSet.udtDataSet.createDatabase(UDTXml.UDTXmlData.SchemaData[0] as UDTData);
                     DBModel.Service.createDatabase();
-                    UDTData master = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
-                    master.setAllSavedProps();
+                    //UDTData master = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
+                    //master.setAllSavedProps();
+                    XMLModel.Service.dbSchema.setAllSavedProps();
                     // create DataEditView if not already created
                     if (DataEditViewModel.dataEditViewModel == null)
                         _regionManager.AddToRegion("ContentRegion", new DataEditView());
@@ -847,10 +856,12 @@ namespace UDTApp.ViewModels
 
         private void findDesignValidationError()
         {
-            if (UDTXml.UDTXmlData.SchemaData.Count <= 0)
+            //if (UDTXml.UDTXmlData.SchemaData.Count <= 0)
+            //    return;
+            //hasValidationErrors = findValidationError(UDTXml.UDTXmlData.SchemaData[0]);
+            if (XMLModel.Service.dbSchema == null)
                 return;
-            //else return findValidationError(UDTXml.UDTXmlData.SchemaData[0]);
-            hasValidationErrors =  findValidationError(UDTXml.UDTXmlData.SchemaData[0]);
+            hasValidationErrors = findValidationError(XMLModel.Service.dbSchema);
         }
 
         private bool findValidationError(UDTBase udtItem)
@@ -1026,7 +1037,8 @@ namespace UDTApp.ViewModels
 
                 AppSettings.appSettings.autoOpenFile = null;
 
-                List<UDTBase> newSchmea = UDTXml.UDTXmlData.newProject
+                //List<UDTBase> newSchmea = UDTXml.UDTXmlData.newProject
+                XMLModel.newProject
                     (newProjectViewModel.ProjectName, 
                     newProjectViewModel.dbType, 
                     newProjectViewModel.sqlServerUrl);
@@ -1041,14 +1053,12 @@ namespace UDTApp.ViewModels
                 }
 
 
-                UDTData master = newSchmea[0] as UDTData;
+                DBModel.Service.dataChangeEvent += dataChanged;
+                DBModel.Service.validationChangedEvent += dataValidationChanged;
 
-                // TBD: take out?
-                new DBModel(master);
-                DBModel.Service.dataChangeEvent += projectValidationChanged;
+                XMLModel.Service.dbSchema.dataChangeEvent += projectDataChanged;
+                XMLModel.Service.dbSchema.validationChangedEvent += projectValidationChanged;
 
-                master.validationChangedEvent += projectValidationChanged;
-                //master.dataChangeEvent += projectDataChanged;
                 viewDesign();
                 RaisePropertyChanged("projectStatus");
                 RaisePropertyChanged("projectStatusVisibility");
@@ -1067,19 +1077,17 @@ namespace UDTApp.ViewModels
 
         }
 
-        private bool _projectDataModified = false;
+        //private bool _projectDataModified = false;
         private bool projectDataModified
         {
             get
             {
-                UDTData master;
-                if (UDTXml.UDTXmlData.SchemaData != null && UDTXml.UDTXmlData.SchemaData.Count > 0)
-                {
-                    master = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
-                    return master.isSchemaModified;
-                }
-                return false;
-                //return _projectDataModified;
+                //if (UDTXml.UDTXmlData.SchemaData != null && UDTXml.UDTXmlData.SchemaData.Count > 0)
+                //{
+                //    return DBModel.Service.dbSchema.isModified;
+                //}
+                if (XMLModel.Service == null) return false;
+                else return XMLModel.Service.dbSchema.isModified;
             }
             //set
             //{

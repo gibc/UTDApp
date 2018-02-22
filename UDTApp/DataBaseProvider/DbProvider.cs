@@ -117,9 +117,11 @@ namespace UDTApp.DataBaseProvider
         {
             get
             {
-                if (UDTXml.UDTXmlData.SchemaData == null) return "";
-                UDTData udtData = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
-                return udtData.Name;
+                //if (UDTXml.UDTXmlData.SchemaData == null) return "";
+                //UDTData udtData = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
+                if (XMLModel.Service.dbSchema == null) return "";
+                //UDTData udtData = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
+                return XMLModel.Service.dbSchema.Name;
             }
         }
 

@@ -205,7 +205,7 @@
     <Compile Include="Log\ApiLogMessage.cs" />
     <Compile Include="Log\Log.cs" />
     <Compile Include="Models\DBModel.cs" />
-    <Compile Include="Models\UDTXml.cs" />
+    <Compile Include="Models\XMLModel.cs" />
     <Compile Include="SchemaModels\SharedUDTTable.cs" />
     <Compile Include="SchemaModels\UDTData.cs" />
     <Compile Include="Settings\FileSetting.cs" />

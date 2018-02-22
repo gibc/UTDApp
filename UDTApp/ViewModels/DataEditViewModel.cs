@@ -589,33 +589,12 @@ namespace UDTApp.ViewModels
         public void windowLoaded()
         {
             // load database from currently loaded schema
-            if (UDTXml.UDTXmlData.SchemaData == null || UDTXml.UDTXmlData.SchemaData.Count <= 0)
-                return;
-            UDTData curentSchem = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
-            if (DBModel.Service.DataSet == null || curentSchem.Name != DBModel.Service.DataSet.DataSetName)
+            //if (UDTXml.UDTXmlData.SchemaData == null || UDTXml.UDTXmlData.SchemaData.Count <= 0)
+            if (XMLModel.Service.dbSchema== null)
+                    return;
+            //UDTData curentSchem = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
+            if (DBModel.Service.DataSet == null || XMLModel.Service.dbSchema.Name != DBModel.Service.DataSet.DataSetName)
                 loadDataSet();
-
-            //    UDTDataSet.udtDataSet.readDatabase(UDTXml.UDTXmlData.SchemaData[0] as UDTData);
-            //UDTDataSet.udtDataSet.IsModified = false;
-            //DataEditDataBase editDataBase = new DataEditDataBase();
-
-            //UDTData dbItem = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
-            //foreach (UDTData table in dbItem.tableData)
-            //{
-            //    DataEditGrid grid = new DataEditGrid(table, navBtnClk);
-            //    //if (currentEditGrid == null)
-            //        currentEditGrid = grid;
-            //    editDataBase.editGrids.Add(grid);
-            //    createDataGrids(grid, table, navBtnClk);
-            //}
-
-
-            ////currentEditGrid = topDataEditGrid;
-            ////dataEditDataBase = editDataBase;
-            ////currentEditGrid.localNavButtonClick();
-            //foreach (DataEditGrid grid in editDataBase.editGrids)
-            //    grid.localNavButtonClick();
-            //dataEditDataBase = editDataBase;
 
         }
 
@@ -623,7 +602,8 @@ namespace UDTApp.ViewModels
         {
             // load database from currently loaded schema
 
-            DBModel.Service.readDatabase(UDTXml.UDTXmlData.SchemaData[0] as UDTData);
+            //DBModel.Service.readDatabase(UDTXml.UDTXmlData.SchemaData[0] as UDTData);
+            DBModel.Service.readDatabase(XMLModel.Service.dbSchema);
             DBModel.Service.IsModified = false;
 
             loadDataGrid();
@@ -649,8 +629,8 @@ namespace UDTApp.ViewModels
         {
             DataEditDataBase editDataBase = new DataEditDataBase();
 
-            UDTData dbItem = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
-            foreach (UDTData table in dbItem.tableData)
+            //UDTData dbItem = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
+            foreach (UDTData table in XMLModel.Service.dbSchema.tableData)
             {
                 DataEditGrid grid = new DataEditGrid(table, navBtnClk);
                 currentEditGrid = grid;

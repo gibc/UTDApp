@@ -391,10 +391,14 @@ namespace UDTApp.SchemaModels
             }
             updateErrorList(e.PropertyName);
 
-            if (UDTXml.UDTXmlData.SchemaData.Count > 0)
+            //if (UDTXml.UDTXmlData.SchemaData.Count > 0)
+            //{
+            //    UDTData master = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
+            //    master.validationChanged();
+            //}
+            if (XMLModel.Service.dbSchema != null)
             {
-                UDTData master = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
-                master.validationChanged();
+                XMLModel.Service.dbSchema.validationChanged();
             }
         }
 
@@ -561,8 +565,9 @@ namespace UDTApp.SchemaModels
         {
             get
             {
-                if (UDTXml.UDTXmlData.SchemaData == null || UDTXml.UDTXmlData.SchemaData.Count <= 0) return null;
-                return UDTXml.UDTXmlData.SchemaData[0] as UDTData;
+                //if (UDTXml.UDTXmlData.SchemaData == null || UDTXml.UDTXmlData.SchemaData.Count <= 0) return null;
+                //return UDTXml.UDTXmlData.SchemaData[0] as UDTData;
+                return XMLModel.Service.dbSchema;
             }
         }
 
@@ -862,7 +867,7 @@ namespace UDTApp.SchemaModels
                     dragButtonVisibility = Visibility.Collapsed;
                     editButtonVisibility = Visibility.Collapsed;
                     backgroundBrush = Brushes.SandyBrown;
-                    TableDictionary.itemDic = new Dictionary<Guid, TableRef>();
+                    //TableDictionary.itemDic = new Dictionary<Guid, TableRef>();
                     // put database ref in table dic so parentOjb references will return
                     // master item and eliminate the need for parentObj fix up
                     TableRef tableRef = new TableRef() { refCount = 1 };
@@ -1657,8 +1662,9 @@ namespace UDTApp.SchemaModels
             else currentValidationError = new List<string>();
             editPropValidationChanged();
 
-            UDTData master = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
-            master.validationChanged();
+            //UDTData master = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
+            //master.validationChanged();
+            XMLModel.Service.dbSchema.validationChanged();
         }
 
         // NOTE: will be set by the non-default ctor that is called by the 
@@ -1676,10 +1682,14 @@ namespace UDTApp.SchemaModels
 
         public void editPropsDataChanged()
         {
-            if (UDTXml.UDTXmlData.SchemaData != null && UDTXml.UDTXmlData.SchemaData.Count > 0)
+            //if (UDTXml.UDTXmlData.SchemaData != null && UDTXml.UDTXmlData.SchemaData.Count > 0)
+            //{
+            //    UDTData master = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
+            //    master.dataChanged();
+            //}
+            if (XMLModel.Service.dbSchema != null)
             {
-                UDTData master = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
-                master.dataChanged();
+                XMLModel.Service.dbSchema.dataChanged();
             }
         }
 

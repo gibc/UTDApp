@@ -100,20 +100,8 @@ namespace UDTApp.ViewModels
 
         private void saveToXml()
         {
-            //string xml = SerializeToString(SchemaList);
-            ////SchemaList = readFromXml(xml);
-
-            //SaveFileDialog saveFileDialog = new SaveFileDialog();
-            //saveFileDialog.Filter = "Xml (*.xml)|*.xml";
-            //if (saveFileDialog.ShowDialog().Value)
-            //{
-            //    FileStream xmlFile = File.Open(saveFileDialog.FileName, FileMode.OpenOrCreate);
-            //    Byte[] info = new UTF8Encoding(true).GetBytes(xml);
-            //    xmlFile.Write(info, 0, info.Length);
-            //    xmlFile.Close();
-            //}
-
-            UDTXml.UDTXmlData.saveToXml(SchemaList);
+            //UDTXml.UDTXmlData.saveToXml(SchemaList);
+            XMLModel.Service.saveToXml(SchemaList);
         }
 
         void readFromXml()
@@ -130,8 +118,8 @@ namespace UDTApp.ViewModels
             //    SchemaList = schema;
             //}
 
-            List<UDTBase> schema = UDTXml.UDTXmlData.readFromXml();
-            if (schema != null) SchemaList = schema;
+            //List<UDTBase> schema = UDTXml.UDTXmlData.readFromXml();
+            //if (schema != null) SchemaList = schema;
         }
 
         
@@ -342,7 +330,9 @@ namespace UDTApp.ViewModels
 
         public void windowLoaded()
         {
-            SchemaList = UDTXml.UDTXmlData.SchemaData;
+            //SchemaList = UDTXml.UDTXmlData.SchemaData;
+            SchemaList = new List<UDTBase>();
+            SchemaList.Add(XMLModel.Service.dbSchema);
         }
 
         private void readDatabase()

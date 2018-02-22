@@ -15,27 +15,29 @@ namespace UDTApp.Models
 {
     public class DBModel : ValidatableBindableBase
     {
-        public DBModel(UDTData _dbSchema)
+        //public DBModel(UDTData _dbSchema) 
+        public DBModel(DBType dbType, string serverName)
         {
-            dbSchema = _dbSchema;
-            dbProvider = new DbProvider(dbSchema.dbType, dbSchema.serverName);
+            //dbSchema = _dbSchema;
+            //dbProvider = new DbProvider(_dbSchema.dbType, _dbSchema.serverName);
+            dbProvider = new DbProvider(dbType, serverName);
             Service = this;
         }
 
         public static DBModel Service;
 
-        public UDTData dbSchema;
+        //public UDTData dbSchema;
         private DbProvider dbProvider;
 
         #region SqlCode
 
         public void createDatabase()
         {
-            createSQLDatabase(dbSchema.Name);
+            createSQLDatabase(XMLModel.Service.dbSchema.Name);
             List<Guid> tableGuids = new List<Guid>();
-            foreach (UDTData table in dbSchema.tableData)
+            foreach (UDTData table in XMLModel.Service.dbSchema.tableData)
             {
-                createDBTable(table, dbSchema.Name, tableGuids);
+                createDBTable(table, XMLModel.Service.dbSchema.Name, tableGuids);
             }
         }
 
@@ -45,9 +47,9 @@ namespace UDTApp.Models
 
             using (DbConnection conn = dbProvider.Conection)
             {
-                UDTData mastr = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
+                //UDTData mastr = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
                 // if remote db must exits before project is created
-                if (!string.IsNullOrEmpty(mastr.serverName))
+                if (!string.IsNullOrEmpty(XMLModel.Service.dbSchema.serverName))
                 {
                     conn.ConnectionString = dbProvider.ConnectionString;
                     try
@@ -119,8 +121,8 @@ namespace UDTApp.Models
                 }
                 else
                 {
-                    UDTData master = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
-                    if (!string.IsNullOrEmpty(master.serverName)) return;  // ignore request to delete remove db
+                    //UDTData master = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
+                    if (!string.IsNullOrEmpty(XMLModel.Service.dbSchema.serverName)) return;  // ignore request to delete remove db
 
                     string sqlTxt =
                         string.Format("ALTER DATABASE {0} SET SINGLE_USER WITH ROLLBACK IMMEDIATE", dbName);
@@ -219,9 +221,9 @@ namespace UDTApp.Models
             }
         }
 
-        public bool isDatabaseEmpty(UDTData master, string dbName)
+        public bool isDatabaseEmpty()
         {
-            return dbEmpty(master, dbName);
+            return dbEmpty(XMLModel.Service.dbSchema, XMLModel.Service.dbSchema.Name);
         }
 
         private bool dbEmpty(UDTData table, string dbName)
@@ -596,8 +598,8 @@ namespace UDTApp.Models
                 }
 
                 // remote db must exist before project in created
-                UDTData master = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
-                if (!string.IsNullOrEmpty(master.serverName)) return true;
+                //UDTData master = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
+                if (!string.IsNullOrEmpty(XMLModel.Service.dbSchema.serverName)) return true;
 
                 string dbPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
                 dataFolder = dbPath + "\\UdtLocalDb";
