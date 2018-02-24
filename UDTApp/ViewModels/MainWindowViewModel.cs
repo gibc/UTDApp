@@ -1,19 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using System.Collections.ObjectModel;
-using System.Windows.Input;
 using UDTApp.Models;
 using System.Windows;
-using Prism.Events;
 using Prism.Commands;
 using Prism.Mvvm;
 using Prism.Regions;
-using System.ComponentModel.DataAnnotations;
-using System.Dynamic;
 using System.ComponentModel;
 using UDTApp.Views;
 using UDTApp.DataBaseProvider;
@@ -23,7 +15,6 @@ using Microsoft.Win32;
 using System.Windows.Media;
 using System.IO;
 using UDTApp.SetUp;
-using UDTApp.Encryption;
 using UDTApp.SchemaModels;
 
 namespace UDTApp.ViewModels
@@ -540,7 +531,7 @@ namespace UDTApp.ViewModels
         {
             projectName = "none";
             //UDTXml.UDTXmlData.SchemaData.Clear();
-            XMLModel.Service.dbSchema = null;
+            XMLModel.Service = null;
             DBModel.Service.DataSet = null;
             raiseDataSetChangeEvents();
             raiseProjectChangeEvents();
@@ -819,6 +810,9 @@ namespace UDTApp.ViewModels
             {
                 try
                 {
+                    DBModel.Service.dataChangeEvent += dataChanged;
+                    DBModel.Service.validationChangedEvent += dataValidationChanged;
+
                     DBModel.Service.createDatabase();
                     //UDTData master = UDTXml.UDTXmlData.SchemaData[0] as UDTData;
                     //master.setAllSavedProps();
@@ -1087,7 +1081,8 @@ namespace UDTApp.ViewModels
                 //    return DBModel.Service.dbSchema.isModified;
                 //}
                 if (XMLModel.Service == null) return false;
-                else return XMLModel.Service.dbSchema.isModified;
+                //else return XMLModel.Service.dbSchema.isModified;
+                else return XMLModel.Service.dbSchema.isSchemaModified;
             }
             //set
             //{

@@ -113,6 +113,9 @@ namespace UDTApp.Models
                     string dataFolder = path + "\\UdtApp";
                     if (Directory.Exists(dataFolder))
                     {
+                        // TBD: does this fix sqlite file not closed when connection closed;
+                        GC.Collect();
+                        GC.WaitForPendingFinalizers();
                         string filePath = string.Format("{0}\\{1}.db",
                             dataFolder, dbName);
                         if (File.Exists(filePath))

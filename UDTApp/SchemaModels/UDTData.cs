@@ -1129,7 +1129,7 @@ namespace UDTApp.SchemaModels
             if(this is UDTData)
             {
                 // check if this table is empty or has rows where parent column field is not null
-                if(DBModel.Service.canRemoveTable(MasterGroup, this as UDTData))
+                if(!DBModel.Service.canRemoveTable(MasterGroup, this as UDTData))
                 {
                     MessageBox.Show(
                         string.Format("Review and delete the data stored in the '{0}' group before removing it from the data design.", this.Name),
@@ -1143,7 +1143,7 @@ namespace UDTApp.SchemaModels
             {
                 // check if this col has data in parent table
                 //if (!string.IsNullOrEmpty(savName) && !isColumnEmpty(parentObj, this))
-                if(DBModel.Service.canRemoveCol(MasterGroup, parentObj, this))
+                if(!DBModel.Service.canRemoveCol(MasterGroup, parentObj, this))
                 {
                     MessageBox.Show(
                         string.Format("Review and delete the data stored in the '{0}' item before removing it from the data design.", this.Name),
