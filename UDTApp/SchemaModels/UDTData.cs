@@ -18,7 +18,6 @@ using System.Xml.Serialization;
 using UDTApp.DataBaseProvider;
 using UDTApp.ListManager;
 using UDTApp.Models;
-using UDTApp.SchemaModels;
 using UDTApp.ViewModels;
 using UDTApp.ViewModels.DataEntryControls;
 using UDTAppControlLibrary.Controls;
@@ -26,7 +25,7 @@ using UDTAppControlLibrary.Controls;
 //namespace UDTApp.Models
 namespace UDTApp.SchemaModels
 {
-    public enum UDTTypeName { DataBase, Group, Text, Real, Number, Date, Base }
+    public enum UDTTypeName { DataBase, Grid, Text, Real, Number, Date, Base }
 
     public class UDTData : UDTBase
     {
@@ -34,8 +33,8 @@ namespace UDTApp.SchemaModels
         {
             tableData = new ManagedObservableCollection<UDTData>();
             columnData = new ManagedObservableCollection<UDTBase>();
-            TypeName = UDTTypeName.Group;
-            Name = TypeName.ToString();
+            TypeName = UDTTypeName.Grid;
+            //Name = TypeName.ToString();
             backgroundBrush = Brushes.White;
             ParentColumnNames = new List<string>();
             dbType = DBType.none;
@@ -868,7 +867,7 @@ namespace UDTApp.SchemaModels
                     editButtonVisibility = Visibility.Collapsed;
                     backgroundBrush = Brushes.SandyBrown;
                     //TableDictionary.itemDic = new Dictionary<Guid, TableRef>();
-                    // put database ref in table dic so parentOjb references will return
+                    // put database ref in table dic so parentObj references will return
                     // master item and eliminate the need for parentObj fix up
                     TableRef tableRef = new TableRef() { refCount = 1 };
                     tableRef.tables.Add(this as UDTData);
@@ -1196,15 +1195,18 @@ namespace UDTApp.SchemaModels
                 TypeName == UDTTypeName.Real || TypeName == UDTTypeName.Number)
             {
                 PageZeroViewModel.viewModel.currentEditItem = this;
+                PageZeroViewModel.viewModel.editPropsVisibility = Visibility.Visible;
             }
-            else PageZeroViewModel.viewModel.currentEditItem = null;
+            else
+            {
+                PageZeroViewModel.viewModel.currentEditItem = null;
+                PageZeroViewModel.viewModel.editPropsVisibility = Visibility.Collapsed;
+            }
         }
+
         private void itemNameEditLostFocus(RoutedEventArgs e)
         {
-            if (TypeName == UDTTypeName.Text)
-            {
-                UDTTxtItem txtItem = this as UDTTxtItem;
-            }
+            PageZeroViewModel.viewModel.editPropsVisibility = Visibility.Collapsed;
         }
 
         // change table data items control margin when item added to collection
@@ -1271,7 +1273,7 @@ namespace UDTApp.SchemaModels
                         udtData = udtItem as UDTData;
                         // if this is table, not database item add parent column name
                         // if not already in parent col name list
-                        if (parent.TypeName == UDTTypeName.Group)
+                        if (parent.TypeName == UDTTypeName.Grid)
                         {
                             if (!udtData.ParentColumnNames.Contains(this.Name))
                             {
@@ -1326,7 +1328,7 @@ namespace UDTApp.SchemaModels
                         if (!parent.columnData.Contains(udtItem))
                         {
                             udtItem.parentObj = parent;
-                            udtItem.Name = getUniqueColumnName(parent.columnData);
+                            udtItem.Name = getUniqueColumnName(parent.columnData, udtItem);
                             if(parent.sharedTable != null)
                             {
                                 foreach(UDTData tbl in parent.sharedTable.sharedTables)
@@ -1356,23 +1358,33 @@ namespace UDTApp.SchemaModels
             }
         }
 
-        private string getUniqueColumnName(ObservableCollection<UDTBase> columnData)
+        private string getUniqueColumnName(ObservableCollection<UDTBase> columnData, UDTBase column)
         {
-            string colName = "DataItem";
+            string colName = "DataColumn";
+            if (column is UDTTxtItem)
+                colName = "TxtColumn";
+            else if (column is UDTIntItem)
+                colName = "NumColumn";
+            else if (column is UDTDecimalItem)
+                colName = "DecimaCol";
+            else if (column is UDTDateItem)
+                colName = "DateColumn";
+
+            string newColName = colName;
             for (char c = 'A'; c <= 'Z'; c++)
             {
-                UDTBase item = columnData.FirstOrDefault(x => x.Name == colName);
+                UDTBase item = columnData.FirstOrDefault(x => x.Name == newColName);
                 if (item == null)
-                    return colName;
+                    return newColName;
                 else
-                    colName = "DataItem" + c;
+                    newColName = colName + c;
             }
             return "";
         }
 
         private string getUniqueGroupName(UDTData tableData)
         {
-            string tableName = "GroupItem";
+            string tableName = "Grid";
             for (char c = 'A'; c <= 'Z'; c++)
             {
                 bool retVal = false;
@@ -1380,7 +1392,7 @@ namespace UDTApp.SchemaModels
                 if (retVal == false)
                     return tableName;
                 else
-                    tableName = "GroupItem" + c;
+                    tableName = "Grid" + c;
             }
             return "";
         }
@@ -1419,7 +1431,7 @@ namespace UDTApp.SchemaModels
             if (dragItem != null)
             {
                 // only tables can be dropped on database item
-                if (this.TypeName == UDTTypeName.DataBase && dragItem.TypeName != UDTTypeName.Group)
+                if (this.TypeName == UDTTypeName.DataBase && dragItem.TypeName != UDTTypeName.Grid)
                     dragArgs.Effects = DragDropEffects.None;
                 else
                     dragArgs.Effects = DragDropEffects.Copy;
@@ -1518,10 +1530,10 @@ namespace UDTApp.SchemaModels
                 if (dataObj.TypeName == UDTTypeName.DataBase)
                 {
                     if (dataObj.tableData.Count <= 0)
-                        return new System.ComponentModel.DataAnnotations.ValidationResult("Data base must include at least one group item.");
+                        return new System.ComponentModel.DataAnnotations.ValidationResult("Data base must include at least one Grid.");
                 }
                 else if (dataObj.columnData.Count <= 0)
-                    return new System.ComponentModel.DataAnnotations.ValidationResult("Group item must include at least one data item.");
+                    return new System.ComponentModel.DataAnnotations.ValidationResult("A Grid must include at least one Column.");
                 dataObj.PopUpOpen = false;
             }
 
@@ -1551,13 +1563,13 @@ namespace UDTApp.SchemaModels
                 foreach (UDTBase obj in dataObj.parentObj.columnData)
                 {
                     if (obj.Name == name && obj.objId != dataObj.objId)
-                        return new System.ComponentModel.DataAnnotations.ValidationResult("Duplicate item name. Item names must be unique within an item group.");
+                        return new System.ComponentModel.DataAnnotations.ValidationResult("Duplicate Column name. Column names must be unique within an Grid.");
                 }
             }
             else if (dataObj != null && dataObj.parentObj != null && dataObj.GetType() == typeof(UDTData))
             {
                 if (dataObj.findGroupName(dataObj.MasterGroup, dataObj.objId, name))
-                    return new System.ComponentModel.DataAnnotations.ValidationResult("Duplicate group name. Group names must be unique.");
+                    return new System.ComponentModel.DataAnnotations.ValidationResult("Duplicate Grid name. Grid names must be unique.");
             }
 
             return System.ComponentModel.DataAnnotations.ValidationResult.Success;
@@ -2214,7 +2226,7 @@ namespace UDTApp.SchemaModels
                 if (_itemList == null)
                 {
                     _itemList = new Collection<UDTBase>();
-                    _itemList.Add(new UDTData());
+                    //_itemList.Add(new UDTData());
                     _itemList.Add(new UDTTxtItem());
                     _itemList.Add(new UDTIntItem());
                     _itemList.Add(new UDTDecimalItem());
@@ -2223,6 +2235,21 @@ namespace UDTApp.SchemaModels
                 return _itemList;
             }
         }
+
+        private static Collection<UDTBase> _gridTool = null;
+        public static Collection<UDTBase> gridTool
+        {
+            get
+            {
+                if (_gridTool == null)
+                {
+                    _gridTool = new Collection<UDTBase>();
+                    _gridTool.Add(new UDTData());
+                }
+                return _gridTool;
+            }
+        }
+
     }
 }
 

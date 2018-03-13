@@ -182,8 +182,10 @@ namespace UDTApp.ViewModels
             else e.Cancel = true;
         }
 
+        private Window mainWin = null;
         private void windowLoaded(Window window)
         {
+            mainWin = window;
             window.Closing += windowClosing;
             
             if (AppSettings.appSettings.autoOpenFile != null)
@@ -422,6 +424,30 @@ namespace UDTApp.ViewModels
             get { return _projectName; }
             set
             {
+                if (XMLModel.Service != null && value != "none")
+                {
+                    string dbType = "Sqlite DB";
+                    string svrName = "";
+                    if (XMLModel.Service.dbSchema.dbType == DBType.sqlExpress)
+                    {
+                        dbType = "Sql Server DB";
+                        if (!string.IsNullOrEmpty(XMLModel.Service.dbSchema.serverName))
+                        {
+                            svrName = XMLModel.Service.dbSchema.serverName;
+                            mainWin.Title = string.Format("{1} [ {0} on remote host: {2} ]", dbType,
+                                XMLModel.Service.dbSchema.Name, svrName);
+                        }
+                    }
+
+                    if (string.IsNullOrEmpty(svrName))
+                    {
+                        mainWin.Title = string.Format("{1} [ {0} ]", dbType,
+                            XMLModel.Service.dbSchema.Name);
+                    }
+                }
+                else
+                    mainWin.Title = "EeZeDB";
+
                 SetProperty(ref _projectName, value);
                 DeleteCommand.RaiseCanExecuteChanged();
             }
@@ -1027,7 +1053,6 @@ namespace UDTApp.ViewModels
         {
             try
             {
-                projectName = newProjectViewModel.ProjectName;
 
                 AppSettings.appSettings.autoOpenFile = null;
 
@@ -1046,6 +1071,7 @@ namespace UDTApp.ViewModels
                         );
                 }
 
+                projectName = newProjectViewModel.ProjectName;
 
                 DBModel.Service.dataChangeEvent += dataChanged;
                 DBModel.Service.validationChangedEvent += dataValidationChanged;

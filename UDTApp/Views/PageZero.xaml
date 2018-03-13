@@ -183,7 +183,7 @@
                     Width="{Binding buttonWidth}" HorizontalAlignment="Center" 
                     VerticalContentAlignment="Center"
                     HorizontalContentAlignment="Center"  BorderThickness="1,1,1,1" BorderBrush="Black"
-                    ToolTip="Drag to Group Item."
+                    ToolTip="Drag to a Grid."
                     Padding="-0,-7,0,-5">
                 
                 <Button.Content>
@@ -674,11 +674,19 @@
             </ScrollViewer>
         </GroupBox>
         <StackPanel Grid.Column="1" Grid.Row="0">
-            <GroupBox FontWeight="Bold" Header="Data Tools" BorderThickness="2" BorderBrush="Black" Padding="0,-3,0,0" >
-                <ListBox FontWeight="Normal" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+            <GroupBox FontWeight="Bold" Header="Drag &amp; Drop Tools" BorderThickness="2" BorderBrush="Black" Padding="0,-3,0,0">
+            <StackPanel>
+                <GroupBox FontWeight="SemiBold"  Header="Data Grid" BorderThickness="1" BorderBrush="Black" Padding="0,-3,0,0">
+                    <ListBox FontWeight="Normal" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                         BorderBrush="Transparent" ItemsSource="{Binding UDTGrid}"></ListBox>
+                </GroupBox>
+                    <GroupBox FontWeight="SemiBold" Header="Grid Columns" BorderThickness="1" BorderBrush="Black" Padding="0,-3,0,0" >
+                    <ListBox FontWeight="Normal" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
                          BorderBrush="Transparent" ItemsSource="{Binding UDTItems}"></ListBox>
-            </GroupBox >
-            <GroupBox BorderThickness="2" BorderBrush="Black">
+                </GroupBox >
+            </StackPanel>
+            </GroupBox>
+            <GroupBox Visibility="{Binding editPropsVisibility, Mode=TwoWay}" BorderThickness="2" BorderBrush="Black">
                 <GroupBox.Header>
                     <WrapPanel>
                         <TextBlock Text="{Binding currentEditItem.TypeName}" FontWeight="Bold"/>
